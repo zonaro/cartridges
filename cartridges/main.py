@@ -93,6 +93,7 @@ class CartridgesApplication(Adw.Application):
 
     def do_activate(self) -> None:  # pylint: disable=arguments-differ
         """Called on app creation"""
+
         try:
             setup_logging()
         except ValueError:
