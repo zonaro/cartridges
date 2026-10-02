@@ -140,6 +140,12 @@
     <key name="show-news-button" type="b">
       <default>false</default>
     </key>
+    <key name="session-wallpaper" type="b">
+      <default>false</default>
+    </key>
+    <key name="session-wallpaper-saved" type="s">
+      <default>""</default>
+    </key>
   </schema>
 
   <schema id="@APP_ID@.State" path="@PREFIX@/State/">
