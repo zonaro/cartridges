@@ -62,6 +62,12 @@
     <key name="bottles-location" type="s">
       <default>"~/.var/app/com.usebottles.bottles/data/bottles/"</default>
     </key>
+    <key name="dolphin" type="b">
+      <default>true</default>
+    </key>
+    <key name="dolphin-cache-location" type="s">
+      <default>"~/.var/app/org.DolphinEmu.dolphin-emu/cache/dolphin-emu/"</default>
+    </key>
     <key name="itch" type="b">
       <default>true</default>
     </key>
@@ -79,6 +85,12 @@
     </key>
     <key name="retroarch-location" type="s">
       <default>"~/.var/app/org.libretro.RetroArch/config/retroarch/"</default>
+    </key>
+    <key name="yuzu" type="b">
+      <default>true</default>
+    </key>
+    <key name="yuzu-location" type="s">
+      <default>"~/.var/app/org.yuzu_emu.yuzu/config/yuzu/"</default>
     </key>
     <key name="desktop" type="b">
       <default>true</default>

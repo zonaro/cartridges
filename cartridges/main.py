@@ -18,6 +18,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import json
+import logging
 import lzma
 import shlex
 import sys
@@ -30,14 +31,21 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
+try:
+    gi.require_version("Manette", "0.2")
+    from gi.repository import Manette
+except (ValueError, ImportError):
+    Manette = None
+
 # pylint: disable=wrong-import-position
-from gi.repository import Adw, Gio, GLib, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
 from cartridges import shared
 from cartridges.details_dialog import DetailsDialog
 from cartridges.game import Game
 from cartridges.importer.bottles_source import BottlesSource
 from cartridges.importer.desktop_source import DesktopSource
+from cartridges.importer.dolphin_source import DolphinSource
 from cartridges.importer.flatpak_source import FlatpakSource
 from cartridges.importer.heroic_source import HeroicSource
 from cartridges.importer.importer import Importer  # yo dawg
@@ -46,6 +54,7 @@ from cartridges.importer.legendary_source import LegendarySource
 from cartridges.importer.lutris_source import LutrisSource
 from cartridges.importer.retroarch_source import RetroarchSource
 from cartridges.importer.steam_source import SteamSource
+from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.logging.setup import log_system_info, setup_logging
 from cartridges.preferences import CartridgesPreferences
 from cartridges.store.managers.cover_manager import CoverManager
@@ -57,11 +66,61 @@ from cartridges.store.store import Store
 from cartridges.utils.run_executable import run_executable
 from cartridges.window import CartridgesWindow
 
+try:
+    from cartridges.keyboard_emulator import KeyboardEmulator
+except ImportError:
+    KeyboardEmulator = None
+
 
 class CartridgesApplication(Adw.Application):
     state = shared.AppState.DEFAULT
     win: CartridgesWindow
     init_search_term: Optional[str] = None
+    keyboard_emulator = None
+
+    @GObject.Signal(name="emulate-key", arg_types=[int])
+    def emulate_key(self, keyval) -> None:
+        """Signal emitted when the app wants to emulate a keypress"""
+
+    def gamepad_listen(self, device, *_args) -> None:
+        logging.debug("Gamepad connected: %s", device.get_name())
+        device.connect("button-press-event", self.gamepad_button_pressed)
+        device.connect("hat-axis-event", self.gamepad_hat_axis)
+
+    def gamepad_button_pressed(self, _device, event) -> None:
+        logging.debug("Gamepad: %s pressed", (button := event.get_button()[1]))
+
+        match button:
+            case 304:  # A, confirm
+                self.emit("emulate-key", Gdk.KEY_Return)
+            case 305:  # B, back
+                self.emit("emulate-key", Gdk.KEY_Escape)
+            case 307:  # X
+                logging.debug("Gamepad: X button pressed")
+            case 308:  # Y
+                logging.debug("Gamepad: Y button pressed")
+
+    def gamepad_hat_axis(self, _device, event) -> None:
+        hat = event.get_hat()
+        logging.debug("Gamepad: hat axis: %s, value: %s", hat[1:3])
+
+        if hat[2] != 0:
+            self.navigate(hat[1] + hat[2])
+
+    def navigate(self, direction: int) -> None:
+        match direction:
+            case 16:
+                self.emit("emulate-key", Gdk.KEY_Up)
+            case 18:
+                self.emit("emulate-key", Gdk.KEY_Down)
+            case 15:
+                self.emit("emulate-key", Gdk.KEY_Left)
+            case 17:
+                self.emit("emulate-key", Gdk.KEY_Right)
+            case _:
+                logging.debug(
+                    "Gamepad: unhandled navigation direction: %s", direction
+                )
 
     def __init__(self) -> None:
         shared.store = Store()
@@ -100,6 +159,20 @@ class CartridgesApplication(Adw.Application):
             pass
 
         log_system_info()
+
+        # Setup gamepads
+        if Manette is not None:
+            manette_monitor = Manette.Monitor.new()
+            manette_iter = manette_monitor.iterate()
+            while (device := manette_iter.next())[0]:
+                self.gamepad_listen(device[1])
+        else:
+            logging.debug("Manette not available, gamepad support disabled")
+
+        if KeyboardEmulator is not None:
+            self.keyboard_emulator = KeyboardEmulator(self)
+        else:
+            logging.debug("snegg not available, key emulation disabled")
 
         # Create the main window
         win = self.props.active_window  # pylint: disable=no-member
@@ -335,6 +408,9 @@ class CartridgesApplication(Adw.Application):
         if shared.schema.get_boolean("bottles"):
             shared.importer.add_source(BottlesSource())
 
+        if shared.schema.get_boolean("dolphin"):
+            shared.importer.add_source(DolphinSource())
+
         if shared.schema.get_boolean("flatpak"):
             shared.importer.add_source(FlatpakSource())
 
@@ -349,6 +425,9 @@ class CartridgesApplication(Adw.Application):
 
         if shared.schema.get_boolean("retroarch"):
             shared.importer.add_source(RetroarchSource())
+
+        if shared.schema.get_boolean("yuzu"):
+            shared.importer.add_source(YuzuSource())
 
         shared.importer.run()
 

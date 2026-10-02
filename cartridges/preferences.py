@@ -33,6 +33,7 @@ from cartridges.errors.friendly_error import FriendlyError
 from cartridges.game import Game
 from cartridges.importer.bottles_source import BottlesSource
 from cartridges.importer.desktop_source import DesktopSource
+from cartridges.importer.dolphin_source import DolphinSource
 from cartridges.importer.flatpak_source import FlatpakSource
 from cartridges.importer.heroic_source import HeroicSource
 from cartridges.importer.itch_source import ItchSource
@@ -42,6 +43,7 @@ from cartridges.importer.lutris_source import LutrisSource
 from cartridges.importer.retroarch_source import RetroarchSource
 from cartridges.importer.source import Source
 from cartridges.importer.steam_source import SteamSource
+from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.utils.create_dialog import create_dialog
 
@@ -85,6 +87,10 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     bottles_data_action_row: Adw.ActionRow = Gtk.Template.Child()
     bottles_data_file_chooser_button: Gtk.Button = Gtk.Template.Child()
 
+    dolphin_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
+    dolphin_cache_action_row: Adw.ActionRow = Gtk.Template.Child()
+    dolphin_cache_file_chooser_button: Gtk.Button = Gtk.Template.Child()
+
     itch_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     itch_config_action_row: Adw.ActionRow = Gtk.Template.Child()
     itch_config_file_chooser_button: Gtk.Button = Gtk.Template.Child()
@@ -96,6 +102,10 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     retroarch_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     retroarch_config_action_row: Adw.ActionRow = Gtk.Template.Child()
     retroarch_config_file_chooser_button: Gtk.Button = Gtk.Template.Child()
+
+    yuzu_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
+    yuzu_data_action_row: Adw.ActionRow = Gtk.Template.Child()
+    yuzu_data_file_chooser_button: Gtk.Button = Gtk.Template.Child()
 
     flatpak_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     flatpak_system_data_action_row: Adw.ActionRow = Gtk.Template.Child()
@@ -157,6 +167,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         # Sources settings
         for source_class in (
             BottlesSource,
+            DolphinSource,
             FlatpakSource,
             HeroicSource,
             ItchSource,
@@ -164,6 +175,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             LutrisSource,
             RetroarchSource,
             SteamSource,
+            YuzuSource,
         ):
             source = source_class()
             if not source.is_available:
