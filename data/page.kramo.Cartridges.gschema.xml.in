@@ -17,6 +17,12 @@
     <key name="remove-missing" type="b">
       <default>true</default>
     </key>
+    <key name="playtime-tracking" type="b">
+      <default>true</default>
+    </key>
+    <key name="process-tracking-grace" type="i">
+      <default>5</default>
+    </key>
     <key name="steam" type="b">
       <default>true</default>
     </key>

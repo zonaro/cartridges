@@ -17,6 +17,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import logging
 import shlex
 from pathlib import Path
 from time import time
@@ -54,6 +55,7 @@ class Game(Gtk.Box):
     source: str
     hidden: bool = False
     last_played: int = 0
+    playtime: int = 0
     name: str
     developer: Optional[str] = None
     removed: bool = False
@@ -117,6 +119,23 @@ class Game(Gtk.Box):
         self.update()
 
         run_executable(self.executable)
+
+        # Automatic playtime tracking. Skipped when disabled, when another
+        # session is already running it is ended first, and when the game
+        # is not followable (launcher URI with no path) the launch
+        # behaves exactly as before.
+        if shared.schema.get_boolean("playtime-tracking"):
+            from cartridges.process_session import ProcessSession
+
+            if ProcessSession.active is not None:
+                ProcessSession.active.stop(record=True)
+            session = ProcessSession(self)
+            if session.exe_name or session.install_dir:
+                session.start()
+            else:
+                logging.debug(
+                    "%s is not followable, skipping playtime tracking", self.name
+                )
 
         if shared.schema.get_boolean("exit-after-launch"):
             self.app.quit()

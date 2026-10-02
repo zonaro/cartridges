@@ -55,6 +55,8 @@ host_cache_dir = Path(getenv("HOST_XDG_CACHE_HOME", Path.home() / ".cache"))
 
 flatpak_dir = home / ".var" / "app"
 
+app_dir = data_dir / "cartridges"
+
 games_dir = data_dir / "cartridges" / "games"
 covers_dir = data_dir / "cartridges" / "covers"
 

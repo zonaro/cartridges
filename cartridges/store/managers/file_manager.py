@@ -44,6 +44,7 @@ class FileManager(AsyncManager):
             "source",
             "hidden",
             "last_played",
+            "playtime",
             "name",
             "developer",
             "removed",
