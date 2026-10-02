@@ -21,6 +21,8 @@
 
 import logging
 import re
+import threading
+from datetime import date
 from pathlib import Path
 from shutil import rmtree
 from sys import platform
@@ -45,7 +47,9 @@ from cartridges.importer.source import Source
 from cartridges.importer.steam_source import SteamSource
 from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.store.managers.sgdb_manager import SgdbManager
+from cartridges.utils import backup
 from cartridges.utils.create_dialog import create_dialog
+from cartridges.utils.na_tela import entregar_na_tela
 
 
 @Gtk.Template(resource_path=shared.PREFIX + "/gtk/preferences.ui")
@@ -128,6 +132,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     danger_zone_group = Gtk.Template.Child()
     remove_all_games_button_row = Gtk.Template.Child()
     reset_button_row = Gtk.Template.Child()
+    export_backup_button_row = Gtk.Template.Child()
+    import_backup_button_row = Gtk.Template.Child()
 
     removed_games: set[Game] = set()
     warning_menu_buttons: dict = {}
@@ -158,6 +164,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
         # General
         self.remove_all_games_button_row.connect("activated", self.remove_all_games)
+        self.export_backup_button_row.connect("activated", self.export_backup)
+        self.import_backup_button_row.connect("activated", self.import_backup)
 
         # Debug
         if shared.PROFILE == "development":
@@ -325,6 +333,125 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.add_toast(self.toast)
         shared.win.get_application().state = shared.AppState.DEFAULT
         shared.win.create_source_rows()
+
+    def _backup_filters(self) -> Gio.ListStore:
+        backup_filter = Gtk.FileFilter(name=_("Backup do Cartridges"))
+        backup_filter.add_suffix("zip")
+        filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(backup_filter)
+        return filters
+
+    def export_backup(self, *_args: Any) -> None:
+        dialog = Gtk.FileDialog()
+        dialog.set_initial_name(f"cartridges-backup-{date.today().isoformat()}.zip")
+        dialog.set_filters(self._backup_filters())
+
+        def finish(file_dialog: Gtk.FileDialog, result: Gio.Task) -> None:
+            try:
+                path = Path(file_dialog.save_finish(result).get_path())
+            except GLib.Error:
+                return
+            settings = backup.ler_configuracoes()
+            progress = Adw.Toast(title=_("Exportando backup…"), timeout=0)
+            self.add_toast(progress)
+
+            def work() -> None:
+                try:
+                    backup.exportar(path, settings)
+                except Exception as error:  # pylint: disable=broad-exception-caught
+                    logging.exception("Não foi possível exportar o backup")
+                    entregar_na_tela(self._export_done, progress, str(error))
+                else:
+                    entregar_na_tela(self._export_done, progress, None)
+
+            threading.Thread(target=work, daemon=True).start()
+
+        dialog.save(shared.win, None, finish)
+
+    def _export_done(self, progress: Adw.Toast, error: Optional[str]) -> bool:
+        progress.dismiss()
+        if error:
+            create_dialog(
+                self,
+                _("Não foi possível exportar"),
+                _(
+                    "Não foi possível gravar o arquivo. Verifique se a pasta "
+                    "de destino está acessível e se há espaço livre em disco."
+                ),
+            )
+        else:
+            self.add_toast(Adw.Toast.new(_("Backup exportado")))
+        return False
+
+    def import_backup(self, *_args: Any) -> None:
+        dialog = Gtk.FileDialog()
+        dialog.set_filters(self._backup_filters())
+
+        def finish(file_dialog: Gtk.FileDialog, result: Gio.Task) -> None:
+            try:
+                path = Path(file_dialog.open_finish(result).get_path())
+            except GLib.Error:
+                return
+            self._restore_backup(path)
+
+        dialog.open(shared.win, None, finish)
+
+    def _restore_backup(self, path: Path) -> None:
+        def on_response(_dialog: Any, response: str) -> None:
+            if response == "restore":
+                self._schedule_restore(path)
+
+        dialog = create_dialog(
+            self,
+            _("Restaurar este backup?"),
+            _("Tem certeza que deseja restaurar este backup? Esta ação é irreversível."),
+            "restore",
+            _("Restaurar"),
+        )
+        dialog.set_response_appearance("restore", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.connect("response", on_response)
+
+    def _schedule_restore(self, path: Path) -> None:
+        progress = Adw.Toast(title=_("Preparando a restauração…"), timeout=0)
+        self.add_toast(progress)
+
+        def work() -> None:
+            try:
+                backup.validar(path)
+                backup.agendar(path)
+            except backup.BackupInvalido:
+                entregar_na_tela(self._restore_invalid, progress)
+            except Exception:  # pylint: disable=broad-exception-caught
+                logging.exception("Não foi possível agendar a restauração do backup")
+                entregar_na_tela(self._restore_failed, progress)
+            else:
+                entregar_na_tela(self._restart_to_restore)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _restore_invalid(self, progress: Adw.Toast) -> bool:
+        progress.dismiss()
+        create_dialog(
+            self,
+            _("Backup inválido"),
+            _("O arquivo não é um backup válido do Cartridges."),
+        )
+        return False
+
+    def _restore_failed(self, progress: Adw.Toast) -> bool:
+        progress.dismiss()
+        create_dialog(
+            self,
+            _("Não foi possível restaurar"),
+            _("Não foi possível restaurar o backup. Tente novamente."),
+        )
+        return False
+
+    def _restart_to_restore(self) -> bool:
+        app = shared.win.get_application()
+        app.reiniciar = True
+        app.quit()
+        return False
 
     def reset_app(self, *_args: Any) -> None:
         rmtree(shared.data_dir / "cartridges", True)

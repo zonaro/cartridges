@@ -31,6 +31,20 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       }
     }
 
+    Adw.PreferencesGroup {
+      title: _("Backup da sua biblioteca");
+      description: _("Salve em um arquivo .zip a biblioteca completa e todas as configurações. A restauração substitui a biblioteca e as configurações atuais pelas do backup.");
+      separate-rows: true;
+
+      Adw.ButtonRow export_backup_button_row {
+        title: _("Exportar para arquivo");
+      }
+
+      Adw.ButtonRow import_backup_button_row {
+        title: _("Importar de arquivo");
+      }
+    }
+
     Adw.PreferencesGroup danger_zone_group {
       title: _("Danger Zone");
       separate-rows: true;
