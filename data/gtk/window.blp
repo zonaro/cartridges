@@ -707,6 +707,96 @@ Adw.NavigationPage details_page {
                 natural-wrap-mode: word;
                 justify: center;
               }
+
+              Label details_view_playtime {
+                margin-start: 12;
+                visible: false;
+                wrap: true;
+                wrap-mode: word_char;
+                natural-wrap-mode: word;
+                justify: center;
+              }
+            }
+
+            Box details_view_status_box {
+              orientation: horizontal;
+              margin-top: 12;
+              halign: start;
+              spacing: 6;
+
+              MenuButton details_view_status_button {
+                tooltip-text: _("Status deste jogo na biblioteca");
+
+                styles [
+                  "flat",
+                ]
+              }
+
+              MenuButton details_view_notes_button {
+                visible: false;
+                label: _("Onde eu parei");
+                tooltip-text: _("Anotar onde você parou neste jogo");
+
+                styles [
+                  "flat",
+                ]
+
+                popover: Popover details_view_notes_popover {
+                  Box {
+                    orientation: vertical;
+                    width-request: 320;
+
+                    ScrolledWindow {
+                      height-request: 120;
+                      hscrollbar-policy: never;
+
+                      TextView details_view_notes_view {
+                        top-margin: 4;
+                        bottom-margin: 4;
+                        left-margin: 4;
+                        right-margin: 4;
+                        wrap-mode: word_char;
+                      }
+                    }
+                  }
+                };
+              }
+            }
+
+            Box details_view_notes_box {
+              orientation: vertical;
+              margin-top: 18;
+              hexpand: true;
+              halign: start;
+              visible: false;
+
+              Label {
+                halign: start;
+                xalign: 0;
+                label: _("Onde eu parei");
+
+                styles [
+                  "caption-heading",
+                  "dim-label",
+                ]
+              }
+
+              Label details_view_notes {
+                margin-top: 3;
+                hexpand: true;
+                halign: start;
+                xalign: 0;
+                max-width-chars: 72;
+                wrap: true;
+                wrap-mode: word_char;
+                natural-wrap-mode: word;
+                lines: 3;
+                ellipsize: end;
+
+                styles [
+                  "dim-label",
+                ]
+              }
             }
 
             Button details_view_update_notice {
@@ -781,6 +871,18 @@ Adw.NavigationPage details_page {
                   icon-name: "user-trash-symbolic";
                   action-name: "app.remove_game";
                   tooltip-text: _("Remove");
+
+                  styles [
+                    "raised",
+                    "circular",
+                  ]
+                }
+
+                Button details_view_delete_button {
+                  icon-name: "user-trash-symbolic";
+                  action-name: "win.delete_game";
+                  tooltip-text: _("Excluir");
+                  visible: false;
 
                   styles [
                     "raised",

@@ -22,6 +22,30 @@ from typing import Any
 
 from gi.repository import GLib
 
+WEEKDAYS = (
+    "segunda-feira",
+    "terça-feira",
+    "quarta-feira",
+    "quinta-feira",
+    "sexta-feira",
+    "sábado",
+    "domingo",
+)
+MONTHS = (
+    "janeiro",
+    "fevereiro",
+    "março",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
+)
+
 
 def relative_date(timestamp: int) -> Any:  # pylint: disable=too-many-return-statements
     days_no = ((today := datetime.today()) - datetime.fromtimestamp(timestamp)).days

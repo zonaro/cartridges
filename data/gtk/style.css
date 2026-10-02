@@ -67,3 +67,7 @@
 .news-list row.expander:checked image.expander-row-arrow:not(:disabled) {
   color: inherit;
 }
+
+.playtime-clickable {
+  text-decoration-line: underline;
+}

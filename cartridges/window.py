@@ -24,11 +24,12 @@ from typing import Any, Optional
 
 from cartridges import shared
 from cartridges.botao_tarefas import BotaoTarefas
-from cartridges.game import Game
+from cartridges.game import Game, STATUS_LABELS, status_label
 from cartridges.game_cover import GameCover
-from cartridges.utils import restauracao, session_fita, session_wallpaper, tarefas
+from cartridges.session_history import SessionHistoryDialog
+from cartridges.utils import restauracao, session_fita, session_log, session_wallpaper, tarefas
 from cartridges.utils.animated_flow_box import AnimatedFlowBox
-from cartridges.utils.format_playtime import format_stopwatch
+from cartridges.utils.format_playtime import format_playtime, format_stopwatch
 from cartridges.utils.install_size import format_size
 from cartridges.utils.news_feed import NewsPost
 from cartridges.utils.open_uri import open_uri
@@ -36,7 +37,13 @@ from cartridges.utils.relative_date import relative_date
 from cartridges.utils.spring_scroll import attach as attach_spring_scroll
 from cartridges.utils.toast_queue import ToastQueue
 from cartridges.zerados_picker import ZeradosPicker
-from gi.repository import Adw, Gio, GLib, Gtk, Pango
+from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango
+
+
+def can_edit_notes(game: Game) -> bool:
+    if game.zerado:
+        return False
+    return game.status == "playing" or bool((game.notes or "").strip())
 
 
 @Gtk.Template(resource_path=shared.PREFIX + "/gtk/window.ui")
@@ -86,6 +93,14 @@ class CartridgesWindow(Adw.ApplicationWindow):
     details_view_last_played: Gtk.Label = Gtk.Template.Child()
     details_view_size: Gtk.Label = Gtk.Template.Child()
     details_view_update_notice: Gtk.Button = Gtk.Template.Child()
+    details_view_playtime: Gtk.Label = Gtk.Template.Child()
+    details_view_status_button: Gtk.MenuButton = Gtk.Template.Child()
+    details_view_notes_box: Gtk.Box = Gtk.Template.Child()
+    details_view_notes: Gtk.Label = Gtk.Template.Child()
+    details_view_notes_button: Gtk.MenuButton = Gtk.Template.Child()
+    details_view_notes_popover: Gtk.Popover = Gtk.Template.Child()
+    details_view_notes_view: Gtk.TextView = Gtk.Template.Child()
+    details_view_delete_button: Gtk.Button = Gtk.Template.Child()
     details_view_hide_button: Gtk.Button = Gtk.Template.Child()
 
     hidden_library_page: Adw.NavigationPage = Gtk.Template.Child()
@@ -128,6 +143,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     session_game: Optional[Game] = None
     session_timer_id: int = 0
     botao_tarefas: BotaoTarefas
+    _playtime_clickable = False
     details_view_game_cover: Optional[GameCover] = None
     sort_state: str = "last_played"
     filter_state: str = "all"
@@ -301,6 +317,14 @@ class CartridgesWindow(Adw.ApplicationWindow):
         add_zerado.connect("activate", lambda *_: ZeradosPicker().present(self))
         self.add_action(add_zerado)
 
+        set_status = Gio.SimpleAction.new("set_status", GLib.VariantType.new("s"))
+        set_status.connect("activate", self.on_set_status_action)
+        self.add_action(set_status)
+
+        delete_game = Gio.SimpleAction.new("delete_game", None)
+        delete_game.connect("activate", self.on_delete_game_action)
+        self.add_action(delete_game)
+
         shared.schema.bind(
             "show-news-button",
             self.news_button,
@@ -336,6 +360,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.details_view_update_notice.connect(
             "clicked", self.on_update_notice_clicked
         )
+        self.details_view_notes_popover.connect(
+            "notify::visible", self.on_notes_popover_toggled
+        )
+        click = Gtk.GestureClick.new()
+        click.connect("released", self.on_playtime_activated)
+        self.details_view_playtime.add_controller(click)
 
         self.navigation_view.connect("popped", self.set_show_hidden)
         self.navigation_view.connect("pushed", self.set_show_hidden)
@@ -504,6 +534,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
         )
         self.update_details_notice(game)
         self.update_install_size_label(game)
+        self.update_status_button(game)
+        self.update_notes_block(game)
+        self.update_playtime_label(game)
 
         if self.navigation_view.get_visible_page() != self.details_page:
             self.navigation_view.push(self.details_page)
@@ -849,6 +882,131 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.details_view_size.set_visible(bool(text))
         if text:
             self.details_view_size.set_label(_("Tamanho: {}").format(text))
+
+    def update_status_button(self, game: Game) -> None:
+        self.details_view_status_button.set_label(
+            status_label(game.status) or _("Definir status")
+        )
+        self.details_view_status_button.set_menu_model(self.build_status_menu())
+        self.details_view_delete_button.set_visible(game.zerado)
+
+    @staticmethod
+    def build_status_menu() -> Gio.Menu:
+        menu = Gio.Menu()
+        section = Gio.Menu()
+        for value, label in STATUS_LABELS.items():
+            item = Gio.MenuItem.new(label, None)
+            item.set_action_and_target_value("win.set_status", GLib.Variant("s", value))
+            section.append_item(item)
+        menu.append_section(None, section)
+
+        clear = Gio.Menu()
+        item = Gio.MenuItem.new(_("Sem status"), None)
+        item.set_action_and_target_value("win.set_status", GLib.Variant("s", ""))
+        clear.append_item(item)
+        menu.append_section(None, clear)
+        return menu
+
+    def on_set_status_action(self, _action: Any, target: GLib.Variant) -> None:
+        game = getattr(self, "active_game", None)
+        if game is None:
+            return
+
+        era_zerado = game.zerado
+        game.definir_status(target.get_string())
+        game.save()
+        game.update()
+
+        if era_zerado and game.removed and not game.zerado:
+            self.navigation_view.pop()
+            return
+        if era_zerado and not game.zerado:
+            self.show_details_page(game)
+
+        self.update_status_button(game)
+        self.update_notes_block(game)
+        if getattr(self, "filter_status_state", ""):
+            self.library.invalidate_filter()
+            self.zerados_library.invalidate_filter()
+
+    def on_delete_game_action(self, *_args: Any) -> None:
+        game = getattr(self, "active_game", None)
+        if game is None or not game.zerado:
+            return
+        dialog = Adw.AlertDialog.new(
+            _("Excluir {}?").format(game.name),
+            _(
+                "Tem certeza que deseja excluir este jogo? "
+                "Esta ação é irreversível."
+            ),
+        )
+        dialog.add_response("cancel", _("Cancelar"))
+        dialog.add_response("delete", _("Excluir"))
+        dialog.set_response_appearance("delete", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("cancel")
+        dialog.set_close_response("cancel")
+        dialog.connect("response", self.on_delete_game_response, game)
+        dialog.present(self)
+
+    def on_delete_game_response(
+        self, _dialog: Adw.AlertDialog, response: str, game: Game
+    ) -> None:
+        if response != "delete" or not game.zerado:
+            return
+
+        self.retirar_da_grade(game)
+        shared.store.excluir(game)
+
+        if self.navigation_view.get_visible_page() == self.details_page:
+            self.navigation_view.pop()
+        self.set_library_child()
+
+        toast = Adw.Toast.new(_("{} excluído").format(game.name))
+        toast.set_use_markup(False)
+        self.toast_queue.add(toast)
+
+    def update_notes_block(self, game: Game) -> None:
+        notes = (game.notes or "").strip()
+        self.details_view_notes.set_label(notes)
+        self.details_view_notes_box.set_visible(bool(notes))
+        self.details_view_notes_button.set_visible(can_edit_notes(game))
+
+    def on_notes_popover_toggled(
+        self, popover: Gtk.Popover, _pspec: Any
+    ) -> None:
+        self.sync_notes_editor(
+            popover, self.details_view_notes_view, getattr(self, "active_game", None)
+        )
+
+    def update_playtime_label(self, game: Game) -> None:
+        self.details_view_playtime.set_visible(bool(game.playtime))
+        if not game.playtime:
+            return
+
+        self.details_view_playtime.set_text(
+            _("Tempo de jogo: {}").format(format_playtime(game.playtime))
+        )
+
+        self._playtime_clickable = bool(session_log.load(game.game_id))
+        self.details_view_playtime.set_tooltip_text(
+            _("Ver o histórico de sessões") if self._playtime_clickable else None
+        )
+        self.details_view_playtime.set_cursor(
+            Gdk.Cursor.new_from_name("pointer", None)
+            if self._playtime_clickable
+            else None
+        )
+        if self._playtime_clickable:
+            self.details_view_playtime.add_css_class("playtime-clickable")
+        else:
+            self.details_view_playtime.remove_css_class("playtime-clickable")
+
+    def on_playtime_activated(self, *_args: Any) -> None:
+        if not self._playtime_clickable:
+            return
+        game = getattr(self, "active_game", None)
+        if game is not None:
+            SessionHistoryDialog(game).present(self)
 
     def retirar_da_grade(self, game: Game) -> None:
         if (parent := game.get_parent()) is not None:

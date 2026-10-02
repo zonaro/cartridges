@@ -28,6 +28,7 @@ install_data(
     'fita_wizard.py',
     'wallpaper_picker.py',
     'zerados_picker.py',
+    'session_history.py',
     configure_file(input: 'shared.py.in', output: 'shared.py', configuration: conf),
   ],
   install_dir: moduledir,

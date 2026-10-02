@@ -30,6 +30,18 @@ from cartridges.game_cover import GameCover
 from cartridges.utils.run_executable import run_executable
 
 
+STATUS_LABELS = {
+    "backlog": _("Quero jogar"),
+    "playing": _("Jogando"),
+    "beaten": _("Zerado"),
+    "dropped": _("Abandonado"),
+}
+
+
+def status_label(status: str) -> str:
+    return STATUS_LABELS.get(status or "", "")
+
+
 # pylint: disable=too-many-instance-attributes
 @Gtk.Template(resource_path=shared.PREFIX + "/gtk/game.ui")
 class Game(Gtk.Box):
