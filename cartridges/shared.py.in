@@ -59,6 +59,8 @@ app_dir = data_dir / "cartridges"
 
 games_dir = data_dir / "cartridges" / "games"
 covers_dir = data_dir / "cartridges" / "covers"
+logos_dir = data_dir / "cartridges" / "logos"
+wallpapers_dir = data_dir / "cartridges" / "wallpapers"
 
 appdata_dir = Path(getenv("appdata") or r"C:\Users\Default\AppData\Roaming")
 local_appdata_dir = Path(

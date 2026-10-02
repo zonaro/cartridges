@@ -28,6 +28,10 @@ from PIL import Image, ImageSequence, UnidentifiedImageError
 from cartridges import shared
 
 
+# Cover formats that hold an animation and are stored in their original form
+ANIMATED_SUFFIXES = (".gif", ".webp")
+
+
 def convert_cover(
     cover_path: Optional[Path] = None,
     pixbuf: Optional[GdkPixbuf.Pixbuf] = None,

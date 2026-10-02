@@ -27,6 +27,23 @@ from PIL import Image, ImageFilter, ImageStat
 from cartridges import shared
 
 
+def texture_from_pixbuf(pixbuf: GdkPixbuf.Pixbuf) -> Gdk.Texture:
+    """Replacement for the deprecated Gdk.Texture.new_for_pixbuf.
+
+    Module-level function because several places build a texture from a
+    pixbuf (covers here, logos in game_logo and logo picker previews).
+    """
+    return Gdk.MemoryTexture.new(
+        pixbuf.get_width(),
+        pixbuf.get_height(),
+        Gdk.MemoryFormat.R8G8B8A8
+        if pixbuf.get_has_alpha()
+        else Gdk.MemoryFormat.R8G8B8,
+        pixbuf.read_pixel_bytes(),
+        pixbuf.get_rowstride(),
+    )
+
+
 class GameCover:
     texture: Optional[Gdk.Texture]
     blurred: Optional[Gdk.Texture]
