@@ -21,6 +21,8 @@ install_data(
     'details_dialog.py',
     'game.py',
     'game_cover.py',
+    'keyboard_emulator.py',
+    'process_session.py',
     configure_file(input: 'shared.py.in', output: 'shared.py', configuration: conf),
   ],
   install_dir: moduledir,
