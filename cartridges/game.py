@@ -107,6 +107,8 @@ class Game(Gtk.Box):
     install_size: int = 0
     install_size_ts: int = 0
     status: str = ""
+    rating: int = 0
+    notes: str = ""
     removed: bool = False
     blacklisted: bool = False
     game_cover: GameCover = None
@@ -119,6 +121,14 @@ class Game(Gtk.Box):
     @property
     def zerado(self) -> bool:
         return self.removed and not self.blacklisted and self.status == "beaten"
+
+    @property
+    def stars(self) -> int:
+        try:
+            rating = int(self.rating or 0)
+        except (TypeError, ValueError):
+            return 0
+        return max(0, min(5, rating))
 
     def definir_status(self, status: str) -> None:
         era_zerado = self.zerado

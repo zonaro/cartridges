@@ -239,6 +239,7 @@ class CartridgesApplication(Adw.Application):
                 ("hltb_search",),
                 ("show_sidebar", ("F9",), shared.win),
                 ("show_hidden", ("<primary>h",), shared.win),
+                ("show_zerados", shared.win),
                 ("go_to_parent", ("<alt>Up",), shared.win),
                 ("go_home", ("<alt>Home",), shared.win),
                 ("toggle_search", ("<primary>f",), shared.win),

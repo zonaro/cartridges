@@ -1,0 +1,25 @@
+<!--
+  Symbolic derivative of icone-novidades-jornal.svg (in the git history up to
+  d6588e0), used by the "Novidades" button in the header bar.
+
+  The source asset draws the newspaper with strokes (fill="none",
+  stroke="currentColor"). GTK recolours symbolic icons by wrapping the file in a
+  stylesheet that forces `fill` on rect/circle/path and never touches `stroke`,
+  so a stroked icon comes out as black blobs on a dark header bar. The same
+  drawing is therefore re-cut here as filled geometry on the 16px symbolic grid:
+  the page outline is a single even-odd ring, everything else is a plain rect.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="#222222">
+  <!-- back page peeking out behind the spine -->
+  <path d="M3.5 4.5H2.5A1.5 1.5 0 0 0 1 6v5.5A2.5 2.5 0 0 0 3.5 14V13A1.5 1.5 0 0 1 2 11.5V6A.5.5 0 0 1 2.5 5.5H3.5Z"/>
+  <!-- main page: rounded rectangle drawn as a 1px ring -->
+  <path fill-rule="evenodd" d="M5 2h9a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 5 2ZM5 3h9a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5v-9A.5.5 0 0 1 5 3Z"/>
+  <!-- headline block -->
+  <rect x="6" y="4.5" width="3.25" height="3" rx=".5"/>
+  <!-- column lines beside the headline -->
+  <rect x="10" y="4.5" width="3" height="1" rx=".5"/>
+  <rect x="10" y="6.5" width="3" height="1" rx=".5"/>
+  <!-- body lines -->
+  <rect x="6" y="9.25" width="7" height="1" rx=".5"/>
+  <rect x="6" y="11.25" width="4.75" height="1" rx=".5"/>
+</svg>

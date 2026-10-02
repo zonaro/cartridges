@@ -21,4 +21,8 @@
   <file alias="retroarch-source-symbolic.svg">icons/sources/retroarch-source-symbolic.svg</file>
   <file alias="steam-source-symbolic.svg">icons/sources/steam-source-symbolic.svg</file>
   </gresource>
+  <gresource prefix="@PREFIX@/icons/scalable/actions/">
+  <file alias="novidades-symbolic.svg">icons/actions/novidades-symbolic.svg</file>
+  <file alias="trofeu-symbolic.svg">icons/actions/trofeu-symbolic.svg</file>
+  </gresource>
 </gresources>

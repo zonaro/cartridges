@@ -25,10 +25,12 @@ from typing import Any, Optional
 from cartridges import shared
 from cartridges.game import Game
 from cartridges.game_cover import GameCover
+from cartridges.utils import restauracao
 from cartridges.utils.animated_flow_box import AnimatedFlowBox
 from cartridges.utils.relative_date import relative_date
 from cartridges.utils.spring_scroll import attach as attach_spring_scroll
 from cartridges.utils.toast_queue import ToastQueue
+from cartridges.zerados_picker import ZeradosPicker
 from gi.repository import Adw, Gio, GLib, Gtk, Pango
 
 
@@ -82,6 +84,14 @@ class CartridgesWindow(Adw.ApplicationWindow):
     hidden_search_bar: Gtk.SearchBar = Gtk.Template.Child()
     hidden_search_entry: Gtk.SearchEntry = Gtk.Template.Child()
     hidden_search_button: Gtk.ToggleButton = Gtk.Template.Child()
+
+    zerados_library_page: Adw.NavigationPage = Gtk.Template.Child()
+    zerados_primary_menu_button: Gtk.MenuButton = Gtk.Template.Child()
+    zerados_library: AnimatedFlowBox = Gtk.Template.Child()
+    zerados_scrolledwindow: Gtk.ScrolledWindow = Gtk.Template.Child()
+    zerados_library_overlay: Gtk.Overlay = Gtk.Template.Child()
+    zerados_notice_empty: Adw.StatusPage = Gtk.Template.Child()
+    zerados_notice_no_results: Adw.StatusPage = Gtk.Template.Child()
 
     game_covers: dict = {}
     toasts: dict = {}
@@ -233,13 +243,22 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         self.library.set_filter_func(self.filter_func)
         self.hidden_library.set_filter_func(self.filter_func)
+        self.zerados_library.set_filter_func(self.filter_func)
 
         self.library.set_sort_func(self.sort_func)
         self.hidden_library.set_sort_func(self.sort_func)
+        self.zerados_library.set_sort_func(self.sort_func)
+        self.zerados_library.set_max_children_per_line(999)
 
-        attach_spring_scroll(self.scrolledwindow, self.hidden_scrolledwindow)
+        attach_spring_scroll(
+            self.scrolledwindow, self.hidden_scrolledwindow, self.zerados_scrolledwindow
+        )
 
         self.toast_queue = ToastQueue(self.toast_overlay)
+
+        add_zerado = Gio.SimpleAction.new("add_zerado", None)
+        add_zerado.connect("activate", lambda *_: ZeradosPicker().present(self))
+        self.add_action(add_zerado)
 
         self.set_library_child()
 
@@ -297,12 +316,23 @@ class CartridgesWindow(Adw.ApplicationWindow):
         (self.hidden_library if hidden else self.library).invalidate_filter()
 
     def set_library_child(self) -> None:
-        child, hidden_child = self.notice_empty, self.hidden_notice_empty
+        child, hidden_child, zerados_child = (
+            self.notice_empty,
+            self.hidden_notice_empty,
+            self.zerados_notice_empty,
+        )
 
         for game in shared.store:
-            if game.removed or game.blacklisted:
+            if game.blacklisted or restauracao.e_pendente(game.game_id):
                 continue
-            if game.hidden:
+            if game.removed:
+                if not game.zerado:
+                    continue
+                if game.filtered and zerados_child:
+                    zerados_child = self.zerados_notice_no_results
+                    continue
+                zerados_child = None
+            elif game.hidden:
                 if game.filtered and hidden_child:
                     hidden_child = self.hidden_notice_no_results
                     continue
@@ -329,21 +359,39 @@ class CartridgesWindow(Adw.ApplicationWindow):
             remove_from_overlay(self.hidden_notice_empty)
             remove_from_overlay(self.hidden_notice_no_results)
 
+        for notice in (self.zerados_notice_empty, self.zerados_notice_no_results):
+            if notice is not zerados_child:
+                remove_from_overlay(notice)
+        if zerados_child:
+            self.zerados_library_overlay.add_overlay(zerados_child)
+
     def filter_func(self, child: Gtk.Widget) -> bool:
         game = child.get_child()
+        if restauracao.e_pendente(game.game_id):
+            self.set_library_child()
+            return False
+        parent = child.get_parent()
+        em_zerados = parent is self.zerados_library if parent else game.zerado
         text = (
-            (
-                self.hidden_search_entry
-                if self.navigation_view.get_visible_page() == self.hidden_library_page
-                else self.search_entry
+            ""
+            if em_zerados
+            else (
+                (
+                    self.hidden_search_entry
+                    if self.navigation_view.get_visible_page()
+                    == self.hidden_library_page
+                    else self.search_entry
+                )
+                .get_text()
+                .lower()
             )
-            .get_text()
-            .lower()
         )
 
         filtered = text != "" and not (
             text in game.name.lower()
             or (text in game.developer.lower() if game.developer else False)
+            or (text in game.publisher.lower() if game.publisher else False)
+            or (text in game.notes.lower() if game.notes else False)
         )
 
         if not filtered:
@@ -431,6 +479,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
             var, order = "added", self.sort_state == "newest"
         elif self.sort_state == "last_played":
             var = "last_played"
+        elif self.sort_state == "install_size":
+            val1 = child1.get_child().install_size or 0
+            val2 = child2.get_child().install_size or 0
+            if val1 != val2:
+                return -1 if val1 > val2 else 1
+            var, order = "name", False
         elif self.sort_state == "a-z":
             order = False
 
@@ -469,6 +523,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
             return
 
         self.navigation_view.push(self.hidden_library_page)
+
+    def on_show_zerados_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() == self.zerados_library_page:
+            return
+
+        self.navigation_view.push(self.zerados_library_page)
 
     def on_sort_action(self, action: Gio.SimpleAction, state: GLib.Variant) -> None:
         action.set_state(state)

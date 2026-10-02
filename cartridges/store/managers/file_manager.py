@@ -69,6 +69,8 @@ class FileManager(AsyncManager):
             "install_size",
             "install_size_ts",
             "status",
+            "rating",
+            "notes",
             "removed",
             "blacklisted",
             "version",

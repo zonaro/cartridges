@@ -43,6 +43,22 @@ Adw.StatusPage hidden_notice_empty {
   valign: center;
 }
 
+Adw.StatusPage zerados_notice_no_results {
+  icon-name: "system-search-symbolic";
+  title: _("Nenhum jogo encontrado");
+  description: _("Tente outro filtro.");
+  vexpand: true;
+  valign: center;
+}
+
+Adw.StatusPage zerados_notice_empty {
+  icon-name: "trofeu-symbolic";
+  title: _("Nenhum jogo zerado");
+  description: _("Os jogos desinstalados marcados como Zerado são exibidos aqui.");
+  vexpand: true;
+  valign: center;
+}
+
 template $CartridgesWindow: Adw.ApplicationWindow {
   title: _("Cartridges");
   width-request: 360;
@@ -208,6 +224,13 @@ template $CartridgesWindow: Adw.ApplicationWindow {
                 icon-name: "system-search-symbolic";
                 action-name: "win.toggle_search";
               }
+
+              [end]
+              Button {
+                tooltip-text: _("Jogos Zerados");
+                icon-name: "trofeu-symbolic";
+                action-name: "win.show_zerados";
+              }
             }
 
             [top]
@@ -273,13 +296,20 @@ Adw.NavigationPage hidden_library_page {
         menu-model: primary_menu;
       }
 
-      [end]
-      ToggleButton hidden_search_button {
-        tooltip-text: _("Search");
-        icon-name: "system-search-symbolic";
-        action-name: "win.toggle_search";
-      }
-    }
+              [end]
+              ToggleButton hidden_search_button {
+                tooltip-text: _("Search");
+                icon-name: "system-search-symbolic";
+                action-name: "win.toggle_search";
+              }
+
+              [end]
+              Button {
+                tooltip-text: _("Jogos Zerados");
+                icon-name: "trofeu-symbolic";
+                action-name: "win.show_zerados";
+              }
+            }
 
     [top]
     SearchBar hidden_search_bar {
@@ -300,6 +330,54 @@ Adw.NavigationPage hidden_library_page {
     Overlay hidden_library_overlay {
       ScrolledWindow hidden_scrolledwindow {
         FlowBox hidden_library {
+          homogeneous: true;
+          halign: center;
+          valign: start;
+          column-spacing: 12;
+          row-spacing: 12;
+          margin-top: 15;
+          margin-bottom: 15;
+          margin-start: 15;
+          margin-end: 15;
+          selection-mode: none;
+
+          styles [
+            "no-hover",
+          ]
+        }
+      }
+    }
+
+    styles [
+      "background",
+    ]
+  }
+}
+
+Adw.NavigationPage zerados_library_page {
+  title: _("Jogos Zerados");
+
+  Adw.ToolbarView zerados_library_view {
+    [top]
+    Adw.HeaderBar zerados_header_bar {
+      [start]
+      Button zerados_add_button {
+        tooltip-text: _("Adicionar a Jogos Zerados");
+        icon-name: "list-add-symbolic";
+        action-name: "win.add_zerado";
+      }
+
+      [end]
+      MenuButton zerados_primary_menu_button {
+        tooltip-text: _("Menu principal");
+        icon-name: "open-menu-symbolic";
+        menu-model: primary_menu;
+      }
+    }
+
+    Overlay zerados_library_overlay {
+      ScrolledWindow zerados_scrolledwindow {
+        $AnimatedFlowBox zerados_library {
           homogeneous: true;
           halign: center;
           valign: start;
