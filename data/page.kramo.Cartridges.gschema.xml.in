@@ -180,6 +180,7 @@
         <choice value="newest" />
         <choice value="oldest" />
         <choice value="last_played" />
+        <choice value="install_size" />
       </choices>
       <default>"last_played"</default>
     </key>

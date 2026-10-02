@@ -277,6 +277,11 @@ class CartridgesApplication(Adw.Application):
 
         shared.win.present()
 
+        if self.restauracao_falhou:
+            shared.win.toast_queue.add(
+                Adw.Toast.new(_("Não foi possível restaurar o backup"))
+            )
+
         if shared.schema.get_boolean("auto-import"):
             self.on_import_action()
 
