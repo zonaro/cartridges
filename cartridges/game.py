@@ -58,6 +58,39 @@ class Game(Gtk.Box):
     playtime: int = 0
     name: str
     developer: Optional[str] = None
+    publisher: Optional[str] = None
+    release_date: Optional[str] = None
+    metacritic: Optional[int] = None
+    steam_review: Optional[str] = None
+    # Already display-ready: picked from Steam's user tags, which have no
+    # stable meaning to re-derive later, so the chosen name is what is kept.
+    genre: Optional[str] = None
+    # "full" or "partial". None means Steam says neither, which is not the
+    # same as "no gamepad support".
+    controller_support: Optional[str] = None
+    # Steam's "Gamepad Recommended": not "works with a gamepad" but "meant
+    # to be played with one".
+    gamepad_recommended: bool = False
+    # Steam's short_description pitch.
+    description: Optional[str] = None
+    # STEAM_METADATA_VERSION at the last successful Steam lookup, or 0 for a
+    # game that predates the marker.
+    steam_checked: int = 0
+    # Steam appid this game's metadata comes from. Once known it is reused
+    # for every later refresh: resolving by name again could land on a
+    # sequel or re-release, silently breaking a title corrected by hand.
+    steam_appid: Optional[str] = None
+    # HowLongToBeat completion estimates, in seconds (same unit as
+    # `playtime`). None means "not looked up yet or nobody has submitted
+    # that time", which is why they are nullable rather than defaulting
+    # to 0 — a real 0 h game does not exist.
+    hltb_id: Optional[int] = None
+    hltb_main: Optional[int] = None
+    hltb_main_extra: Optional[int] = None
+    hltb_completionist: Optional[int] = None
+    # Games catalogued on HowLongToBeat only chapter by chapter carry one
+    # entry per chapter ({"number", "name", "hltb_id", "hltb_main", …}).
+    hltb_chapters: Optional[list[dict]] = None
     removed: bool = False
     blacklisted: bool = False
     game_cover: GameCover = None

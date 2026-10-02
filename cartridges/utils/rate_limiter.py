@@ -124,6 +124,30 @@ class RateLimiter(AbstractContextManager):
         """
         self.pick_history = PickHistory(self.refill_period_seconds)
 
+    def seed_history(self) -> int:
+        """Charge the bucket for the picks `_init_pick_history` brought back.
+
+        Restoring a history has to cost tokens, or persisting it achieves
+        nothing: the Steam limiter reloads up to 200 timestamps at startup,
+        and a bucket created full on top of that let a restart 10 seconds
+        after a big import issue another 100 requests straight away — 300
+        inside a period the service documents as allowing 200.
+
+        Only picks still inside the period count, and never more than the
+        bucket holds. The acquires are non-blocking on purpose: this runs
+        during ``__init__``, before the refill thread exists, so anything
+        that blocked here would deadlock.
+
+        :return: how many tokens the restored history consumed
+        """
+        consumed = 0
+        for _ in range(min(len(self.pick_history), self.burst_tokens)):
+            if not self.bucket.acquire(blocking=False):
+                break
+            consumed += 1
+        self.n_tokens -= consumed
+        return consumed
+
     def __init__(self) -> None:
         """Initialize the limiter"""
 
@@ -134,9 +158,13 @@ class RateLimiter(AbstractContextManager):
         self.queue_lock = Lock()
         self.queue = deque()
 
-        # Initialize the token bucket
+        # Initialize the token bucket, then take back what a restored
+        # history has already spent — the bucket has to exist before it can
+        # be drained, which is why this is not done in `_init_pick_history`
+        # itself.
         self.bucket = BoundedSemaphore(self.burst_tokens)
         self.n_tokens = self.burst_tokens
+        self.seed_history()
 
         # Spawn daemon thread that refills the bucket
         refill_thread = Thread(target=self.refill_thread_func, daemon=True)
