@@ -145,6 +145,8 @@ class ProcessSession:
                     self.game.name,
                     self.waited,
                 )
+                if shared.win is not None:
+                    shared.win.show_session_blocker(self.game)
             else:
                 self.waited += self.POLL_INTERVAL
                 if self.waited >= self.STARTUP_GRACE:
@@ -238,6 +240,9 @@ class ProcessSession:
 
         if ProcessSession.active is self:
             ProcessSession.active = None
+
+        if shared.win is not None:
+            shared.win.hide_session_blocker()
 
         if record and self.started:
             # Capture the final running stretch (a no-op if already paused).

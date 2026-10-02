@@ -31,3 +31,24 @@
     background-color: white;
   }
 }
+
+.session-blocker {
+  background-color: rgba(0, 0, 0, 0.92);
+}
+
+.session-blocker label {
+  color: white;
+}
+
+.botao-tarefas {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes girar-tarefas {
+  from { -gtk-icon-transform: rotate(0turn); }
+  to { -gtk-icon-transform: rotate(1turn); }
+}
+
+.botao-tarefas.girando image {
+  animation: girar-tarefas 1.2s linear infinite;
+}

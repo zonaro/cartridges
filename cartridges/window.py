@@ -23,10 +23,12 @@ from sys import platform
 from typing import Any, Optional
 
 from cartridges import shared
+from cartridges.botao_tarefas import BotaoTarefas
 from cartridges.game import Game
 from cartridges.game_cover import GameCover
-from cartridges.utils import restauracao
+from cartridges.utils import restauracao, session_fita, session_wallpaper, tarefas
 from cartridges.utils.animated_flow_box import AnimatedFlowBox
+from cartridges.utils.format_playtime import format_stopwatch
 from cartridges.utils.relative_date import relative_date
 from cartridges.utils.spring_scroll import attach as attach_spring_scroll
 from cartridges.utils.toast_queue import ToastQueue
@@ -47,6 +49,14 @@ class CartridgesWindow(Adw.ApplicationWindow):
     added_row_box: Gtk.Box = Gtk.Template.Child()
     added_games_no_label: Gtk.Label = Gtk.Template.Child()
     toast_overlay: Adw.ToastOverlay = Gtk.Template.Child()
+    session_overlay: Gtk.Overlay = Gtk.Template.Child()
+    session_blocker: Gtk.Box = Gtk.Template.Child()
+    session_blocker_label: Gtk.Label = Gtk.Template.Child()
+    session_blocker_button: Gtk.Button = Gtk.Template.Child()
+    session_blocker_notes_button: Gtk.MenuButton = Gtk.Template.Child()
+    session_blocker_notes_popover: Gtk.Popover = Gtk.Template.Child()
+    session_blocker_notes_view: Gtk.TextView = Gtk.Template.Child()
+    session_blocker_timer: Gtk.Label = Gtk.Template.Child()
     primary_menu_button: Gtk.MenuButton = Gtk.Template.Child()
     show_sidebar_button: Gtk.Button = Gtk.Template.Child()
     details_view: Gtk.Overlay = Gtk.Template.Child()
@@ -97,6 +107,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
     toasts: dict = {}
     toast_queue: ToastQueue
     active_game: Game
+    session_game: Optional[Game] = None
+    session_timer_id: int = 0
+    botao_tarefas: BotaoTarefas
     details_view_game_cover: Optional[GameCover] = None
     sort_state: str = "last_played"
     filter_state: str = "all"
@@ -255,6 +268,16 @@ class CartridgesWindow(Adw.ApplicationWindow):
         )
 
         self.toast_queue = ToastQueue(self.toast_overlay)
+
+        self.botao_tarefas = BotaoTarefas(self)
+        self.session_overlay.add_overlay(self.botao_tarefas)
+        tarefas.lista.connect("items-changed", self.botao_tarefas.ao_mudar_lista)
+        self.navigation_view.connect("notify::visible-page", self.botao_tarefas.reavaliar)
+        self.connect("notify::visible-dialog", self.botao_tarefas.reavaliar)
+        self.session_blocker_button.connect("clicked", self.on_session_blocker_clicked)
+        self.session_blocker_notes_popover.connect(
+            "notify::visible", self.on_session_notes_popover_toggled
+        )
 
         add_zerado = Gio.SimpleAction.new("add_zerado", None)
         add_zerado.connect("activate", lambda *_: ZeradosPicker().present(self))
@@ -621,3 +644,82 @@ class CartridgesWindow(Adw.ApplicationWindow):
             if game.get_parent():
                 game.get_parent().set_child()
         self.game_covers.pop(game.game_id, None)
+
+    def session_elapsed(self) -> int:
+        from cartridges.process_session import ProcessSession
+
+        if ProcessSession.active is not None:
+            return ProcessSession.active.elapsed
+        return 0
+
+    def session_tick(self, *_args: Any) -> bool:
+        self.session_blocker_timer.set_label(format_stopwatch(self.session_elapsed()))
+        return GLib.SOURCE_CONTINUE
+
+    def show_session_blocker(self, game: Game) -> None:
+        if self.session_game is game and self.session_blocker.get_visible():
+            return
+
+        self.session_game = game
+        self.botao_tarefas.reavaliar()
+        self.session_blocker_label.set_label(_("{} em execução").format(game.name))
+        self.session_blocker.set_visible(True)
+        self.navigation_view.set_sensitive(False)
+        self.session_blocker_button.grab_focus()
+        self.session_tick()
+        self.session_blocker_timer.set_visible(True)
+        self.session_timer_id = GLib.timeout_add_seconds(1, self.session_tick)
+
+        if shared.schema.get_boolean("session-wallpaper"):
+            session_wallpaper.comecar(game)
+        session_fita.comecar(game)
+
+    def hide_session_blocker(self) -> None:
+        self.session_blocker.set_visible(False)
+        self.session_game = None
+        self.botao_tarefas.reavaliar()
+        self.navigation_view.set_sensitive(True)
+
+        if self.session_timer_id:
+            GLib.source_remove(self.session_timer_id)
+            self.session_timer_id = 0
+        self.session_blocker_timer.set_visible(False)
+        session_wallpaper.restaurar()
+        session_fita.voltar()
+
+    def on_session_blocker_clicked(self, *_args: Any) -> None:
+        from cartridges.process_session import ProcessSession
+
+        if ProcessSession.active is not None:
+            ProcessSession.active.stop(record=True)
+
+    def on_session_notes_popover_toggled(
+        self, popover: Gtk.Popover, _pspec: Any
+    ) -> None:
+        self.sync_notes_editor(
+            popover, self.session_blocker_notes_view, self.session_game
+        )
+
+    def sync_notes_editor(
+        self, popover: Gtk.Popover, view: Gtk.TextView, game: Optional[Game]
+    ) -> None:
+        if game is None:
+            return
+
+        buffer = view.get_buffer()
+        if popover.get_visible():
+            buffer.set_text(game.notes or "")
+            return
+
+        notes = buffer.get_text(
+            buffer.get_start_iter(), buffer.get_end_iter(), False
+        ).strip()
+        if notes == (game.notes or ""):
+            return
+
+        game.notes = notes
+        game.save()
+        game.update()
+        refresh = getattr(self, "update_notes_block", None)
+        if game is getattr(self, "active_game", None) and refresh is not None:
+            refresh(game)

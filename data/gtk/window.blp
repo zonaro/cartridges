@@ -87,7 +87,8 @@ template $CartridgesWindow: Adw.ApplicationWindow {
   }
 
   Adw.ToastOverlay toast_overlay {
-    Adw.NavigationView navigation_view {
+    Overlay session_overlay {
+      Adw.NavigationView navigation_view {
       Adw.NavigationPage library_page {
         title: _("All Games");
 
@@ -279,8 +280,95 @@ template $CartridgesWindow: Adw.ApplicationWindow {
           }
         }
       }
-    }
-  }
+     }
+   }
+
+      [overlay]
+      Box session_blocker {
+        visible: false;
+        halign: fill;
+        valign: fill;
+        hexpand: true;
+        vexpand: true;
+
+        styles [
+          "session-blocker",
+        ]
+
+        Box {
+          orientation: vertical;
+          halign: center;
+          valign: center;
+          hexpand: true;
+          vexpand: true;
+          spacing: 18;
+          margin-start: 24;
+          margin-end: 24;
+
+          Label session_blocker_label {
+            halign: center;
+            wrap: true;
+            wrap-mode: word_char;
+            natural-wrap-mode: word;
+            justify: center;
+
+            styles [
+              "title-1",
+            ]
+          }
+
+          Label session_blocker_timer {
+            visible: false;
+            halign: center;
+
+            styles [
+              "title-1",
+              "numeric",
+            ]
+          }
+
+          Button session_blocker_button {
+            label: _("Já terminei de jogar");
+            halign: center;
+
+            styles [
+              "suggested-action",
+              "pill",
+            ]
+          }
+
+          MenuButton session_blocker_notes_button {
+            label: _("Onde eu parei");
+            halign: center;
+            tooltip-text: _("Anotar onde você parou neste jogo");
+
+            styles [
+              "flat",
+            ]
+
+            popover: Popover session_blocker_notes_popover {
+              Box {
+                orientation: vertical;
+                width-request: 320;
+
+                ScrolledWindow {
+                  height-request: 120;
+                  hscrollbar-policy: never;
+
+                  TextView session_blocker_notes_view {
+                    top-margin: 4;
+                    bottom-margin: 4;
+                    left-margin: 4;
+                    right-margin: 4;
+                    wrap-mode: word_char;
+                  }
+                }
+              }
+            };
+          }
+        }
+      }
+   }
 }
 
 Adw.NavigationPage hidden_library_page {
