@@ -20,6 +20,11 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         title: _("Cover Image Launches Game");
         subtitle: _("Swaps the behavior of the cover image and the play button");
       }
+
+      Adw.SwitchRow playtime_tracking_switch {
+        title: _("Contar horas de jogo");
+        subtitle: _("Registra o tempo de cada sessão");
+      }
     }
 
     Adw.PreferencesGroup images_group {
@@ -64,6 +69,146 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         styles [
           "destructive-action"
         ]
+      }
+    }
+  }
+
+  Adw.PreferencesPage session_page {
+    name: "session";
+    title: _("Sessão");
+    icon-name: "video-joined-displays-symbolic";
+
+    Adw.PreferencesGroup {
+      title: _("Barra superior");
+
+      Adw.SwitchRow show_news_button_switch {
+        title: _("Mostrar o botão Novidades");
+      }
+    }
+
+    Adw.PreferencesGroup session_wallpaper_group {
+      title: _("Papel de parede");
+      sensitive: bind playtime_tracking_switch.active;
+      description: _("Durante a sessão, substitui temporariamente o papel de parede dos outros monitores por uma imagem relacionada ao jogo.");
+
+      Adw.SwitchRow session_wallpaper_switch {
+        title: _("Trocar o papel de parede dos outros monitores");
+      }
+
+      Adw.EntryRow wallhaven_key_entry_row {
+        title: _("Chave da API do wallhaven (opcional)");
+        sensitive: bind session_wallpaper_switch.active;
+      }
+    }
+
+    Adw.PreferencesGroup session_fita_group {
+      title: _("Iluminação inteligente");
+      description: _("Muda a cor da iluminação inteligente enquanto o Cartridges está aberto: a cor do aplicativo fora do jogo e a cor do jogo durante a sessão. Ao fechar o aplicativo, a iluminação inteligente volta ao estado anterior.");
+
+      Adw.SwitchRow session_fita_switch {
+        title: _("Mudar a cor da iluminação inteligente");
+      }
+
+      Adw.SpinRow fita_brilho_row {
+        title: _("Brilho (%)");
+        subtitle: _("Aplicado aos jogos sem brilho próprio definido");
+        sensitive: bind session_fita_switch.active;
+
+        adjustment: Adjustment {
+          lower: 1;
+          upper: 100;
+          step-increment: 1;
+          page-increment: 10;
+        };
+      }
+
+      Adw.ActionRow fita_brilho_individual_row {
+        title: _("Brilho máximo por dispositivo");
+        subtitle: _("Define o brilho máximo de cada dispositivo");
+        sensitive: bind session_fita_switch.active;
+        activatable-widget: fita_brilho_individual_button;
+
+        [suffix]
+        Button fita_brilho_individual_button {
+          valign: center;
+          icon-name: "go-next-symbolic";
+          tooltip-text: _("Ajustar o brilho de cada dispositivo");
+
+          styles [
+            "flat"
+          ]
+        }
+      }
+
+      Adw.ActionRow fita_cor_app_row {
+        title: _("Cor do app");
+        subtitle: _("A cor da iluminação inteligente com o aplicativo aberto e nenhum jogo em execução");
+        sensitive: bind session_fita_switch.active;
+        activatable-widget: fita_cor_app_menu;
+
+        [suffix]
+        Button fita_cor_app_reset {
+          valign: center;
+          icon-name: "edit-undo-symbolic";
+          tooltip-text: _("Voltar à cor padrão");
+          visible: false;
+
+          styles [
+            "flat",
+          ]
+        }
+
+        [suffix]
+        MenuButton fita_cor_app_menu {
+          valign: center;
+          tooltip-text: _("Escolher a cor da iluminação inteligente");
+
+          child: DrawingArea fita_cor_app_amostra {
+            content-width: 22;
+            content-height: 22;
+          };
+
+          popover: Popover {
+            child: ColorChooserWidget fita_cor_app_seletor {
+              use-alpha: false;
+            };
+          };
+        }
+      }
+
+      Adw.ActionRow fita_configurar_row {
+        title: _("Configurar a iluminação inteligente");
+        subtitle: _("Busca os dispositivos na sua conta da Tuya");
+        activatable-widget: fita_configurar_button;
+
+        [suffix]
+        Button fita_configurar_button {
+          valign: center;
+          icon-name: "applications-engineering-symbolic";
+          tooltip-text: _("Abrir assistente");
+
+          styles [
+            "flat"
+          ]
+        }
+      }
+
+      Adw.ActionRow fita_testar_row {
+        title: _("Testar");
+        subtitle: _("Acende cada dispositivo na cor do aplicativo");
+        sensitive: bind session_fita_switch.active;
+        activatable-widget: fita_testar_button;
+
+        [suffix]
+        Button fita_testar_button {
+          valign: center;
+          icon-name: "media-playback-start-symbolic";
+          tooltip-text: _("Ligar a iluminação inteligente");
+
+          styles [
+            "flat"
+          ]
+        }
       }
     }
   }

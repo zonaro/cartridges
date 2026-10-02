@@ -135,6 +135,24 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     export_backup_button_row = Gtk.Template.Child()
     import_backup_button_row = Gtk.Template.Child()
 
+    playtime_tracking_switch: Adw.SwitchRow = Gtk.Template.Child()
+    show_news_button_switch: Adw.SwitchRow = Gtk.Template.Child()
+    session_wallpaper_switch: Adw.SwitchRow = Gtk.Template.Child()
+    wallhaven_key_entry_row: Adw.EntryRow = Gtk.Template.Child()
+    session_fita_switch: Adw.SwitchRow = Gtk.Template.Child()
+    fita_brilho_row: Adw.SpinRow = Gtk.Template.Child()
+    fita_brilho_individual_row: Adw.ActionRow = Gtk.Template.Child()
+    fita_brilho_individual_button: Gtk.Button = Gtk.Template.Child()
+    fita_cor_app_row: Adw.ActionRow = Gtk.Template.Child()
+    fita_cor_app_reset: Gtk.Button = Gtk.Template.Child()
+    fita_cor_app_menu: Gtk.MenuButton = Gtk.Template.Child()
+    fita_cor_app_amostra: Gtk.DrawingArea = Gtk.Template.Child()
+    fita_cor_app_seletor: Gtk.ColorChooserWidget = Gtk.Template.Child()
+    fita_configurar_row: Adw.ActionRow = Gtk.Template.Child()
+    fita_configurar_button: Gtk.Button = Gtk.Template.Child()
+    fita_testar_row: Adw.ActionRow = Gtk.Template.Child()
+    fita_testar_button: Gtk.Button = Gtk.Template.Child()
+
     removed_games: set[Game] = set()
     warning_menu_buttons: dict = {}
 
@@ -271,6 +289,10 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "sgdb-prefer",
                 "sgdb-animated",
                 "desktop",
+                "playtime-tracking",
+                "show-news-button",
+                "session-wallpaper",
+                "session-fita",
             }
         )
 
@@ -282,6 +304,27 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
         self.sgdb_key_entry_row.connect("changed", set_sgdb_sensitive)
         set_sgdb_sensitive(self.sgdb_key_entry_row)
+
+        def wallhaven_key_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "wallhaven-key", self.wallhaven_key_entry_row.get_text().strip()
+            )
+
+        self._wallhaven_key_changed_id = self.wallhaven_key_entry_row.connect(
+            "changed", wallhaven_key_changed
+        )
+        self.reler_wallhaven()
+
+    def reler_wallhaven(self) -> None:
+        self.wallhaven_key_entry_row.handler_block(self._wallhaven_key_changed_id)
+        try:
+            self.wallhaven_key_entry_row.set_text(
+                shared.schema.get_string("wallhaven-key")
+            )
+        finally:
+            self.wallhaven_key_entry_row.handler_unblock(
+                self._wallhaven_key_changed_id
+            )
 
     def set_is_open(self, is_open: bool) -> None:
         self.__class__.is_open = is_open
