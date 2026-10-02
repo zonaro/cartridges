@@ -30,6 +30,7 @@ from cartridges.utils import restauracao, session_fita, session_wallpaper, taref
 from cartridges.utils.animated_flow_box import AnimatedFlowBox
 from cartridges.utils.format_playtime import format_stopwatch
 from cartridges.utils.install_size import format_size
+from cartridges.utils.news_feed import NewsPost
 from cartridges.utils.open_uri import open_uri
 from cartridges.utils.relative_date import relative_date
 from cartridges.utils.spring_scroll import attach as attach_spring_scroll
@@ -107,10 +108,23 @@ class CartridgesWindow(Adw.ApplicationWindow):
     zerados_notice_empty: Adw.StatusPage = Gtk.Template.Child()
     zerados_notice_no_results: Adw.StatusPage = Gtk.Template.Child()
 
+    news_button: Gtk.Button = Gtk.Template.Child()
+    news_badge: Gtk.Box = Gtk.Template.Child()
+    news_page: Adw.NavigationPage = Gtk.Template.Child()
+    news_stack: Gtk.Stack = Gtk.Template.Child()
+    news_list: Gtk.ListBox = Gtk.Template.Child()
+    news_scrolledwindow: Gtk.ScrolledWindow = Gtk.Template.Child()
+    news_refresh_button: Gtk.Button = Gtk.Template.Child()
+    news_retry_button: Gtk.Button = Gtk.Template.Child()
+
     game_covers: dict = {}
     toasts: dict = {}
     toast_queue: ToastQueue
     active_game: Game
+    news_checker: Optional[Any] = None
+    _news_handler_ids: list = []
+    _news_refresh_toast: Optional[Adw.Toast] = None
+    _news_refresh_requested = False
     session_game: Optional[Game] = None
     session_timer_id: int = 0
     botao_tarefas: BotaoTarefas
@@ -286,6 +300,15 @@ class CartridgesWindow(Adw.ApplicationWindow):
         add_zerado = Gio.SimpleAction.new("add_zerado", None)
         add_zerado.connect("activate", lambda *_: ZeradosPicker().present(self))
         self.add_action(add_zerado)
+
+        shared.schema.bind(
+            "show-news-button",
+            self.news_button,
+            "visible",
+            Gio.SettingsBindFlags.GET,
+        )
+        self.news_refresh_button.connect("clicked", self.on_news_refresh_clicked)
+        self.news_retry_button.connect("clicked", self.on_news_refresh_clicked)
 
         self.set_library_child()
 
@@ -561,6 +584,152 @@ class CartridgesWindow(Adw.ApplicationWindow):
             return
 
         self.navigation_view.push(self.zerados_library_page)
+
+    def attach_news_checker(self, checker: Any) -> None:
+        self.news_checker = checker
+        self._news_handler_ids = [
+            checker.connect("posts-changed", self.on_news_posts_changed),
+            checker.connect("poll-finished", self.on_news_poll_finished),
+            checker.connect("unseen-changed", self.on_news_unseen_changed),
+        ]
+        self.news_badge.set_visible(checker.has_unseen)
+        self.rebuild_news_list()
+        self.update_news_view()
+
+    def detach_news_checker(self) -> None:
+        if (checker := self.news_checker) is not None:
+            for handler_id in self._news_handler_ids:
+                if checker.handler_is_connected(handler_id):
+                    checker.disconnect(handler_id)
+        self._news_handler_ids = []
+        self.news_checker = None
+
+    def on_news_unseen_changed(self, _checker: Any, unseen: bool) -> None:
+        self.news_badge.set_visible(unseen)
+
+    def on_news_posts_changed(self, *_args: Any) -> None:
+        self.rebuild_news_list()
+        self.update_news_view()
+        if (
+            self.navigation_view.get_visible_page() == self.news_page
+            and self.news_checker is not None
+        ):
+            self.news_checker.mark_seen()
+
+    def on_news_poll_finished(self, _checker: Any, success: bool) -> None:
+        self.update_news_view()
+        if not self._news_refresh_requested:
+            return
+        self._news_refresh_requested = False
+        self.dismiss_news_refresh_toast()
+        self.toast_queue.add(
+            Adw.Toast.new(
+                _("Novidades atualizadas")
+                if success
+                else _("Não foi possível atualizar as novidades")
+            )
+        )
+
+    def on_news_refresh_clicked(self, *_args: Any) -> None:
+        if (checker := self.news_checker) is None:
+            return
+        self._news_refresh_requested = True
+        self.dismiss_news_refresh_toast()
+        toast = Adw.Toast.new(_("Atualizando novidades…"))
+        toast.set_timeout(0)
+        self._news_refresh_toast = toast
+        self.toast_queue.add(toast)
+        checker.check_async()
+        self.update_news_view()
+
+    def dismiss_news_refresh_toast(self) -> None:
+        if self._news_refresh_toast is not None:
+            self.toast_queue.dismiss(self._news_refresh_toast)
+            self._news_refresh_toast = None
+
+    def on_show_news_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() == self.news_page:
+            return
+        if (checker := self.news_checker) is not None:
+            checker.mark_seen()
+            if not checker.posts:
+                checker.check_async()
+        self.update_news_view()
+        self.navigation_view.push(self.news_page)
+
+    def update_news_view(self) -> None:
+        checker = self.news_checker
+        if checker is not None and checker.posts:
+            name = "list"
+        elif checker is not None and checker.loading:
+            name = "loading"
+        else:
+            name = "empty"
+        self.news_stack.set_visible_child_name(name)
+
+    def rebuild_news_list(self) -> None:
+        while child := self.news_list.get_first_child():
+            self.news_list.remove(child)
+        if self.news_checker is None:
+            return
+        for post in self.news_checker.posts:
+            self.news_list.append(self.build_news_row(post))
+        self.news_scrolledwindow.get_vadjustment().set_value(0)
+
+    def build_news_row(self, post: NewsPost) -> Gtk.ListBoxRow:
+        children: list[Gtk.Widget] = []
+        if post.summary:
+            children.append(self.build_news_summary_row(post.summary))
+        if post.url:
+            open_row = Adw.ActionRow(activatable=True)
+            open_row.set_use_markup(False)
+            open_row.set_title(_("Abrir no navegador"))
+            open_row.add_suffix(
+                Gtk.Image(
+                    icon_name="adw-external-link-symbolic",
+                    valign=Gtk.Align.CENTER,
+                    css_classes=["dim-label"],
+                )
+            )
+            open_row.connect("activated", self.on_news_row_activated, post.url)
+            children.append(open_row)
+        row = Adw.ExpanderRow() if children else Adw.ActionRow()
+        row.set_use_markup(False)
+        row.set_title(post.title)
+        row.set_title_lines(0)
+        if subtitle := " · ".join(
+            part
+            for part in (
+                relative_date(post.timestamp) if post.timestamp else "",
+                post.category,
+            )
+            if part
+        ):
+            row.set_subtitle(subtitle)
+            row.set_subtitle_lines(0)
+        for child in children:
+            row.add_row(child)
+        return row
+
+    @staticmethod
+    def build_news_summary_row(text: str) -> Gtk.ListBoxRow:
+        row = Gtk.ListBoxRow(activatable=False, selectable=False)
+        row.set_child(
+            Gtk.Label(
+                label=text,
+                wrap=True,
+                xalign=0,
+                margin_top=12,
+                margin_bottom=12,
+                margin_start=12,
+                margin_end=12,
+                css_classes=["body"],
+            )
+        )
+        return row
+
+    def on_news_row_activated(self, _row: Adw.ActionRow, url: str) -> None:
+        open_uri(url, self)
 
     def on_sort_action(self, action: Gio.SimpleAction, state: GLib.Variant) -> None:
         action.set_state(state)

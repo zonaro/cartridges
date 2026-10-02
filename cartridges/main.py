@@ -70,6 +70,7 @@ from cartridges.utils.single_instance import (
     acquire as acquire_single_instance,
     present_running_instance,
 )
+from cartridges.utils.news_checker import NewsChecker
 from cartridges.utils.updates_checker import UpdatesChecker
 from cartridges.window import CartridgesWindow
 
@@ -85,6 +86,7 @@ class CartridgesApplication(Adw.Application):
     init_search_term: Optional[str] = None
     keyboard_emulator = None
     updates_checker: Optional[UpdatesChecker] = None
+    news_checker: Optional[NewsChecker] = None
     install_size_sweep: Optional[InstallSizeSweep] = None
     restauracao_falhou = False
 
@@ -240,6 +242,7 @@ class CartridgesApplication(Adw.Application):
                 ("show_sidebar", ("F9",), shared.win),
                 ("show_hidden", ("<primary>h",), shared.win),
                 ("show_zerados", shared.win),
+                ("show_news", shared.win),
                 ("go_to_parent", ("<alt>Up",), shared.win),
                 ("go_home", ("<alt>Home",), shared.win),
                 ("toggle_search", ("<primary>f",), shared.win),
@@ -265,6 +268,10 @@ class CartridgesApplication(Adw.Application):
 
         self.updates_checker = UpdatesChecker()
         self.updates_checker.start()
+        self.news_checker = NewsChecker()
+        shared.win.attach_news_checker(self.news_checker)
+        shared.schema.connect("changed::show-news-button", self.on_show_news_changed)
+        self.on_show_news_changed()
         self.install_size_sweep = InstallSizeSweep()
         self.install_size_sweep.start()
 
@@ -479,7 +486,19 @@ class CartridgesApplication(Adw.Application):
     def on_hltb_search_action(self, *_args: Any) -> None:
         self.search("https://howlongtobeat.com/?q=")
 
+    def on_show_news_changed(self, *_args: Any) -> None:
+        if self.news_checker is None:
+            return
+        if shared.schema.get_boolean("show-news-button"):
+            self.news_checker.start()
+        else:
+            self.news_checker.stop()
+
     def on_quit_action(self, *_args: Any) -> None:
+        if self.news_checker is not None:
+            self.news_checker.stop()
+        if self.updates_checker is not None:
+            self.updates_checker.stop()
         session_wallpaper.restaurar()
         session_fita.fechar()
         self.quit()

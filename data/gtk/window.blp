@@ -232,6 +232,36 @@ template $CartridgesWindow: Adw.ApplicationWindow {
                 icon-name: "trofeu-symbolic";
                 action-name: "win.show_zerados";
               }
+
+              [end]
+              Button news_button {
+                tooltip-text: _("Novidades");
+                action-name: "win.show_news";
+
+                styles [
+                  "flat",
+                  "image-button",
+                ]
+
+                Overlay {
+                  Image {
+                    icon-name: "novidades-symbolic";
+                    pixel-size: 20;
+                  }
+
+                  [overlay]
+                  Box news_badge {
+                    visible: false;
+                    can-target: false;
+                    halign: end;
+                    valign: start;
+
+                    styles [
+                      "news-badge",
+                    ]
+                  }
+                }
+              }
             }
 
             [top]
@@ -487,6 +517,88 @@ Adw.NavigationPage zerados_library_page {
     styles [
       "background",
     ]
+  }
+}
+
+Adw.NavigationPage news_page {
+  title: _("Novidades");
+
+  Adw.ToolbarView news_view {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      Button news_refresh_button {
+        tooltip-text: _("Atualizar");
+        icon-name: "view-refresh-symbolic";
+      }
+    }
+
+    Stack news_stack {
+      transition-type: crossfade;
+
+      StackPage {
+        name: "loading";
+
+        child: Adw.Spinner {
+          halign: center;
+          valign: center;
+          hexpand: true;
+          vexpand: true;
+          width-request: 32;
+          height-request: 32;
+        };
+      }
+
+      StackPage {
+        name: "list";
+
+        child: ScrolledWindow news_scrolledwindow {
+          hexpand: true;
+          vexpand: true;
+
+          Adw.Clamp {
+            maximum-size: 800;
+            tightening-threshold: 600;
+            margin-top: 18;
+            margin-bottom: 18;
+            margin-start: 12;
+            margin-end: 12;
+
+            ListBox news_list {
+              selection-mode: none;
+              valign: start;
+
+              styles [
+                "boxed-list",
+                "news-list",
+              ]
+            }
+          }
+        };
+      }
+
+      StackPage {
+        name: "empty";
+
+        child: Adw.StatusPage news_status {
+          icon-name: "novidades-symbolic";
+          title: _("Sem novidades");
+          description: _("Não foi possível carregar as novidades.");
+          vexpand: true;
+          valign: center;
+
+          Button news_retry_button {
+            label: _("Tentar novamente");
+            halign: center;
+
+            styles [
+              "pill",
+              "suggested-action",
+            ]
+          }
+        };
+      }
+    }
   }
 }
 

@@ -52,3 +52,18 @@
 .botao-tarefas.girando image {
   animation: girar-tarefas 1.2s linear infinite;
 }
+
+.news-badge {
+  min-width: 7px;
+  min-height: 7px;
+  border-radius: 9999px;
+  background-color: var(--accent-bg-color, #3584e4);
+  box-shadow: 0 0 0 1.5px var(--headerbar-bg-color, #ffffff);
+}
+
+.news-list .expander-row-arrow,
+.news-list row.expander image.expander-row-arrow,
+.news-list row.expander:checked image.expander-row-arrow,
+.news-list row.expander:checked image.expander-row-arrow:not(:disabled) {
+  color: inherit;
+}
