@@ -20,6 +20,7 @@
 # pyright: reportAssignmentType=none
 
 import logging
+import math
 import re
 import threading
 from datetime import date
@@ -48,6 +49,7 @@ from cartridges.importer.steam_source import SteamSource
 from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.utils import backup
+from cartridges.utils import session_fita
 from cartridges.utils.create_dialog import create_dialog
 from cartridges.utils.na_tela import entregar_na_tela
 
@@ -157,6 +159,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     warning_menu_buttons: dict = {}
 
     is_open = False
+    _teste_em_curso: Optional[threading.Event] = None
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -314,6 +317,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             "changed", wallhaven_key_changed
         )
         self.reler_wallhaven()
+        self.setup_fita_rows()
+        self.reler_fitas()
 
     def reler_wallhaven(self) -> None:
         self.wallhaven_key_entry_row.handler_block(self._wallhaven_key_changed_id)
@@ -325,6 +330,213 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             self.wallhaven_key_entry_row.handler_unblock(
                 self._wallhaven_key_changed_id
             )
+
+    def setup_fita_rows(self) -> None:
+        self._fita_brilho_changed_id = self.fita_brilho_row.connect(
+            "notify::value", self.mudar_brilho_padrao
+        )
+        self.fita_brilho_individual_button.connect(
+            "clicked", self.brilho_por_dispositivo
+        )
+        self.fita_configurar_button.connect("clicked", self.configurar_fitas)
+        self.fita_testar_button.connect("clicked", self.testar_fitas)
+
+        self.fita_cor_app_amostra.set_draw_func(self.desenhar_cor_app)
+        self._fita_cor_app_changed_id = self.fita_cor_app_seletor.connect(
+            "notify::rgba", self.mudar_cor_app
+        )
+        self.fita_cor_app_reset.connect("clicked", self.voltar_ao_roxo)
+        self.session_fita_switch.connect("notify::active", self.arrancar_fitas)
+
+    def reler_fitas(self) -> None:
+        self.fita_brilho_row.handler_block(self._fita_brilho_changed_id)
+        try:
+            self.fita_brilho_row.set_value(
+                session_fita.por_cento(shared.schema.get_int("fita-brilho-padrao"))
+            )
+        finally:
+            self.fita_brilho_row.handler_unblock(self._fita_brilho_changed_id)
+        self.atualizar_fitas()
+
+        self.fita_cor_app_seletor.handler_block(self._fita_cor_app_changed_id)
+        try:
+            self.fita_cor_app_seletor.set_property(
+                "rgba", session_fita.cor_para_rgba(session_fita.cor_do_app())
+            )
+        finally:
+            self.fita_cor_app_seletor.handler_unblock(self._fita_cor_app_changed_id)
+        self.fita_cor_app_amostra.queue_draw()
+        self.fita_cor_app_reset.set_visible(
+            session_fita.tom_do_app() != session_fita.ROXO_DO_APP
+        )
+
+    def atualizar_fitas(self) -> None:
+        configuradas = session_fita.fitas()
+        self.session_fita_switch.set_sensitive(bool(configuradas))
+        if configuradas:
+            n = len(configuradas)
+            self.session_fita_switch.set_subtitle(
+                f"{n} dispositivo configurado"
+                if n == 1
+                else f"{n} dispositivos configurados"
+            )
+            return
+
+        shared.schema.set_boolean("session-fita", False)
+        self.session_fita_switch.set_subtitle(_("Nenhum dispositivo configurado"))
+
+    def arrancar_fitas(self, row: Adw.SwitchRow, *_args: Any) -> None:
+        if row.get_active():
+            shared.schema.set_boolean("session-fita", True)
+            session_fita.reacender()
+
+    def mudar_brilho_padrao(self, row: Adw.SpinRow, *_args: Any) -> None:
+        brilho = session_fita.de_por_cento(row.get_value())
+        shared.schema.set_int("fita-brilho-padrao", brilho)
+        session_fita.previa(session_fita.Cor(*session_fita.tom_do_app(), brilho))
+
+    def brilho_por_dispositivo(self, *_args: Any) -> None:
+        configuradas = session_fita.fitas()
+        dialogo = Adw.Dialog(
+            title=_("Brilho máximo por dispositivo"), content_width=420
+        )
+        cabecalho = Adw.HeaderBar(
+            show_start_title_buttons=False, show_end_title_buttons=False
+        )
+        cancelar = Gtk.Button(label=_("Cancelar"))
+        salvar = Gtk.Button(label=_("Salvar"), css_classes=["suggested-action"])
+        cabecalho.pack_start(cancelar)
+        cabecalho.pack_end(salvar)
+
+        grupo = Adw.PreferencesGroup(
+            description=_(
+                "Brilho máximo de cada dispositivo, em porcentagem. O brilho "
+                "definido nas Preferências e em cada jogo é aplicado "
+                "proporcionalmente sobre estes valores."
+            )
+        )
+        linhas: dict[str, Adw.SpinRow] = {}
+
+        def mostrar(*_args: Any) -> None:
+            session_fita.previa(
+                session_fita.Cor(*session_fita.tom_do_app(), session_fita.BRILHO_CHEIO),
+                {id_: round(linha.get_value()) for id_, linha in linhas.items()},
+            )
+
+        for fita in configuradas:
+            linha = Adw.SpinRow.new_with_range(1, 100, 1)
+            linha.set_title(fita.nome)
+            linha.set_value(fita.brilho)
+            linha.connect("notify::value", mostrar)
+            grupo.add(linha)
+            linhas[fita.id] = linha
+
+        pagina = Adw.PreferencesPage()
+        pagina.add(grupo)
+        vista = Adw.ToolbarView(content=pagina)
+        vista.add_top_bar(cabecalho)
+        dialogo.set_child(vista)
+
+        def gravar(*_args: Any) -> None:
+            session_fita.gravar_fitas(
+                [
+                    fita._replace(brilho=round(linhas[fita.id].get_value()))
+                    if fita.id in linhas
+                    else fita
+                    for fita in session_fita.fitas()
+                ]
+            )
+            dialogo.close()
+
+        cancelar.connect("clicked", lambda *_: dialogo.close())
+        salvar.connect("clicked", gravar)
+        dialogo.connect("closed", lambda *_: session_fita.previa(session_fita.cor_do_app()))
+        dialogo.present(self)
+        mostrar()
+
+    def desenhar_cor_app(
+        self, _area: Any, contexto: Any, largura: int, altura: int
+    ) -> None:
+        cor = self.fita_cor_app_seletor.props.rgba
+        contexto.set_source_rgb(cor.red, cor.green, cor.blue)
+        raio = min(largura, altura) / 2
+        contexto.arc(largura / 2, altura / 2, raio, 0, 2 * math.pi)
+        contexto.fill()
+
+    def mudar_cor_app(self, seletor: Gtk.ColorChooserWidget, *_args: Any) -> None:
+        cor = session_fita.rgba_para_cor(
+            seletor.props.rgba, session_fita.brilho_padrao()
+        )
+        session_fita.salvar_tom_do_app(cor.matiz, cor.saturacao)
+        self.fita_cor_app_amostra.queue_draw()
+        self.fita_cor_app_reset.set_visible(
+            session_fita.tom_do_app() != session_fita.ROXO_DO_APP
+        )
+        session_fita.previa(session_fita.cor_do_app())
+
+    def voltar_ao_roxo(self, *_args: Any) -> None:
+        self.fita_cor_app_seletor.set_property(
+            "rgba",
+            session_fita.cor_para_rgba(
+                session_fita.Cor(*session_fita.ROXO_DO_APP, session_fita.brilho_padrao())
+            ),
+        )
+        session_fita.redefinir_tom_do_app()
+        self.fita_cor_app_reset.set_visible(False)
+
+    def configurar_fitas(self, *_args: Any) -> None:
+        from cartridges.fita_wizard import FitaWizard  # noqa: PLC0415
+
+        assistente = FitaWizard()
+        assistente.connect("closed", lambda *_: self.fitas_configuradas())
+        assistente.present(self)
+
+    def fitas_configuradas(self) -> None:
+        self.atualizar_fitas()
+        if session_fita.ligada():
+            session_fita.reacender()
+
+    def testar_fitas(self, *_args: Any) -> None:
+        if self._teste_em_curso is not None:
+            self._teste_em_curso.set()
+            return
+
+        parar = threading.Event()
+        self._teste_em_curso = parar
+        session_fita.retomar()
+
+        def tarefa() -> None:
+            cor = session_fita.cor_do_app()
+            mudas = []
+            for fita in session_fita.fitas():
+                if parar.is_set():
+                    break
+                if not session_fita.aplicar(
+                    fita, True, session_fita.hsv_hex(session_fita.na_fita(cor, fita))
+                ):
+                    mudas.append(fita.nome)
+            entregar_na_tela(pronto, mudas, parar.is_set())
+
+        def pronto(mudas: list[str], cancelado: bool) -> bool:
+            self._teste_em_curso = None
+            if not self.__class__.is_open:
+                return False
+            self.fita_testar_button.set_icon_name("media-playback-start-symbolic")
+            if cancelado:
+                self.fita_testar_row.set_subtitle(_("Teste interrompido"))
+            else:
+                self.fita_testar_row.set_subtitle(
+                    _(
+                        "Sem resposta: {}. Se o dispositivo estiver ligado, o "
+                        "endereço dele na rede pode ter mudado; configure a "
+                        "iluminação inteligente novamente."
+                    ).format(", ".join(mudas))
+                    if mudas
+                    else _("Teste concluído")
+                )
+            return False
+
+        threading.Thread(target=tarefa, daemon=True).start()
 
     def set_is_open(self, is_open: bool) -> None:
         self.__class__.is_open = is_open
