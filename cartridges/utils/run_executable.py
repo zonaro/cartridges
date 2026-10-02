@@ -19,10 +19,25 @@
 
 import logging
 import os
+import re
 import subprocess
 from shlex import quote
 
 from cartridges import shared
+
+
+_AUMID_CHARS = re.compile(r"[\w.!+\-]+")
+
+_MARKER_RE = re.compile(re.escape("shell:AppsFolder\\"), re.IGNORECASE)
+
+
+def aumid_from_command(executable: str) -> str:
+    found = _MARKER_RE.search(executable or "")
+    if found is None:
+        return ""
+
+    match = _AUMID_CHARS.match(executable, found.end())
+    return match.group() if match else ""
 
 
 def run_executable(executable) -> None:

@@ -549,3 +549,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
     def update_details_notice(self, game: Game) -> None:
         game.has_update
+
+    def update_install_size_label(self, game: Game) -> None:
+        game.install_size

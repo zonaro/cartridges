@@ -104,6 +104,9 @@ class Game(Gtk.Box):
     # acts on the notice; "" when there is no notice or the digest carried
     # no link.
     update_url: str = ""
+    install_size: int = 0
+    install_size_ts: int = 0
+    status: str = ""
     removed: bool = False
     blacklisted: bool = False
     game_cover: GameCover = None
@@ -112,6 +115,16 @@ class Game(Gtk.Box):
     @property
     def has_update(self) -> bool:
         return self.track_updates and self.update_available_ts > 0
+
+    @property
+    def zerado(self) -> bool:
+        return self.removed and not self.blacklisted and self.status == "beaten"
+
+    def definir_status(self, status: str) -> None:
+        era_zerado = self.zerado
+        self.status = status
+        if era_zerado and not self.zerado and self.executable:
+            self.removed = False
 
     def __init__(self, data: dict[str, Any], **kwargs: Any) -> None:
         super().__init__(**kwargs)
