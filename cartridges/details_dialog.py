@@ -30,12 +30,13 @@ from PIL import Image, UnidentifiedImageError
 
 from cartridges import shared
 from cartridges.errors.friendly_error import FriendlyError
-from cartridges.game import Game
+from cartridges.game import Game, STATUS_LABELS
 from cartridges.game_cover import GameCover
 from cartridges.store.managers.cover_manager import CoverManager
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.utils.create_dialog import create_dialog
 from cartridges.utils.save_cover import convert_cover, save_cover
+from cartridges.utils.steam import format_release_date
 
 
 @Gtk.Template(resource_path=shared.PREFIX + "/gtk/details-dialog.ui")
@@ -51,7 +52,29 @@ class DetailsDialog(Adw.Dialog):
 
     name: Adw.EntryRow = Gtk.Template.Child()
     developer: Adw.EntryRow = Gtk.Template.Child()
+    publisher: Adw.EntryRow = Gtk.Template.Child()
+    release_date: Adw.EntryRow = Gtk.Template.Child()
+    genre: Adw.EntryRow = Gtk.Template.Child()
+    controller_support: Adw.ComboRow = Gtk.Template.Child()
+    status: Adw.ComboRow = Gtk.Template.Child()
+    rating_row: Adw.ActionRow = Gtk.Template.Child()
+    rating_box: Gtk.Box = Gtk.Template.Child()
     executable: Adw.EntryRow = Gtk.Template.Child()
+    track_updates_switch: Adw.SwitchRow = Gtk.Template.Child()
+    logo_row: Adw.ActionRow = Gtk.Template.Child()
+    logo_button_reset: Gtk.Button = Gtk.Template.Child()
+    logo_button_browse: Gtk.Button = Gtk.Template.Child()
+    logo_button_file: Gtk.Button = Gtk.Template.Child()
+    wallpaper_row: Adw.ActionRow = Gtk.Template.Child()
+    wallpaper_button_reset: Gtk.Button = Gtk.Template.Child()
+    wallpaper_button_browse: Gtk.Button = Gtk.Template.Child()
+    wallpaper_button_file: Gtk.Button = Gtk.Template.Child()
+    fita_row: Adw.ActionRow = Gtk.Template.Child()
+    fita_button_reset: Gtk.Button = Gtk.Template.Child()
+    fita_cor_menu: Gtk.MenuButton = Gtk.Template.Child()
+    fita_amostra: Gtk.DrawingArea = Gtk.Template.Child()
+    fita_color_button: Gtk.ColorChooserWidget = Gtk.Template.Child()
+    fita_brilho_row: Adw.SpinRow = Gtk.Template.Child()
 
     exec_info_label: Gtk.Label = Gtk.Template.Child()
     exec_info_popover: Gtk.Popover = Gtk.Template.Child()
@@ -62,6 +85,8 @@ class DetailsDialog(Adw.Dialog):
     cover_changed: bool = False
 
     is_open: bool = False
+
+    _rating: int = 0
 
     def __init__(self, game: Optional[Game] = None, **kwargs: Any):
         super().__init__(**kwargs)
@@ -74,12 +99,40 @@ class DetailsDialog(Adw.Dialog):
         self.game: Optional[Game] = game
         self.game_cover: GameCover = GameCover({self.cover})
 
+        self.status.set_model(
+            Gtk.StringList.new([_("Sem status"), *STATUS_LABELS.values()])
+        )
+
+        self.rating_buttons: list[Gtk.Button] = []
+        for value in range(1, 6):
+            button = Gtk.Button(
+                valign=Gtk.Align.CENTER,
+                tooltip_text=(
+                    f"{value} estrela" if value == 1 else f"{value} estrelas"
+                ),
+            )
+            button.add_css_class("flat")
+            button.connect("clicked", self.on_star_clicked, value)
+            self.rating_box.append(button)
+            self.rating_buttons.append(button)
+
         if self.game:
             self.set_title(_("Game Details"))
             self.name.set_text(self.game.name)
             if self.game.developer:
                 self.developer.set_text(self.game.developer)
+            if self.game.publisher:
+                self.publisher.set_text(self.game.publisher)
+            if self.game.release_date:
+                self.release_date.set_text(self.game.release_date)
+            if self.game.genre:
+                self.genre.set_text(self.game.genre)
+            self.set_controller_support(self.game.controller_support)
+            self.set_status(self.game.status)
+            self._rating = self.game.stars
             self.executable.set_text(self.game.executable)
+            self.track_updates_switch.set_active(self.game.track_updates)
+            self.update_rating_stars()
             self.apply_button.set_label(_("Apply"))
 
             self.game_cover.new_cover(self.game.get_cover_path())
@@ -181,6 +234,12 @@ class DetailsDialog(Adw.Dialog):
     def apply_preferences(self, *_args: Any) -> None:
         final_name = self.name.get_text()
         final_developer = self.developer.get_text()
+        final_publisher = self.publisher.get_text()
+        typed_release_date = self.release_date.get_text().strip()
+        final_release_date = format_release_date(typed_release_date)
+        final_genre = self.genre.get_text().strip()
+        final_controller_support = self.get_controller_support()
+        final_status = self.get_status()
         final_executable = self.executable.get_text()
 
         if not self.game:
@@ -240,8 +299,22 @@ class DetailsDialog(Adw.Dialog):
                 )
                 return
 
+        if typed_release_date and not final_release_date:
+            create_dialog(
+                self,
+                _("Couldn't Apply Preferences"),
+                _("Release date not recognized."),
+            )
+            return
+
         self.game.name = final_name
         self.game.developer = final_developer or None
+        self.game.publisher = final_publisher or None
+        self.game.release_date = final_release_date
+        self.game.genre = final_genre or None
+        self.game.controller_support = final_controller_support
+        self.game.definir_status(final_status)
+        self.game.rating = self._rating
         self.game.executable = final_executable
 
         if self.game.game_id in shared.win.game_covers.keys():
@@ -256,9 +329,22 @@ class DetailsDialog(Adw.Dialog):
                 self.game_cover.pixbuf,
             )
 
+        track_updates = self.track_updates_switch.get_active()
+        just_enabled = track_updates and not self.game.track_updates
+        if not track_updates:
+            self.game.update_available_ts = 0
+            self.game.update_url = ""
+        self.game.track_updates = track_updates
+
         shared.store.add_game(self.game, {}, run_pipeline=False)
         self.game.save()
         self.game.update()
+
+        if just_enabled:
+            app = shared.win.get_application()
+            checker = getattr(app, "updates_checker", None)
+            if checker is not None:
+                checker.check_async()
 
         # TODO: this is fucked up (less than before)
         # Get a cover from SGDB if none is present
@@ -296,6 +382,39 @@ class DetailsDialog(Adw.Dialog):
 
     def focus_executable(self, *_args: Any) -> None:
         self.set_focus(self.executable)
+
+    CONTROLLER_POSITIONS = {None: 0, "full": 1, "partial": 2}
+    CONTROLLER_VALUES = {0: None, 1: "full", 2: "partial"}
+
+    def set_controller_support(self, value: Optional[str]) -> None:
+        self.controller_support.set_selected(self.CONTROLLER_POSITIONS.get(value, 0))
+
+    def get_controller_support(self) -> Optional[str]:
+        return self.CONTROLLER_VALUES.get(self.controller_support.get_selected())
+
+    STATUS_VALUES = ("", *STATUS_LABELS)
+
+    def set_status(self, value: str) -> None:
+        try:
+            self.status.set_selected(self.STATUS_VALUES.index(value or ""))
+        except ValueError:
+            self.status.set_selected(0)
+
+    def get_status(self) -> str:
+        selected = self.status.get_selected()
+        if selected >= len(self.STATUS_VALUES):
+            return ""
+        return self.STATUS_VALUES[selected]
+
+    def on_star_clicked(self, _widget: Any, value: int) -> None:
+        self._rating = 0 if self._rating == value else value
+        self.update_rating_stars()
+
+    def update_rating_stars(self) -> None:
+        for index, button in enumerate(self.rating_buttons, start=1):
+            button.set_icon_name(
+                "starred-symbolic" if index <= self._rating else "non-starred-symbolic"
+            )
 
     def toggle_loading(self) -> None:
         self.apply_button.set_sensitive(not self.apply_button.get_sensitive())

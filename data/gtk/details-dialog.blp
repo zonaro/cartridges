@@ -88,12 +88,177 @@ template $DetailsDialog: Adw.Dialog {
       }
 
       Adw.PreferencesGroup {
+        Adw.ActionRow logo_row {
+          title: _("Logo");
+          activatable-widget: logo_button_browse;
+
+          [suffix]
+          Button logo_button_reset {
+            valign: center;
+            icon-name: "edit-undo-symbolic";
+            tooltip-text: _("Voltar a escolher o logo automaticamente");
+            visible: false;
+
+            styles [
+              "flat",
+            ]
+          }
+
+          [suffix]
+          Button logo_button_browse {
+            valign: center;
+            icon-name: "edit-find-symbolic";
+            tooltip-text: _("Escolher logo no SteamGridDB");
+
+            styles [
+              "flat",
+            ]
+          }
+
+          [suffix]
+          Button logo_button_file {
+            valign: center;
+            icon-name: "document-open-symbolic";
+            tooltip-text: _("Escolher logo de um arquivo");
+
+            styles [
+              "flat",
+            ]
+          }
+        }
+
+        Adw.ActionRow wallpaper_row {
+          title: _("Papel de parede da sessão");
+          activatable-widget: wallpaper_button_browse;
+
+          [suffix]
+          Button wallpaper_button_reset {
+            valign: center;
+            icon-name: "edit-undo-symbolic";
+            tooltip-text: _("Voltar a escolher o papel de parede automaticamente");
+            visible: false;
+
+            styles [
+              "flat",
+            ]
+          }
+
+          [suffix]
+          Button wallpaper_button_browse {
+            valign: center;
+            icon-name: "edit-find-symbolic";
+            tooltip-text: _("Escolher papel de parede no wallhaven");
+
+            styles [
+              "flat",
+            ]
+          }
+
+          [suffix]
+          Button wallpaper_button_file {
+            valign: center;
+            icon-name: "document-open-symbolic";
+            tooltip-text: _("Escolher papel de parede de um arquivo");
+
+            styles [
+              "flat",
+            ]
+          }
+        }
+
+        Adw.ActionRow fita_row {
+          title: _("Iluminação inteligente");
+          activatable-widget: fita_cor_menu;
+
+          [suffix]
+          Button fita_button_reset {
+            valign: center;
+            icon-name: "edit-undo-symbolic";
+            tooltip-text: _("Voltar a escolher a cor a partir da capa");
+            visible: false;
+
+            styles [
+              "flat",
+            ]
+          }
+
+          [suffix]
+          MenuButton fita_cor_menu {
+            valign: center;
+            tooltip-text: _("Escolher a cor da iluminação inteligente");
+
+            child: DrawingArea fita_amostra {
+              content-width: 22;
+              content-height: 22;
+            };
+
+            popover: Popover {
+              child: ColorChooserWidget fita_color_button {
+                use-alpha: false;
+              };
+            };
+          }
+        }
+
+        Adw.SpinRow fita_brilho_row {
+          title: _("Brilho (%)");
+
+          adjustment: Adjustment {
+            lower: 1;
+            upper: 100;
+            step-increment: 1;
+            page-increment: 10;
+          };
+        }
+      }
+
+      Adw.PreferencesGroup {
         Adw.EntryRow name {
           title: _("Title");
         }
 
         Adw.EntryRow developer {
           title: _("Developer (optional)");
+        }
+
+        Adw.EntryRow publisher {
+          title: _("Publicadora (opcional)");
+        }
+
+        Adw.EntryRow release_date {
+          title: _("Data de lançamento (opcional)");
+        }
+
+        Adw.EntryRow genre {
+          title: _("Gênero (opcional)");
+        }
+
+        Adw.ComboRow controller_support {
+          title: _("Compatibilidade com controle");
+
+          model: StringList {
+            strings [
+              _("Não informada"),
+              _("Total"),
+              _("Parcial"),
+            ]
+          };
+        }
+      }
+
+      Adw.PreferencesGroup {
+        Adw.ComboRow status {
+          title: _("Status");
+        }
+
+        Adw.ActionRow rating_row {
+          title: _("Minha nota");
+          subtitle: _("Clique na nota para removê-la");
+
+          [suffix]
+          Box rating_box {
+            valign: center;
+          }
         }
       }
 
@@ -138,6 +303,13 @@ template $DetailsDialog: Adw.Dialog {
               "flat"
             ]
           }
+        }
+      }
+
+      Adw.PreferencesGroup updates_group {
+        Adw.SwitchRow track_updates_switch {
+          title: _("Notificar sobre atualizações");
+          subtitle: _("Avisa quando houver atualização disponível");
         }
       }
     }
