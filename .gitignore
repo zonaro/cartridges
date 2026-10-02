@@ -7,3 +7,5 @@ build-aux/flatpak/page.kramo.Cartridges.json
 /.vscode
 .DS_Store
 .prettierignore
+__pycache__/
+*.py[cod]
