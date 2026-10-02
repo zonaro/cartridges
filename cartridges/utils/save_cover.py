@@ -76,7 +76,7 @@ def convert_cover(
                     if shared.schema.get_boolean("high-quality-images")
                     else shared.TIFF_COMPRESSION,
                 )
-    except UnidentifiedImageError:
+    except (UnidentifiedImageError, OSError, ValueError):
         try:
             Gdk.Texture.new_from_filename(str(cover_path)).save_to_tiff(
                 tmp_path := Gio.File.new_tmp("XXXXXX.tiff")[0].get_path()
@@ -88,7 +88,11 @@ def convert_cover(
     return tmp_path
 
 
-def save_cover(game_id: str, cover_path: Path) -> None:
+def save_cover(
+    game_id: str,
+    cover_path: Optional[Path] = None,
+    pixbuf: Optional[GdkPixbuf.Pixbuf] = None,
+) -> None:
     shared.covers_dir.mkdir(parents=True, exist_ok=True)
 
     animated_path = shared.covers_dir / f"{game_id}.gif"
@@ -98,7 +102,15 @@ def save_cover(game_id: str, cover_path: Path) -> None:
     animated_path.unlink(missing_ok=True)
     static_path.unlink(missing_ok=True)
 
-    if not cover_path:
+    if not cover_path and not pixbuf:
+        return
+
+    if pixbuf:
+        pixbuf.savev(str(static_path), "tiff", ["compression"], ["1"])
+
+        if game_id in shared.win.game_covers:
+            shared.win.game_covers[game_id].new_cover(static_path)
+
         return
 
     copyfile(
