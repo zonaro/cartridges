@@ -19,6 +19,7 @@
 
 # pyright: reportAssignmentType=none
 
+import math
 import shlex
 from pathlib import Path
 from sys import platform
@@ -32,11 +33,29 @@ from cartridges import shared
 from cartridges.errors.friendly_error import FriendlyError
 from cartridges.game import Game, STATUS_LABELS
 from cartridges.game_cover import GameCover
+from cartridges.logo_picker import LogoPicker
+from cartridges.sgdb_picker import SgdbPicker
 from cartridges.store.managers.cover_manager import CoverManager
 from cartridges.store.managers.sgdb_manager import SgdbManager
+from cartridges.utils import session_fita
 from cartridges.utils.create_dialog import create_dialog
+from cartridges.utils.game_logo import (
+    IMAGE_SUFFIXES,
+    logo_choice,
+    reset_logo,
+    save_manual_logo,
+    use_title_instead,
+)
 from cartridges.utils.save_cover import convert_cover, save_cover
+from cartridges.utils.session_wallpaper import (
+    Posicoes,
+    escolha as wallpaper_choice,
+    nao_trocar,
+    redefinir as reset_wallpaper,
+    salvar_escolha,
+)
 from cartridges.utils.steam import format_release_date
+from cartridges.wallpaper_picker import WallpaperPicker
 
 
 @Gtk.Template(resource_path=shared.PREFIX + "/gtk/details-dialog.ui")
@@ -75,6 +94,8 @@ class DetailsDialog(Adw.Dialog):
     fita_amostra: Gtk.DrawingArea = Gtk.Template.Child()
     fita_color_button: Gtk.ColorChooserWidget = Gtk.Template.Child()
     fita_brilho_row: Adw.SpinRow = Gtk.Template.Child()
+    executable_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    updates_group: Adw.PreferencesGroup = Gtk.Template.Child()
 
     exec_info_label: Gtk.Label = Gtk.Template.Child()
     exec_info_popover: Gtk.Popover = Gtk.Template.Child()
@@ -87,6 +108,13 @@ class DetailsDialog(Adw.Dialog):
     is_open: bool = False
 
     _rating: int = 0
+    _logo_choice: Optional[tuple[str, Optional[Path]]] = None
+    _wallpaper_choice: Optional[tuple[str, Optional[Path], Posicoes]] = None
+    _wallpaper_tmp: Optional[Path] = None
+    _logo_tmp: Optional[Path] = None
+    _fita_mostrada: Optional[session_fita.Cor] = None
+    _fita_redefinir: bool = False
+    _fita_previa_usada: bool = False
 
     def __init__(self, game: Optional[Game] = None, **kwargs: Any):
         super().__init__(**kwargs)
@@ -138,6 +166,18 @@ class DetailsDialog(Adw.Dialog):
             self.game_cover.new_cover(self.game.get_cover_path())
             if self.game_cover.get_texture():
                 self.cover_button_delete_revealer.set_reveal_child(True)
+            self.update_logo_row()
+            self.update_wallpaper_row()
+            self.atualizar_fita()
+            if self.game.zerado:
+                for widget in (
+                    self.wallpaper_row,
+                    self.fita_row,
+                    self.fita_brilho_row,
+                    self.executable_group,
+                    self.updates_group,
+                ):
+                    widget.set_visible(False)
         else:
             self.set_title(_("Add New Game"))
             self.apply_button.set_label(_("Add"))
@@ -166,6 +206,16 @@ class DetailsDialog(Adw.Dialog):
         self.exec_file_dialog = Gtk.FileDialog()
         self.exec_file_dialog.set_filters(exec_filters)
         self.exec_file_dialog.set_default_filter(exec_filter)
+
+        logo_filter = Gtk.FileFilter(name=_("Imagens de logo"))
+        for suffix in IMAGE_SUFFIXES:
+            logo_filter.add_suffix(suffix[1:])
+        logo_filters = Gio.ListStore.new(Gtk.FileFilter)
+        logo_filters.append(logo_filter)
+
+        self.logo_file_dialog = Gtk.FileDialog()
+        self.logo_file_dialog.set_filters(logo_filters)
+        self.logo_file_dialog.set_default_filter(logo_filter)
 
         # Translate this string as you would translate "file"
         file_name = _("file.txt")
@@ -207,6 +257,21 @@ class DetailsDialog(Adw.Dialog):
 
         self.cover_button_delete.connect("clicked", self.delete_pixbuf)
         self.cover_button_edit.connect("clicked", self.choose_cover)
+        self.cover_button_browse.connect("clicked", self.browse_covers)
+        self.logo_button_browse.connect("clicked", self.browse_logos)
+        self.logo_button_file.connect("clicked", self.choose_logo_file)
+        self.logo_button_reset.connect("clicked", self.reset_logo_choice)
+        self.wallpaper_button_browse.connect("clicked", self.browse_wallpapers)
+        self.wallpaper_button_file.connect("clicked", self.choose_wallpaper_file)
+        self.wallpaper_button_reset.connect("clicked", self.reset_wallpaper_choice)
+        self.fita_button_reset.connect("clicked", self.redefinir_fita)
+        self.fita_color_button.connect("notify::rgba", self.previa_da_fita)
+        self.fita_color_button.connect(
+            "notify::rgba", lambda *_: self.fita_amostra.queue_draw()
+        )
+        self.fita_amostra.set_draw_func(self.desenhar_amostra)
+        self.fita_brilho_row.connect("notify::value", self.previa_da_fita)
+        self.connect("closed", lambda *_: self.encerrar_previa())
         self.file_chooser_button.connect("clicked", self.choose_executable)
         self.apply_button.connect("clicked", self.apply_preferences)
 
@@ -228,8 +293,256 @@ class DetailsDialog(Adw.Dialog):
     def on_closed(self, *args):
         if self.tmp_cover_path:
             self.tmp_cover_path.unlink(missing_ok=True)
+        self._discard_tmp("_logo_tmp")
+        self.discard_wallpaper_tmp()
+        self.encerrar_previa()
 
         self.set_is_open(False)
+
+    def _discard_tmp(self, attribute: str) -> None:
+        path = getattr(self, attribute, None)
+        if path is not None:
+            try:
+                Path(path).unlink(missing_ok=True)
+            except OSError:
+                pass
+            setattr(self, attribute, None)
+
+    def browse_covers(self, *_args: Any) -> None:
+        SgdbPicker(self.name.get_text(), self.set_cover_from_path).present(self)
+
+    def set_cover_from_path(self, new_path: Path) -> None:
+        if self.tmp_cover_path:
+            self.tmp_cover_path.unlink(missing_ok=True)
+        self.tmp_cover_path = new_path
+        self.game_cover.new_cover(new_path)
+        self.cover_button_delete_revealer.set_reveal_child(True)
+        self.cover_changed = True
+
+    def browse_logos(self, *_args: Any) -> None:
+        LogoPicker(
+            self.name.get_text(), self.set_logo_from_picker, self.set_logo_to_title
+        ).present(self)
+
+    def choose_logo_file(self, *_args: Any) -> None:
+        self.logo_file_dialog.open(self.get_root(), None, self.set_logo_file)
+
+    def set_logo_file(self, _source: Any, result: Gio.Task, *_args: Any) -> None:
+        try:
+            path = Path(self.logo_file_dialog.open_finish(result).get_path())
+        except GLib.Error:
+            return
+        self.set_logo_from_path(path)
+
+    def set_logo_from_path(self, path: Path) -> None:
+        self._discard_tmp("_logo_tmp")
+        self._logo_choice = ("manual", path)
+        self.update_logo_row()
+
+    def set_logo_from_picker(self, path: Path) -> None:
+        self.set_logo_from_path(path)
+        self._logo_tmp = path
+
+    def set_logo_to_title(self) -> None:
+        self._discard_tmp("_logo_tmp")
+        self._logo_choice = ("title", None)
+        self.update_logo_row()
+
+    def reset_logo_choice(self, *_args: Any) -> None:
+        self._discard_tmp("_logo_tmp")
+        self._logo_choice = ("auto", None)
+        self.update_logo_row()
+
+    def update_logo_row(self) -> None:
+        if self._logo_choice:
+            choice = self._logo_choice[0]
+        elif self.game:
+            choice = logo_choice(self.game)
+        else:
+            choice = "auto"
+
+        self.logo_row.set_subtitle(
+            {
+                "manual": _("Escolhido manualmente"),
+                "title": _("Sem logo; o título é exibido"),
+            }.get(choice, _("Automático (SteamGridDB)"))
+        )
+        self.logo_button_reset.set_visible(choice != "auto")
+
+    def apply_logo_choice(self, game: Game) -> bool:
+        if not self._logo_choice:
+            return False
+
+        choice, path = self._logo_choice
+        if choice == "manual" and path:
+            save_manual_logo(game.game_id, game.name, path)
+        elif choice == "title":
+            use_title_instead(game.game_id, game.name)
+        else:
+            reset_logo(game.game_id)
+
+        self._discard_tmp("_logo_tmp")
+        self._logo_choice = None
+        return True
+
+    def browse_wallpapers(self, *_args: Any) -> None:
+        WallpaperPicker(
+            self.name.get_text(),
+            self.set_wallpaper_from_picker,
+            self.set_wallpaper_none,
+        ).present(self)
+
+    def choose_wallpaper_file(self, *_args: Any) -> None:
+        self.image_file_dialog.open(self.get_root(), None, self.set_wallpaper_file)
+
+    def set_wallpaper_file(self, _source: Any, result: Gio.Task, *_args: Any) -> None:
+        try:
+            chosen = self.image_file_dialog.open_finish(result).get_path()
+        except GLib.Error:
+            return
+        if chosen:
+            self.open_wallpaper_file(Path(chosen))
+
+    def open_wallpaper_file(self, path: Path) -> None:
+        WallpaperPicker(
+            self.name.get_text(),
+            self.set_wallpaper_from_picker,
+            self.set_wallpaper_none,
+            arquivo=path,
+        ).present(self)
+
+    def set_wallpaper_from_picker(self, path: Path, posicoes: Posicoes) -> None:
+        self.discard_wallpaper_tmp()
+        self._wallpaper_choice = ("manual", path, posicoes)
+        self._wallpaper_tmp = path
+        self.update_wallpaper_row()
+
+    def discard_wallpaper_tmp(self) -> None:
+        self._discard_tmp("_wallpaper_tmp")
+
+    def set_wallpaper_none(self) -> None:
+        self.discard_wallpaper_tmp()
+        self._wallpaper_choice = ("none", None, Posicoes())
+        self.update_wallpaper_row()
+
+    def reset_wallpaper_choice(self, *_args: Any) -> None:
+        self.discard_wallpaper_tmp()
+        self._wallpaper_choice = ("auto", None, Posicoes())
+        self.update_wallpaper_row()
+
+    def update_wallpaper_row(self) -> None:
+        if self._wallpaper_choice:
+            choice = self._wallpaper_choice[0]
+        elif self.game:
+            choice = wallpaper_choice(self.game)
+        else:
+            choice = "auto"
+
+        self.wallpaper_row.set_subtitle(
+            {
+                "manual": _("Escolhido manualmente"),
+                "none": _("Não trocar o papel de parede"),
+            }.get(choice, _("Automático (wallhaven)"))
+        )
+        self.wallpaper_button_reset.set_visible(choice != "auto")
+
+    def apply_wallpaper_choice(self, game: Game) -> bool:
+        if not self._wallpaper_choice:
+            return False
+
+        choice, path, posicoes = self._wallpaper_choice
+        if choice == "manual" and path:
+            salvar_escolha(game.game_id, game.name, path, posicoes)
+        elif choice == "none":
+            nao_trocar(game.game_id, game.name)
+        else:
+            reset_wallpaper(game.game_id)
+
+        self.discard_wallpaper_tmp()
+        self._wallpaper_choice = None
+        return True
+
+    def cor_automatica(self) -> session_fita.Cor:
+        if self.game is None:
+            return session_fita.cor_do_app()
+        return session_fita.cor_do_jogo(self.game, self._fita_redefinir)
+
+    def atualizar_fita(self) -> None:
+        if self.game is None or not session_fita.fitas():
+            self._fita_mostrada = None
+            self.fita_row.set_sensitive(False)
+            self.fita_row.set_subtitle(_("Nenhum dispositivo configurado"))
+            self.fita_brilho_row.set_sensitive(False)
+            self.fita_brilho_row.set_subtitle(_("Nenhum dispositivo configurado"))
+            self.fita_button_reset.set_visible(False)
+            return
+
+        cor = self.cor_automatica()
+        self._fita_mostrada = cor
+        self.fita_color_button.set_property("rgba", session_fita.cor_para_rgba(cor))
+        self.fita_brilho_row.set_value(session_fita.por_cento(cor.brilho))
+
+        manual = not self._fita_redefinir and session_fita.escolhida(
+            self.game.game_id
+        )
+        self.fita_button_reset.set_visible(manual)
+        self.fita_row.set_subtitle(
+            _("Escolhida manualmente") if manual else _("Extraída da capa")
+        )
+
+    def desenhar_amostra(self, _area: Any, contexto: Any, largura: int, altura: int) -> None:
+        cor = self.fita_color_button.props.rgba
+        contexto.set_source_rgb(cor.red, cor.green, cor.blue)
+        raio = min(largura, altura) / 2
+        contexto.arc(largura / 2, altura / 2, raio, 0, 2 * math.pi)
+        contexto.fill()
+
+    def previa_da_fita(self, *_args: Any) -> None:
+        if self._fita_mostrada is None:
+            return
+        self._fita_previa_usada = True
+        session_fita.previa(
+            session_fita.rgba_para_cor(
+                self.fita_color_button.props.rgba,
+                session_fita.de_por_cento(self.fita_brilho_row.get_value()),
+            )
+        )
+
+    def encerrar_previa(self) -> None:
+        if self._fita_previa_usada:
+            self._fita_previa_usada = False
+            session_fita.previa(session_fita.cor_do_app())
+
+    def redefinir_fita(self, *_args: Any) -> None:
+        if not self.game:
+            return
+        self._fita_redefinir = True
+        self.atualizar_fita()
+
+    def aplicar_fita(self, game: Game) -> None:
+        if self._fita_mostrada is None and not self._fita_redefinir:
+            return
+
+        na_tela = session_fita.rgba_para_cor(
+            self.fita_color_button.props.rgba,
+            session_fita.de_por_cento(self.fita_brilho_row.get_value()),
+        )
+        mostrada = self._fita_mostrada
+        mesma = (
+            mostrada is not None
+            and (na_tela.matiz, na_tela.saturacao, na_tela.brilho)
+            == (mostrada.matiz, mostrada.saturacao, mostrada.brilho)
+        )
+        escolha_nova = mostrada is not None and not mesma
+
+        if escolha_nova:
+            session_fita.salvar_cor(game.game_id, game.name, na_tela)
+        elif self._fita_redefinir:
+            session_fita.redefinir(game.game_id)
+        elif session_fita.escolhida(game.game_id):
+            session_fita.salvar_cor(game.game_id, game.name, na_tela)
+
+        self._fita_redefinir = False
 
     def apply_preferences(self, *_args: Any) -> None:
         final_name = self.name.get_text()
@@ -335,6 +648,10 @@ class DetailsDialog(Adw.Dialog):
             self.game.update_available_ts = 0
             self.game.update_url = ""
         self.game.track_updates = track_updates
+
+        self.apply_logo_choice(self.game)
+        self.apply_wallpaper_choice(self.game)
+        self.aplicar_fita(self.game)
 
         shared.store.add_game(self.game, {}, run_pipeline=False)
         self.game.save()
