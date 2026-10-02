@@ -29,6 +29,8 @@ from cartridges.game_cover import GameCover
 from cartridges.utils import restauracao, session_fita, session_wallpaper, tarefas
 from cartridges.utils.animated_flow_box import AnimatedFlowBox
 from cartridges.utils.format_playtime import format_stopwatch
+from cartridges.utils.install_size import format_size
+from cartridges.utils.open_uri import open_uri
 from cartridges.utils.relative_date import relative_date
 from cartridges.utils.spring_scroll import attach as attach_spring_scroll
 from cartridges.utils.toast_queue import ToastQueue
@@ -81,6 +83,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
     details_view_developer: Gtk.Label = Gtk.Template.Child()
     details_view_added: Gtk.ShortcutLabel = Gtk.Template.Child()
     details_view_last_played: Gtk.Label = Gtk.Template.Child()
+    details_view_size: Gtk.Label = Gtk.Template.Child()
+    details_view_update_notice: Gtk.Button = Gtk.Template.Child()
     details_view_hide_button: Gtk.Button = Gtk.Template.Child()
 
     hidden_library_page: Adw.NavigationPage = Gtk.Template.Child()
@@ -306,6 +310,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         self.search_entry.connect("activate", self.show_details_page_search)
         self.hidden_search_entry.connect("activate", self.show_details_page_search)
+        self.details_view_update_notice.connect(
+            "clicked", self.on_update_notice_clicked
+        )
 
         self.navigation_view.connect("popped", self.set_show_hidden)
         self.navigation_view.connect("pushed", self.set_show_hidden)
@@ -472,6 +479,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
             # The variable is the date when the game was last played
             _("Last played: {}").format(last_played_date)
         )
+        self.update_details_notice(game)
+        self.update_install_size_label(game)
 
         if self.navigation_view.get_visible_page() != self.details_page:
             self.navigation_view.push(self.details_page)
@@ -631,10 +640,46 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.close()
 
     def update_details_notice(self, game: Game) -> None:
-        game.has_update
+        self.details_view_update_notice.set_visible(game.has_update and not game.zerado)
+
+    def on_update_notice_clicked(self, *_args: Any) -> None:
+        game = self.active_game
+        if game is None or not game.has_update:
+            return
+
+        open_uri(getattr(game, "update_url", ""), self)
+
+        dialog = Adw.AlertDialog.new(
+            _("Você instalou a atualização?"),
+            _(
+                "A página da atualização foi aberta no navegador. Confirme após "
+                "instalá-la para ocultar o aviso."
+            ),
+        )
+        dialog.add_response("cancel", _("Ainda não"))
+        dialog.add_response("confirm", _("Já instalei"))
+        dialog.set_response_appearance(
+            "confirm", Adw.ResponseAppearance.SUGGESTED
+        )
+        dialog.set_default_response("confirm")
+        dialog.set_close_response("cancel")
+        dialog.connect("response", self.on_update_notice_response, game)
+        dialog.present(self)
+
+    def on_update_notice_response(
+        self, _dialog: Adw.AlertDialog, response: str, game: Game
+    ) -> None:
+        if response != "confirm":
+            return
+        game.dismiss_update()
+        if self.active_game is game:
+            self.update_details_notice(game)
 
     def update_install_size_label(self, game: Game) -> None:
-        game.install_size
+        text = "" if game.zerado else format_size(game.install_size)
+        self.details_view_size.set_visible(bool(text))
+        if text:
+            self.details_view_size.set_label(_("Tamanho: {}").format(text))
 
     def retirar_da_grade(self, game: Game) -> None:
         if (parent := game.get_parent()) is not None:

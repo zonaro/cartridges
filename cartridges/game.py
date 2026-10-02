@@ -136,6 +136,15 @@ class Game(Gtk.Box):
         if era_zerado and not self.zerado and self.executable:
             self.removed = False
 
+    def dismiss_update(self) -> None:
+        self.update_dismissed_ts = max(
+            self.update_dismissed_ts, self.update_available_ts
+        )
+        self.update_available_ts = 0
+        self.update_url = ""
+        self.save()
+        self.update()
+
     def __init__(self, data: dict[str, Any], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 

@@ -586,6 +586,39 @@ Adw.NavigationPage details_page {
                 natural-wrap-mode: word;
                 justify: center;
               }
+
+              Label details_view_size {
+                margin-start: 12;
+                visible: false;
+                wrap: true;
+                wrap-mode: word_char;
+                natural-wrap-mode: word;
+                justify: center;
+              }
+            }
+
+            Button details_view_update_notice {
+              margin-top: 15;
+              halign: start;
+              visible: false;
+              tooltip-text: _("Abrir a página da atualização");
+
+              Box {
+                spacing: 8;
+                halign: center;
+
+                Image {
+                  icon-name: "software-update-available-symbolic";
+                }
+
+                Label {
+                  label: _("Atualização disponível");
+
+                  styles [
+                    "heading",
+                  ]
+                }
+              }
             }
 
             Box details_view_toolbar {
