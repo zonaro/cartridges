@@ -2,11 +2,13 @@ blueprints = custom_target(
   'blueprints',
   input: files(
     'gtk/details-dialog.blp',
+    'gtk/fita-wizard.blp',
     'gtk/game.blp',
     'gtk/logo-picker.blp',
     'gtk/preferences.blp',
     'gtk/sgdb-picker.blp',
     'gtk/shortcuts-dialog.blp',
+    'gtk/wallpaper-picker.blp',
     'gtk/window.blp',
   ),
   output: '.',

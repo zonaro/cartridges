@@ -1,0 +1,121 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $FitaWizard: Adw.Dialog {
+  title: _("Configurar a iluminação inteligente");
+  content-width: 480;
+  content-height: 520;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    Adw.ViewStack stack {
+      Adw.ViewStackPage {
+        name: "credenciais";
+
+        child: Adw.PreferencesPage {
+          Adw.PreferencesGroup {
+            title: _("Conta de desenvolvedor da Tuya");
+            description: _("O Access ID e o Access Secret são obtidos em uma conta de desenvolvedor da Tuya vinculada ao app Smart Life. Após uma busca bem-sucedida, as credenciais são salvas de forma criptografada e não serão solicitadas novamente.");
+
+            header-suffix: LinkButton {
+              label: _("Abrir o painel da Tuya");
+              uri: "https://auth.tuya.com/?from=https%3A%2F%2Fdeveloper.tuya.com%3Fredirect%3Dhttps%3A%2F%2Fplatform.tuya.com";
+              valign: center;
+            };
+
+            Adw.EntryRow api_key_row {
+              title: _("Access ID (Client ID)");
+            }
+
+            Adw.PasswordEntryRow api_secret_row {
+              title: _("Access Secret (Client Secret)");
+            }
+
+            Adw.ComboRow regiao_row {
+              title: _("Região");
+
+              model: Gtk.StringList {
+                strings [
+                  _("Américas (us)"),
+                  _("Europa (eu)"),
+                  _("China (cn)"),
+                  _("Índia (in)"),
+                ]
+              };
+            }
+          }
+
+          Adw.PreferencesGroup {
+            Box {
+              orientation: vertical;
+              spacing: 12;
+
+              // Busca que não achou nada volta para cá, e não para a lista de
+              // dispositivos: lá o único botão é "Aplicar", que gravaria uma
+              // lista vazia por cima das fitas já configuradas.
+              Label aviso_label {
+                visible: false;
+                wrap: true;
+                justify: center;
+                label: _("Nenhum dispositivo encontrado. Confira as credenciais e a região.");
+
+                styles [
+                  "error",
+                ]
+              }
+
+              Button buscar_button {
+                label: _("Buscar dispositivos");
+                halign: center;
+
+                styles [
+                  "pill",
+                  "suggested-action",
+                ]
+              }
+            }
+          }
+        };
+      }
+
+      Adw.ViewStackPage {
+        name: "dispositivos";
+
+        child: Adw.PreferencesPage {
+          Adw.PreferencesGroup dispositivos_group {
+            title: _("Selecione os dispositivos");
+            description: _("Ao aplicar, somente os dispositivos marcados são mantidos. Desmarcar um dispositivo o remove.");
+          }
+
+          Adw.PreferencesGroup {
+            Button salvar_button {
+              label: _("Aplicar");
+              halign: center;
+
+              styles [
+                "pill",
+                "suggested-action",
+              ]
+            }
+          }
+        };
+      }
+
+      Adw.ViewStackPage {
+        name: "buscando";
+
+        child: Adw.StatusPage {
+          title: _("Buscando os dispositivos…");
+          description: _("A busca é feita primeiro na nuvem e depois na rede local.");
+
+          child: Adw.Spinner {
+            width-request: 32;
+            height-request: 32;
+          };
+        };
+      }
+    }
+  }
+}

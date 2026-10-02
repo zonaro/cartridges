@@ -146,6 +146,21 @@
     <key name="session-wallpaper-saved" type="s">
       <default>""</default>
     </key>
+    <key name="fita-brilho-padrao" type="i">
+      <default>180</default>
+    </key>
+    <key name="fita-matiz-app" type="i">
+      <default>284</default>
+    </key>
+    <key name="fita-saturacao-app" type="i">
+      <default>620</default>
+    </key>
+    <key name="session-fita" type="b">
+      <default>false</default>
+    </key>
+    <key name="fita-estado-anterior" type="s">
+      <default>""</default>
+    </key>
   </schema>
 
   <schema id="@APP_ID@.State" path="@PREFIX@/State/">

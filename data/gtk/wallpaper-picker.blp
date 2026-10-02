@@ -1,0 +1,197 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $WallpaperPicker: Adw.Dialog {
+  content-width: 860;
+  content-height: 700;
+  title: _("Escolher papel de parede");
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar header_bar {
+      [end]
+      Button none_button {
+        label: _("Não trocar");
+        tooltip-text: _("Não alterar o papel de parede quando este jogo rodar");
+      }
+    }
+
+    [top]
+    SearchBar search_bar {
+      search-mode-enabled: true;
+
+      Adw.Clamp {
+        maximum-size: 450;
+
+        SearchEntry search_entry {
+          placeholder-text: _("Buscar no wallhaven…");
+          hexpand: true;
+        }
+      }
+    }
+
+    Stack stack {
+      transition-type: crossfade;
+      vexpand: true;
+
+      StackPage {
+        name: "loading";
+
+        child: Adw.Spinner spinner {
+          width-request: 32;
+          height-request: 32;
+          halign: center;
+          valign: center;
+        };
+      }
+
+      StackPage {
+        name: "empty";
+
+        child: Adw.StatusPage status_page {
+          icon-name: "image-x-generic-symbolic";
+          title: _("Nenhum papel de parede encontrado");
+          description: _("Tente buscar por outro nome.");
+        };
+      }
+
+      StackPage {
+        name: "results";
+
+        child: ScrolledWindow {
+          hscrollbar-policy: never;
+
+          // As celulas ja vem na proporcao dos monitores-alvo (em pe so quando
+          // todos estao em pe), e o corte que elas mostram e o mesmo que o
+          // arquivo final recebe. Tres ou quatro por linha numa janela cheia,
+          // uma so quando ela encolhe.
+          FlowBox flowbox {
+            homogeneous: true;
+            halign: center;
+            valign: start;
+            column-spacing: 12;
+            row-spacing: 12;
+            margin-top: 12;
+            margin-bottom: 12;
+            margin-start: 12;
+            margin-end: 12;
+            selection-mode: none;
+            min-children-per-line: 1;
+            max-children-per-line: 4;
+
+            styles [
+              "no-hover",
+            ]
+          }
+        };
+      }
+
+      StackPage {
+        name: "adjust";
+
+        child: Box {
+          orientation: vertical;
+          spacing: 12;
+          margin-top: 12;
+          margin-bottom: 12;
+          margin-start: 12;
+          margin-end: 12;
+          halign: center;
+          valign: center;
+
+          // Um corte por orientacao dos monitores-alvo. Com todos do mesmo
+          // jeito, um dos dois fica escondido; no arranjo misto, os dois ficam
+          // lado a lado: a mesma imagem nos dois formatos, cada um com a sua
+          // barrinha.
+          Box {
+            spacing: 12;
+            halign: center;
+
+            Box adjust_landscape_box {
+              orientation: vertical;
+              spacing: 12;
+              valign: start;
+
+              Picture adjust_landscape_picture {
+                content-fit: contain;
+                halign: center;
+              }
+
+              Label adjust_landscape_hint {
+                halign: center;
+
+                styles [
+                  "dim-label",
+                  "caption",
+                ]
+              }
+
+              Scale adjust_landscape_scale {
+                hexpand: true;
+                draw-value: false;
+
+                adjustment: Adjustment adjust_landscape_adjustment {
+                  lower: 0;
+                  upper: 100;
+                  value: 50;
+                  step-increment: 1;
+                  page-increment: 10;
+                };
+              }
+            }
+
+            Box adjust_portrait_box {
+              orientation: vertical;
+              spacing: 12;
+              valign: start;
+
+              Picture adjust_portrait_picture {
+                content-fit: contain;
+                halign: center;
+              }
+
+              Label adjust_portrait_hint {
+                halign: center;
+
+                styles [
+                  "dim-label",
+                  "caption",
+                ]
+              }
+
+              Scale adjust_portrait_scale {
+                hexpand: true;
+                draw-value: false;
+
+                adjustment: Adjustment adjust_portrait_adjustment {
+                  lower: 0;
+                  upper: 100;
+                  value: 50;
+                  step-increment: 1;
+                  page-increment: 10;
+                };
+              }
+            }
+          }
+
+          Box {
+            spacing: 12;
+            halign: center;
+
+            Button adjust_back {
+              label: _("Voltar");
+            }
+
+            Button adjust_apply {
+              label: _("Usar esta imagem");
+
+              styles [
+                "suggested-action",
+              ]
+            }
+          }
+        };
+      }
+    }
+  }
+}

@@ -60,6 +60,8 @@ flatpak_dir: Path
 
 games_dir: Path
 covers_dir: Path
+fitas_dir: Path
+fitas_arquivo: Path
 
 appdata_dir: Path
 local_appdata_dir: Path
