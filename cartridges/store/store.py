@@ -24,6 +24,10 @@ from cartridges import shared
 from cartridges.game import Game
 from cartridges.store.managers.manager import Manager
 from cartridges.store.pipeline import Pipeline
+from cartridges.utils import session_log
+from cartridges.utils.game_logo import IMAGE_SUFFIXES as LOGO_SUFFIXES
+from cartridges.utils.game_logo import remove_logo
+from cartridges.utils.wallhaven import IMAGE_SUFFIXES as WALLPAPER_SUFFIXES
 
 
 class Store:
@@ -104,14 +108,30 @@ class Store:
         else:
             self.pipeline_managers.discard(self.managers[manager_type])
 
-    def cleanup_game(self, game: Game) -> None:
+    def cleanup_game(self, game: Game, apagar_sessoes: bool = True) -> None:
         """Remove a game's files, dismiss any loose toasts"""
         for path in (
             shared.games_dir / f"{game.game_id}.json",
             shared.covers_dir / f"{game.game_id}.tiff",
             shared.covers_dir / f"{game.game_id}.gif",
+            shared.covers_dir / f"{game.game_id}.webp",
+            shared.wallpapers_dir / f"{game.game_id}.json",
+            *(
+                shared.wallpapers_dir / f"{game.game_id}{suffix}"
+                for suffix in WALLPAPER_SUFFIXES
+            ),
+            *(
+                shared.logos_dir / f"{game.game_id}{suffix}"
+                for suffix in LOGO_SUFFIXES
+            ),
+            shared.fitas_dir / f"{game.game_id}.json",
         ):
             path.unlink(missing_ok=True)
+
+        remove_logo(game.game_id)
+
+        if apagar_sessoes:
+            session_log.apagar_jogo(game.game_id)
 
         # TODO: don't run this if the state is startup
         for undo in ("remove", "hide"):
@@ -120,6 +140,10 @@ class Store:
                 shared.win.toasts.pop((game, undo))
             except KeyError:
                 pass
+
+    def excluir(self, game: Game, apagar_sessoes: bool = True) -> None:
+        self.source_games.get(game.base_source, {}).pop(game.game_id, None)
+        self.cleanup_game(game, apagar_sessoes=apagar_sessoes)
 
     def add_game(
         self, game: Game, additional_data: dict, run_pipeline: bool = True

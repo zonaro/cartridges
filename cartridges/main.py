@@ -63,11 +63,14 @@ from cartridges.store.managers.file_manager import FileManager
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
 from cartridges.store.store import Store
+from cartridges.utils import backup, session_fita, session_wallpaper
+from cartridges.utils.install_size import InstallSizeSweep
 from cartridges.utils.run_executable import run_executable
 from cartridges.utils.single_instance import (
     acquire as acquire_single_instance,
     present_running_instance,
 )
+from cartridges.utils.updates_checker import UpdatesChecker
 from cartridges.window import CartridgesWindow
 
 try:
@@ -81,6 +84,9 @@ class CartridgesApplication(Adw.Application):
     win: CartridgesWindow
     init_search_term: Optional[str] = None
     keyboard_emulator = None
+    updates_checker: Optional[UpdatesChecker] = None
+    install_size_sweep: Optional[InstallSizeSweep] = None
+    restauracao_falhou = False
 
     @GObject.Signal(name="emulate-key", arg_types=[int])
     def emulate_key(self, keyval) -> None:
@@ -163,6 +169,10 @@ class CartridgesApplication(Adw.Application):
             pass
 
         log_system_info()
+
+        self.restauracao_falhou = backup.aplicar_pendente() is False
+        session_wallpaper.restaurar_orfaos()
+        session_fita.abrir()
 
         # Setup gamepads
         if Manette is not None:
@@ -251,6 +261,11 @@ class CartridgesApplication(Adw.Application):
             shared.win.search_bar.set_search_mode(True)
             shared.win.search_entry.set_text(self.init_search_term)
             shared.win.search_entry.set_position(-1)
+
+        self.updates_checker = UpdatesChecker()
+        self.updates_checker.start()
+        self.install_size_sweep = InstallSizeSweep()
+        self.install_size_sweep.start()
 
         shared.win.present()
 
@@ -464,6 +479,8 @@ class CartridgesApplication(Adw.Application):
         self.search("https://howlongtobeat.com/?q=")
 
     def on_quit_action(self, *_args: Any) -> None:
+        session_wallpaper.restaurar()
+        session_fita.fechar()
         self.quit()
 
     def create_actions(self, actions: set) -> None:

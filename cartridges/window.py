@@ -552,3 +552,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
     def update_install_size_label(self, game: Game) -> None:
         game.install_size
+
+    def retirar_da_grade(self, game: Game) -> None:
+        if (parent := game.get_parent()) is not None:
+            grade = parent.get_parent()
+            if grade is not None:
+                grade.remove(game)
+            if game.get_parent():
+                game.get_parent().set_child()
+        self.game_covers.pop(game.game_id, None)
