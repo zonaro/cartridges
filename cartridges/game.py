@@ -105,11 +105,11 @@ class Game(Gtk.Box):
 
             if (self, action) in shared.win.toasts.keys():
                 # Dismiss the toast if there already is one
-                shared.win.toasts[(self, action)].dismiss()
+                shared.win.toast_queue.dismiss(shared.win.toasts[(self, action)])
 
             shared.win.toasts[(self, action)] = toast
 
-        shared.win.toast_overlay.add_toast(toast)
+        shared.win.toast_queue.add(toast)
 
     def launch(self) -> None:
         self.last_played = int(time())

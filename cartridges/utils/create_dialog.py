@@ -21,6 +21,8 @@ from typing import Optional
 
 from gi.repository import Adw, Gtk
 
+from cartridges.utils.dialog_backdrop import block_window_drag
+
 
 def create_dialog(
     win: Gtk.Window,
@@ -35,5 +37,6 @@ def create_dialog(
     if extra_option:
         dialog.add_response(extra_option, extra_label or "")
 
+    block_window_drag(dialog)
     dialog.choose(win)
     return dialog

@@ -64,6 +64,10 @@ from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
 from cartridges.store.store import Store
 from cartridges.utils.run_executable import run_executable
+from cartridges.utils.single_instance import (
+    acquire as acquire_single_instance,
+    present_running_instance,
+)
 from cartridges.window import CartridgesWindow
 
 try:
@@ -484,5 +488,13 @@ class CartridgesApplication(Adw.Application):
 
 def main(_version: int) -> Any:
     """App entry point"""
+    # Before anything is loaded: a second copy must not read the game files
+    # at all, let alone save over them. GApplication's own uniqueness check
+    # runs over the D-Bus session bus, which may not exist on all platforms.
+    if not acquire_single_instance():
+        logging.warning("Cartridges is already running")
+        present_running_instance()
+        return 0
+
     app = CartridgesApplication()
     return app.run(sys.argv)

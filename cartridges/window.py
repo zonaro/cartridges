@@ -25,7 +25,10 @@ from typing import Any, Optional
 from cartridges import shared
 from cartridges.game import Game
 from cartridges.game_cover import GameCover
+from cartridges.utils.animated_flow_box import AnimatedFlowBox
 from cartridges.utils.relative_date import relative_date
+from cartridges.utils.spring_scroll import attach as attach_spring_scroll
+from cartridges.utils.toast_queue import ToastQueue
 from gi.repository import Adw, Gio, GLib, Gtk, Pango
 
 
@@ -47,7 +50,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     details_view: Gtk.Overlay = Gtk.Template.Child()
     library_page: Adw.NavigationPage = Gtk.Template.Child()
     library_view: Adw.ToolbarView = Gtk.Template.Child()
-    library: Gtk.FlowBox = Gtk.Template.Child()
+    library: AnimatedFlowBox = Gtk.Template.Child()
     scrolledwindow: Gtk.ScrolledWindow = Gtk.Template.Child()
     library_overlay: Gtk.Overlay = Gtk.Template.Child()
     notice_empty: Adw.StatusPage = Gtk.Template.Child()
@@ -82,11 +85,15 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
     game_covers: dict = {}
     toasts: dict = {}
+    toast_queue: ToastQueue
     active_game: Game
     details_view_game_cover: Optional[GameCover] = None
     sort_state: str = "last_played"
     filter_state: str = "all"
     source_rows: dict = {}
+
+    def add_toast(self, toast: Adw.Toast) -> None:
+        self.toast_queue.add(toast)
 
     def create_source_rows(self) -> None:
         def get_removed(source_id: str) -> Any:
@@ -229,6 +236,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         self.library.set_sort_func(self.sort_func)
         self.hidden_library.set_sort_func(self.sort_func)
+
+        attach_spring_scroll(self.scrolledwindow, self.hidden_scrolledwindow)
+
+        self.toast_queue = ToastQueue(self.toast_overlay)
 
         self.set_library_child()
 
