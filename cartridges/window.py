@@ -546,3 +546,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
     def on_close_action(self, *_args: Any) -> None:
         self.close()
+
+    def update_details_notice(self, game: Game) -> None:
+        game.has_update

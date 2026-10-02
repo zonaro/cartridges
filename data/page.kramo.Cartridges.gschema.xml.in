@@ -131,6 +131,15 @@
     <key name="library-rows" type="u">
       <default>0</default>
     </key>
+    <key name="updates-check-interval" type="i">
+      <default>12</default>
+    </key>
+    <key name="news-check-interval" type="i">
+      <default>6</default>
+    </key>
+    <key name="show-news-button" type="b">
+      <default>false</default>
+    </key>
   </schema>
 
   <schema id="@APP_ID@.State" path="@PREFIX@/State/">
@@ -158,6 +167,9 @@
     </key>
     <key name="steam-limiter-tokens-history" type="s">
       <default>"[]"</default>
+    </key>
+    <key name="news-last-seen-ts" type="x">
+      <default>0</default>
     </key>
   </schema>
 </schemalist>

@@ -91,10 +91,27 @@ class Game(Gtk.Box):
     # Games catalogued on HowLongToBeat only chapter by chapter carry one
     # entry per chapter ({"number", "name", "hltb_id", "hltb_main", …}).
     hltb_chapters: Optional[list[dict]] = None
+    # Opt-in per game: watch the repack feed for a newer patch of this
+    # title. Off by default — most games never need it.
+    track_updates: bool = False
+    # pubDate (epoch seconds) of the newest update-digest post this game was
+    # matched in and is currently being advertised for. 0 means "no notice".
+    update_available_ts: int = 0
+    # pubDate of the most recent patch the user dismissed for this game. A
+    # future digest only re-raises the notice when it is newer than this.
+    update_dismissed_ts: int = 0
+    # Repack page of the currently advertised patch. Opened when the user
+    # acts on the notice; "" when there is no notice or the digest carried
+    # no link.
+    update_url: str = ""
     removed: bool = False
     blacklisted: bool = False
     game_cover: GameCover = None
     version: int = 0
+
+    @property
+    def has_update(self) -> bool:
+        return self.track_updates and self.update_available_ts > 0
 
     def __init__(self, data: dict[str, Any], **kwargs: Any) -> None:
         super().__init__(**kwargs)
