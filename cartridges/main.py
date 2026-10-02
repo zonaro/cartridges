@@ -21,6 +21,7 @@ import json
 import logging
 import lzma
 import shlex
+import subprocess
 import sys
 from time import time
 from typing import Any, Optional
@@ -69,6 +70,7 @@ from cartridges.utils.run_executable import run_executable
 from cartridges.utils.single_instance import (
     acquire as acquire_single_instance,
     present_running_instance,
+    release as release_single_instance,
 )
 from cartridges.utils.news_checker import NewsChecker
 from cartridges.utils.updates_checker import UpdatesChecker
@@ -89,6 +91,7 @@ class CartridgesApplication(Adw.Application):
     news_checker: Optional[NewsChecker] = None
     install_size_sweep: Optional[InstallSizeSweep] = None
     restauracao_falhou = False
+    reiniciar = False
 
     @GObject.Signal(name="emulate-key", arg_types=[int])
     def emulate_key(self, keyval) -> None:
@@ -528,6 +531,14 @@ class CartridgesApplication(Adw.Application):
             scope.add_action(simple_action)
 
 
+def relancar() -> None:
+    subprocess.Popen(  # pylint: disable=consider-using-with
+        [sys.executable, *sys.argv],
+        start_new_session=True,
+        close_fds=True,
+    )
+
+
 def main(_version: int) -> Any:
     """App entry point"""
     # Before anything is loaded: a second copy must not read the game files
@@ -539,4 +550,8 @@ def main(_version: int) -> Any:
         return 0
 
     app = CartridgesApplication()
-    return app.run(sys.argv)
+    status = app.run(sys.argv)
+    if app.reiniciar:
+        release_single_instance()
+        relancar()
+    return status
