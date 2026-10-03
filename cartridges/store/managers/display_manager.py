@@ -17,12 +17,18 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import threading
+
 from cartridges import shared
 from cartridges.game import Game
 from cartridges.game_cover import GameCover
 from cartridges.store.managers.manager import Manager
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
+
+
+def is_main_thread() -> bool:
+    return threading.current_thread() is threading.main_thread()
 
 
 class DisplayManager(Manager):

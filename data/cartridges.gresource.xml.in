@@ -3,8 +3,12 @@
   <gresource prefix="@PREFIX@">
     <file preprocess="xml-stripblanks">@APP_ID@.metainfo.xml</file>
     <file preprocess="xml-stripblanks">gtk/details-dialog.ui</file>
+    <file preprocess="xml-stripblanks">gtk/fita-wizard.ui</file>
     <file preprocess="xml-stripblanks">gtk/game.ui</file>
+    <file preprocess="xml-stripblanks">gtk/logo-picker.ui</file>
     <file preprocess="xml-stripblanks">gtk/preferences.ui</file>
+    <file preprocess="xml-stripblanks">gtk/sgdb-picker.ui</file>
+    <file preprocess="xml-stripblanks">gtk/wallpaper-picker.ui</file>
     <file preprocess="xml-stripblanks">gtk/window.ui</file>
     <file preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">gtk/shortcuts-dialog.ui</file>
     <file alias="style.css">gtk/style.css</file>
