@@ -23,12 +23,13 @@ from cartridges import shared
 from cartridges.game import Game
 from cartridges.store.managers.async_manager import AsyncManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
+from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
 
 
 class FileManager(AsyncManager):
     """Manager in charge of saving a game to a file"""
 
-    run_after = (SteamAPIManager,)
+    run_after = (SteamAPIManager, TheGamesDBManager)
     signals = {"save-ready"}
 
     def main(self, game: Game, additional_data: dict) -> None:
@@ -55,6 +56,14 @@ class FileManager(AsyncManager):
             "controller_support",
             "gamepad_recommended",
             "description",
+            "tgdb_id",
+            "tgdb_checked",
+            "tgdb_platform",
+            "tgdb_players",
+            "tgdb_age_rating",
+            "tgdb_coop",
+            "tgdb_screenshots",
+            "tgdb_fanart",
             "steam_checked",
             "steam_appid",
             "hltb_id",
@@ -74,6 +83,17 @@ class FileManager(AsyncManager):
             "removed",
             "blacklisted",
             "version",
+            "game_mode_use_gamemode",
+            "game_mode_use_mangohud",
+            "launch_working_directory",
+            "launch_environment",
+            "gamescope_options",
+            "fps_limit",
+            "game_resolution",
+            "scaling_mode",
+            "track_process",
+            "process_executable",
+            "is_launcher",
         )
 
         json.dump(

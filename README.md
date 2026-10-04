@@ -32,6 +32,8 @@
   <img src="data/screenshots/1.png">
 </div>
 
+Explore the multilingual product page in [landing/](landing/index.html).
+
 # The Project
 
 Cartridges is an easy-to-use, elegant game launcher written in Python using GTK4 and Libadwaita.
@@ -53,6 +55,7 @@ Cartridges is an easy-to-use, elegant game launcher written in Python using GTK4
 - Searching and sorting by title, date added and last played
 - Hiding games
 - Automatically downloading cover art from [SteamGridDB](https://www.steamgriddb.com/)
+- Game details, screenshots, and fallback artwork from [TheGamesDB](https://thegamesdb.net/)
 - Searching for games on various databases
 - Animated covers
 - A search provider for GNOME
@@ -68,7 +71,17 @@ Thank you for your generosity! 💜
 
 ## Linux
 
-The app is available on Flathub.
+On Fedora, install the latest source build for your user with:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zonaro/cartridges/main/install.sh | bash
+```
+
+The installer downloads the source into a temporary directory, installs any
+missing build dependencies, compiles and installs Cartridges under `~/.local`,
+then removes the cloned repository and build files.
+
+The original app is also available on Flathub.
 
 <a href=https://flathub.org/apps/page.kramo.Cartridges><img alt='Download on Flathub' src='https://flathub.org/api/badge?svg&locale=en'/></a>
 
@@ -95,6 +108,90 @@ Note: macOS might tell you that the application could not be checked for malicio
 ## Building manually
 
 See [Building](https://codeberg.org/kramo/cartridges/src/branch/main/CONTRIBUTING.md#building).
+
+## Game Mode
+
+Cartridges can also be the frontend of a standalone Gamescope session. This
+does not start GNOME Shell and does not change normal desktop launches. The
+same application and library are used in both modes.
+
+### Requirements and installation (Fedora)
+
+Build and install Cartridges normally, then run:
+
+```sh
+./scripts/install-game-session.sh
+```
+
+The installer verifies Fedora, checks `gamescope`, `gamemode`, and
+`libmanette`, installs only missing packages with DNF, validates the session
+desktop file, and installs the session launcher under `/usr`. It never
+removes dependencies or changes GPU, SELinux, PAM, or GDM settings. MangoHud
+is optional.
+
+The application menu also exposes **Instalar Gaming Mode** or **Desinstalar
+Gaming Mode**, according to the current state. It uses the normal polkit
+authorization dialog. The login-manager entry uses the distribution name
+from `/etc/os-release`, for example **Fedora Gaming Mode**.
+
+Log out, select **<Distribution> Gaming Mode** (for example, **Fedora Gaming
+Mode**) from the display manager's session chooser, and sign in. Closing
+Cartridges ends Gamescope and returns to the login screen. To remove only the
+session integration:
+
+```sh
+./scripts/uninstall-game-session.sh
+```
+
+### Development and configuration
+
+Test the console UI without logging out:
+
+```sh
+cartridges --game-mode --windowed
+```
+
+Game Mode starts on a console-style landing page showing the current Linux
+account name and AccountsService (or `~/.face`) avatar, with Continue,
+Library, Settings and Power actions. **Start in Library** can bypass that page.
+
+The Session preferences page controls GameMode, optional MangoHud, Gamescope
+VRR/FPS limiting, cursor hiding, and the preferred display, audio output and
+audio input when multiple devices are available. Default settings preserve
+the existing desktop launch behavior. Each game's details dialog has a
+persisted launch profile for global GameMode/MangoHud overrides, working
+directory, JSON environment, Gamescope options, FPS limit, resolution,
+scaling and an optional process name for launcher hand-offs.
+
+Gamepad navigation uses libmanette and supports hotplug; D-pad/left stick
+navigate, the south face button confirms, the east face button goes back,
+Start opens the page menu, and Guide/Home opens the global menu. That menu can
+return to the library, close the current tracked game, suspend, restart, shut
+down or leave Game Mode. Power actions use systemd-logind over D-Bus and do
+not call sudo.
+
+### Troubleshooting
+
+Session launcher messages are available with:
+
+```sh
+journalctl -t cartridges-session -b
+journalctl --user -b | grep -i cartridges
+```
+
+Check `gamescope --version`, `gamemoded -t`, and the app log under
+`~/.cache/cartridges/logs/` when a component fails. The session retries once
+with safe Gamescope defaults if monitor, VRR, or limiter options fail during
+startup.
+
+Known limitations: HDR is deliberately not enabled automatically; Guide/Home
+delivery depends on the controller and its driver; a launcher that deliberately
+detaches without Steam/Flatpak identity may need its process name configured
+in the game profile; Flatpak builds cannot install a host GDM session
+themselves. The previous PipeWire defaults are restored when the session exits.
+
+The implementation and responsibility boundaries are documented in
+[`docs/game-mode-architecture.md`](docs/game-mode-architecture.md).
 
 # Contributing
 

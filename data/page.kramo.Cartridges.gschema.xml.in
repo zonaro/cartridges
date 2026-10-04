@@ -98,6 +98,12 @@
     <key name="yuzu-location" type="s">
       <default>"~/.var/app/org.yuzu_emu.yuzu/config/yuzu/"</default>
     </key>
+    <key name="twintail" type="b">
+      <default>true</default>
+    </key>
+    <key name="twintail-location" type="s">
+      <default>"~/.local/share/twintaillauncher"</default>
+    </key>
     <key name="desktop" type="b">
       <default>true</default>
     </key>
@@ -123,6 +129,12 @@
       <default>false</default>
     </key>
     <key name="sgdb-animated" type="b">
+      <default>false</default>
+    </key>
+    <key name="thegamesdb-key" type="s">
+      <default>""</default>
+    </key>
+    <key name="thegamesdb" type="b">
       <default>false</default>
     </key>
     <key name="wallhaven-key" type="s">
@@ -158,8 +170,44 @@
     <key name="session-fita" type="b">
       <default>false</default>
     </key>
+    <key name="game-mode-use-gamemode" type="b">
+      <default>false</default>
+    </key>
+    <key name="game-mode-use-mangohud" type="b">
+      <default>false</default>
+    </key>
+    <key name="game-mode-enable-fps-limiter" type="b">
+      <default>false</default>
+    </key>
+    <key name="game-mode-enable-vrr" type="b">
+      <default>false</default>
+    </key>
+    <key name="game-mode-start-library" type="b">
+      <default>false</default>
+    </key>
+    <key name="game-mode-hide-mouse-cursor" type="b">
+      <default>true</default>
+    </key>
+    <key name="game-mode-monitor" type="s">
+      <default>""</default>
+    </key>
+    <key name="game-mode-audio-output" type="s">
+      <default>""</default>
+    </key>
+    <key name="game-mode-audio-input" type="s">
+      <default>""</default>
+    </key>
     <key name="fita-estado-anterior" type="s">
       <default>""</default>
+    </key>
+    <key name="agrupar-duplicados" type="b">
+      <default>true</default>
+    </key>
+    <key name="xbox-cloud-gaming" type="b">
+      <default>false</default>
+    </key>
+    <key name="better-xcloud" type="b">
+      <default>true</default>
     </key>
   </schema>
 

@@ -42,7 +42,9 @@ command, whichever answers first.
 """
 
 import logging
-from time import monotonic
+import os
+import signal
+from time import monotonic, sleep
 from typing import Optional
 
 from gi.repository import Adw, GLib
@@ -53,9 +55,17 @@ from cartridges.utils import session_log
 from cartridges.utils.format_playtime import format_playtime
 from cartridges.utils.process_monitor import (
     exe_name_from_command,
+    flatpak_id_from_command,
+    flatpak_app_pids,
     install_dir_from_command,
+    is_flatpak_app_running,
+    is_process_group_running,
     is_process_running,
     is_process_running_under,
+    is_steam_app_running,
+    steam_appid_from_command,
+    steam_app_pids,
+    process_group_pids,
 )
 
 
@@ -81,8 +91,9 @@ class ProcessSession:
     # poll after waking. Such a gap is credited as a single poll interval.
     MAX_GAP = POLL_INTERVAL + 30
 
-    def __init__(self, game: Game) -> None:
+    def __init__(self, game: Game, launcher_pid: int = 0) -> None:
         self.game = game
+        self.launcher_pid = launcher_pid
         # A user-configured process name wins when present (getattr: the
         # details-dialog fields land in a later commit); otherwise fall back
         # to the executable named by the launch command itself.
@@ -97,6 +108,11 @@ class ProcessSession:
         # handing off to a differently named executable, and the name catches
         # a game whose command points into a subfolder.
         self.install_dir = install_dir_from_command(game.executable)
+        self.steam_appid = str(
+            getattr(game, "steam_appid", "")
+            or steam_appid_from_command(game.executable)
+        )
+        self.flatpak_id = flatpak_id_from_command(game.executable)
         # Seconds to keep waiting after the process disappears before ending
         # the session, so a game that restarts itself isn't cut off.
         self.grace = max(0, shared.schema.get_int("process-tracking-grace"))
@@ -120,9 +136,72 @@ class ProcessSession:
 
     def _is_running(self) -> bool:
         """Is the game running right now?"""
+        if self.launcher_pid and is_process_group_running(self.launcher_pid):
+            return True
+        if self.steam_appid and is_steam_app_running(self.steam_appid):
+            return True
+        if self.flatpak_id and is_flatpak_app_running(self.flatpak_id):
+            return True
         if self.exe_name and is_process_running(self.exe_name):
             return True
         return bool(self.install_dir) and is_process_running_under(self.install_dir)
+
+    def _attributed_pids(self) -> set[int]:
+        """Processes that can be safely attributed to this launch."""
+        pids = process_group_pids(self.launcher_pid)
+        pids.extend(steam_app_pids(self.steam_appid))
+        pids.extend(flatpak_app_pids(self.flatpak_id))
+        return set(pids)
+
+    def terminate_game(self, force: bool = False) -> None:
+        """Signal only processes that can be safely attributed to this game."""
+        sig = signal.SIGKILL if force else signal.SIGTERM
+        pids = process_group_pids(self.launcher_pid)
+        if pids:
+            try:
+                os.killpg(self.launcher_pid, sig)
+                logging.info(
+                    "%s game process group %s",
+                    "Killed" if force else "Terminated",
+                    self.launcher_pid,
+                )
+            except (OSError, ProcessLookupError) as error:
+                logging.warning("Could not signal game process group: %s", error)
+        attributed = set(steam_app_pids(self.steam_appid))
+        attributed.update(flatpak_app_pids(self.flatpak_id))
+        attributed.difference_update(pids)
+        for pid in attributed:
+            try:
+                os.kill(pid, sig)
+            except ProcessLookupError:
+                continue
+            except OSError as error:
+                logging.warning("Could not signal game PID %s: %s", pid, error)
+        if attributed:
+            logging.info("Signalled %s attributed game processes", len(attributed))
+        elif not pids:
+            logging.warning(
+                "No safely attributable process to terminate for %s", self.game.name
+            )
+
+    def shutdown(self, timeout: float = 2.0) -> None:
+        """End a dedicated session without leaving its game processes behind."""
+        self.terminate_game()
+        deadline = monotonic() + max(0.0, timeout)
+        while self._attributed_pids() and monotonic() < deadline:
+            sleep(0.05)
+        if self._attributed_pids():
+            logging.warning("Game did not exit after SIGTERM; forcing shutdown")
+            self.terminate_game(force=True)
+        if self.poll_id:
+            GLib.source_remove(self.poll_id)
+            self.poll_id = 0
+        if self.started:
+            self._accumulate()
+            session_log.record(self.game.game_id, self.session_seconds)
+            self.game.save()
+        if ProcessSession.active is self:
+            ProcessSession.active = None
 
     def start(self) -> None:
         """Begin watching for the game's process."""
@@ -243,6 +322,11 @@ class ProcessSession:
 
         if shared.win is not None:
             shared.win.hide_session_blocker()
+            if shared.runtime.is_game_mode:
+                # Present is the compositor-supported focus request. It also
+                # covers games which hand off through Steam/Lutris and whose
+                # original launcher PID has long since exited.
+                shared.win.present()
 
         if record and self.started:
             # Capture the final running stretch (a no-op if already paused).

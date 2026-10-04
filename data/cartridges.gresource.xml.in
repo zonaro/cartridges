@@ -2,15 +2,15 @@
 <gresources>
   <gresource prefix="@PREFIX@">
     <file preprocess="xml-stripblanks">@APP_ID@.metainfo.xml</file>
-    <file preprocess="xml-stripblanks">gtk/details-dialog.ui</file>
-    <file preprocess="xml-stripblanks">gtk/fita-wizard.ui</file>
-    <file preprocess="xml-stripblanks">gtk/game.ui</file>
-    <file preprocess="xml-stripblanks">gtk/logo-picker.ui</file>
-    <file preprocess="xml-stripblanks">gtk/preferences.ui</file>
-    <file preprocess="xml-stripblanks">gtk/sgdb-picker.ui</file>
-    <file preprocess="xml-stripblanks">gtk/wallpaper-picker.ui</file>
-    <file preprocess="xml-stripblanks">gtk/window.ui</file>
-    <file preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">gtk/shortcuts-dialog.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/details-dialog.ui">details-dialog.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/fita-wizard.ui">fita-wizard.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/game.ui">game.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/logo-picker.ui">logo-picker.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/preferences.ui">preferences.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/sgdb-picker.ui">sgdb-picker.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/wallpaper-picker.ui">wallpaper-picker.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/window.ui">window.ui</file>
+    <file preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">shortcuts-dialog.ui</file>
     <file alias="style.css">gtk/style.css</file>
     <file>library_placeholder.svg</file>
     <file>library_placeholder_small.svg</file>
@@ -24,6 +24,8 @@
   <file alias="lutris-source-symbolic.svg">icons/sources/lutris-source-symbolic.svg</file>
   <file alias="retroarch-source-symbolic.svg">icons/sources/retroarch-source-symbolic.svg</file>
   <file alias="steam-source-symbolic.svg">icons/sources/steam-source-symbolic.svg</file>
+  <file alias="twintail-source-symbolic.svg">icons/sources/twintail-source-symbolic.svg</file>
+  <file alias="xbox-cloud-symbolic.svg">icons/sources/xbox-cloud-symbolic.svg</file>
   </gresource>
   <gresource prefix="@PREFIX@/icons/scalable/actions/">
   <file alias="novidades-symbolic.svg">icons/actions/novidades-symbolic.svg</file>

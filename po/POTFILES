@@ -32,3 +32,4 @@ cartridges/importer/retroarch_source.py
 cartridges/importer/steam_source.py
 
 cartridges/store/managers/sgdb_manager.py
+cartridges/store/managers/thegamesdb_manager.py

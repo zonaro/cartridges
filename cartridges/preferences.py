@@ -23,6 +23,7 @@ import logging
 import math
 import re
 import threading
+from shutil import which
 from datetime import date
 from pathlib import Path
 from shutil import rmtree
@@ -32,8 +33,10 @@ from typing import Any, Callable, Optional
 from gi.repository import Adw, Gio, GLib, Gtk
 
 from cartridges import shared
+from cartridges import xcloud
 from cartridges.errors.friendly_error import FriendlyError
 from cartridges.game import Game
+from cartridges.hardware import drm_connectors, pipewire_nodes, vrr_supported
 from cartridges.importer.bottles_source import BottlesSource
 from cartridges.importer.desktop_source import DesktopSource
 from cartridges.importer.dolphin_source import DolphinSource
@@ -46,8 +49,10 @@ from cartridges.importer.lutris_source import LutrisSource
 from cartridges.importer.retroarch_source import RetroarchSource
 from cartridges.importer.source import Source
 from cartridges.importer.steam_source import SteamSource
+from cartridges.importer.twintail_source import TwintailSource
 from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.store.managers.sgdb_manager import SgdbManager
+from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
 from cartridges.utils import backup
 from cartridges.utils import session_fita
 from cartridges.utils.create_dialog import create_dialog
@@ -66,7 +71,12 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
     exit_after_launch_switch: Adw.SwitchRow = Gtk.Template.Child()
     cover_launches_game_switch: Adw.SwitchRow = Gtk.Template.Child()
+    agrupar_duplicados_switch: Adw.SwitchRow = Gtk.Template.Child()
     high_quality_images_switch: Adw.SwitchRow = Gtk.Template.Child()
+    xbox_cloud_gaming_switch: Adw.SwitchRow = Gtk.Template.Child()
+    better_xcloud_switch: Adw.SwitchRow = Gtk.Template.Child()
+    better_xcloud_update_row: Adw.ActionRow = Gtk.Template.Child()
+    better_xcloud_update_button: Gtk.Button = Gtk.Template.Child()
 
     auto_import_switch: Adw.SwitchRow = Gtk.Template.Child()
     remove_missing_switch: Adw.SwitchRow = Gtk.Template.Child()
@@ -113,6 +123,10 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     yuzu_data_action_row: Adw.ActionRow = Gtk.Template.Child()
     yuzu_data_file_chooser_button: Gtk.Button = Gtk.Template.Child()
 
+    twintail_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
+    twintail_data_action_row: Adw.ActionRow = Gtk.Template.Child()
+    twintail_data_file_chooser_button: Gtk.Button = Gtk.Template.Child()
+
     flatpak_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     flatpak_system_data_action_row: Adw.ActionRow = Gtk.Template.Child()
     flatpak_system_data_file_chooser_button: Gtk.Button = Gtk.Template.Child()
@@ -130,6 +144,12 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     sgdb_fetch_button: Gtk.Button = Gtk.Template.Child()
     sgdb_stack: Gtk.Stack = Gtk.Template.Child()
     sgdb_spinner: Adw.Spinner = Gtk.Template.Child()
+    thegamesdb_key_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    thegamesdb_key_entry_row: Adw.EntryRow = Gtk.Template.Child()
+    thegamesdb_switch: Adw.SwitchRow = Gtk.Template.Child()
+    thegamesdb_fetch_button: Gtk.Button = Gtk.Template.Child()
+    thegamesdb_stack: Gtk.Stack = Gtk.Template.Child()
+    thegamesdb_spinner: Adw.Spinner = Gtk.Template.Child()
 
     danger_zone_group = Gtk.Template.Child()
     remove_all_games_button_row = Gtk.Template.Child()
@@ -142,6 +162,16 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     session_wallpaper_switch: Adw.SwitchRow = Gtk.Template.Child()
     wallhaven_key_entry_row: Adw.EntryRow = Gtk.Template.Child()
     session_fita_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    game_mode_use_gamemode_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_use_mangohud_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_enable_fps_limiter_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_enable_vrr_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_start_library_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_hide_mouse_cursor_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_mode_monitor_entry_row: Adw.ComboRow = Gtk.Template.Child()
+    game_mode_audio_output_entry_row: Adw.ComboRow = Gtk.Template.Child()
+    game_mode_audio_input_entry_row: Adw.ComboRow = Gtk.Template.Child()
     fita_brilho_row: Adw.SpinRow = Gtk.Template.Child()
     fita_brilho_individual_row: Adw.ActionRow = Gtk.Template.Child()
     fita_brilho_individual_button: Gtk.Button = Gtk.Template.Child()
@@ -204,6 +234,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             LutrisSource,
             RetroarchSource,
             SteamSource,
+            TwintailSource,
             YuzuSource,
         ):
             source = source_class()
@@ -273,12 +304,83 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
         self.sgdb_fetch_button.connect("clicked", update_sgdb)
 
+        # TheGamesDB
+        def thegamesdb_key_changed(*_args: Any) -> None:
+            key = self.thegamesdb_key_entry_row.get_text().strip()
+            shared.schema.set_string("thegamesdb-key", key)
+            self.thegamesdb_switch.set_sensitive(bool(key))
+            if not key:
+                shared.schema.set_boolean("thegamesdb", False)
+
+        self.thegamesdb_key_entry_row.set_text(
+            shared.schema.get_string("thegamesdb-key")
+        )
+        self.thegamesdb_key_entry_row.connect("changed", thegamesdb_key_changed)
+        self.thegamesdb_switch.set_sensitive(
+            bool(self.thegamesdb_key_entry_row.get_text().strip())
+        )
+        self.thegamesdb_key_group.set_description(
+            _(
+                "A chave permite buscar detalhes, capturas de tela e imagens. "
+                "Consulte a {}página da API do TheGamesDB{}."
+            ).format('<a href="https://api.thegamesdb.net/">', "</a>")
+        )
+
+        def update_thegamesdb(*_args: Any) -> None:
+            games = list(shared.store)
+            if not games:
+                return
+            manager = shared.store.managers[TheGamesDBManager]
+            manager.reset_cancellable()
+            remaining = len(games)
+            self.thegamesdb_spinner.set_visible(True)
+            self.thegamesdb_stack.set_visible_child(self.thegamesdb_spinner)
+            self.add_toast(progress_toast := Adw.Toast.new(_("Buscando metadados…")))
+
+            def updated(_manager: TheGamesDBManager, game: Game) -> None:
+                nonlocal remaining
+                game.save()
+                game.update()
+                remaining -= 1
+                if remaining:
+                    return
+                progress_toast.dismiss()
+                errors = manager.collect_errors()
+                friendly = next(
+                    (error for error in errors if isinstance(error, FriendlyError)),
+                    None,
+                )
+                if friendly:
+                    create_dialog(self, friendly.title, friendly.subtitle)
+                elif errors:
+                    create_dialog(
+                        self,
+                        _("Não foi possível concluir a atualização"),
+                        _("Verifique a conexão e tente novamente."),
+                    )
+                else:
+                    self.add_toast(Adw.Toast.new(_("Metadados atualizados")))
+                self.thegamesdb_spinner.set_visible(False)
+                self.thegamesdb_stack.set_visible_child(
+                    self.thegamesdb_fetch_button
+                )
+
+            for game in games:
+                manager.process_game(
+                    game, {}, lambda current, item=game: updated(current, item)
+                )
+
+        self.thegamesdb_fetch_button.connect("clicked", update_thegamesdb)
+
         # Switches
         self.bind_switches(
             {
                 "exit-after-launch",
                 "cover-launches-game",
+                "agrupar-duplicados",
                 "high-quality-images",
+                "xbox-cloud-gaming",
+                "better-xcloud",
                 "auto-import",
                 "remove-missing",
                 "lutris-import-steam",
@@ -291,13 +393,52 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "sgdb",
                 "sgdb-prefer",
                 "sgdb-animated",
+                "thegamesdb",
                 "desktop",
                 "playtime-tracking",
                 "show-news-button",
                 "session-wallpaper",
                 "session-fita",
+                "game-mode-use-gamemode",
+                "game-mode-use-mangohud",
+                "game-mode-enable-fps-limiter",
+                "game-mode-enable-vrr",
+                "game-mode-start-library",
+                "game-mode-hide-mouse-cursor",
             }
         )
+        self.agrupar_duplicados_switch.connect(
+            "notify::active", lambda *_: self._reagrupar()
+        )
+        self.better_xcloud_update_button.connect(
+            "clicked", self.atualizar_better_xcloud
+        )
+        self.reler_better_xcloud()
+
+        sinks, sources = pipewire_nodes()
+        self.setup_device_row(
+            self.game_mode_monitor_entry_row,
+            "game-mode-monitor",
+            drm_connectors(),
+        )
+        self.setup_device_row(
+            self.game_mode_audio_output_entry_row,
+            "game-mode-audio-output",
+            sinks,
+        )
+        self.setup_device_row(
+            self.game_mode_audio_input_entry_row,
+            "game-mode-audio-input",
+            sources,
+        )
+        has_vrr = vrr_supported()
+        self.game_mode_enable_vrr_switch.set_visible(has_vrr)
+        if not has_vrr:
+            shared.schema.set_boolean("game-mode-enable-vrr", False)
+        self.game_mode_use_gamemode_switch.set_sensitive(which("gamemoderun") is not None)
+        self.game_mode_use_mangohud_switch.set_sensitive(which("mangohud") is not None)
+        gamescope_available = which("gamescope") is not None
+        self.game_mode_enable_fps_limiter_switch.set_sensitive(gamescope_available)
 
         def set_sgdb_sensitive(widget: Adw.EntryRow) -> None:
             if not widget.get_text():
@@ -319,6 +460,31 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.reler_wallhaven()
         self.setup_fita_rows()
         self.reler_fitas()
+
+    def reler_better_xcloud(self) -> None:
+        version = xcloud.get_cached_version()
+        self.better_xcloud_update_row.set_subtitle(
+            _("Script v{} em cache").format(version)
+            if version
+            else _("Nunca baixado")
+        )
+
+    def atualizar_better_xcloud(self, *_args: Any) -> None:
+        self.better_xcloud_update_row.set_subtitle(_("Baixando do GitHub…"))
+
+        def done(script: Optional[str], _from_network: bool) -> None:
+            version = xcloud.parse_version(script)
+            if version:
+                self.add_toast(
+                    Adw.Toast.new(_("Better xCloud v{} pronto").format(version))
+                )
+            else:
+                self.add_toast(
+                    Adw.Toast.new(_("Não foi possível baixar o Better xCloud"))
+                )
+            self.reler_better_xcloud()
+
+        xcloud.fetch_better_xcloud_async(done)
 
     def reler_wallhaven(self) -> None:
         self.wallhaven_key_entry_row.handler_block(self._wallhaven_key_changed_id)
@@ -541,6 +707,11 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     def set_is_open(self, is_open: bool) -> None:
         self.__class__.is_open = is_open
 
+    @staticmethod
+    def _reagrupar(*_args: Any) -> None:
+        for game in shared.store:
+            game.update()
+
     def get_switch(self, setting: str) -> Any:
         return getattr(self, f'{setting.replace("-", "_")}_switch')
 
@@ -552,6 +723,25 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "active",
                 Gio.SettingsBindFlags.DEFAULT,
             )
+
+    @staticmethod
+    def setup_device_row(row: Adw.ComboRow, setting: str, values: list[str]) -> None:
+        choices = [_('System default'), *values]
+        row.set_model(Gtk.StringList.new(choices))
+        saved = shared.schema.get_string(setting)
+        if saved and saved not in values:
+            shared.schema.set_string(setting, "")
+            saved = ""
+        row.set_selected(choices.index(saved) if saved in choices else 0)
+        row.set_visible(len(values) > 1)
+
+        def selected_changed(widget: Adw.ComboRow, *_args: Any) -> None:
+            selected = widget.get_selected()
+            shared.schema.set_string(
+                setting, values[selected - 1] if 0 < selected <= len(values) else ""
+            )
+
+        row.connect("notify::selected", selected_changed)
 
     def choose_folder(
         self, _widget: Any, callback: Callable, callback_data: Optional[str] = None

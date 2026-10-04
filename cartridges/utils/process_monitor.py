@@ -50,6 +50,101 @@ from pathlib import Path
 from typing import Callable, Optional
 
 
+_STEAM_APP_RE = re.compile(r"steam://rungameid/(\d+)", re.IGNORECASE)
+_FLATPAK_APP_RE = re.compile(
+    r"(?:^|\s)flatpak\s+run(?:\s+--[^\s]+)*\s+([\w.-]+)", re.IGNORECASE
+)
+
+
+def steam_appid_from_command(executable: str) -> str:
+    """Extract a Steam app id from an imported launch URI."""
+    match = _STEAM_APP_RE.search(executable or "")
+    return match.group(1) if match else ""
+
+
+def is_steam_app_running(appid: str) -> bool:
+    """Identify the real Steam child instead of its long-lived client."""
+    if not appid or not appid.isdigit():
+        return False
+    needles = {
+        f"SteamAppId={appid}".encode(),
+        f"SteamGameId={appid}".encode(),
+    }
+    try:
+        pids = (entry for entry in os.listdir("/proc") if entry.isdigit())
+    except OSError:
+        return False
+    for pid in pids:
+        try:
+            values = set(Path(f"/proc/{pid}/environ").read_bytes().split(b"\0"))
+        except OSError:
+            continue
+        if values & needles:
+            return True
+    return False
+
+
+def steam_app_pids(appid: str) -> list[int]:
+    ids = set(_environment_matching_pids("SteamAppId", appid))
+    ids.update(_environment_matching_pids("SteamGameId", appid))
+    return sorted(ids)
+
+
+def flatpak_id_from_command(executable: str) -> str:
+    match = _FLATPAK_APP_RE.search(executable or "")
+    return match.group(1) if match else ""
+
+
+def _environment_matching_pids(name: str, value: str) -> list[int]:
+    needle = f"{name}={value}".encode()
+    matches = []
+    try:
+        pids = (entry for entry in os.listdir("/proc") if entry.isdigit())
+    except OSError:
+        return matches
+    for pid in pids:
+        try:
+            values = Path(f"/proc/{pid}/environ").read_bytes().split(b"\0")
+        except OSError:
+            continue
+        if needle in values:
+            matches.append(int(pid))
+    return matches
+
+
+def is_flatpak_app_running(appid: str) -> bool:
+    return bool(appid and _environment_matching_pids("FLATPAK_ID", appid))
+
+
+def flatpak_app_pids(appid: str) -> list[int]:
+    return _environment_matching_pids("FLATPAK_ID", appid) if appid else []
+
+
+def process_group_pids(group_id: int) -> list[int]:
+    """Return members of a POSIX process group, even if its leader exited."""
+    if group_id <= 0:
+        return []
+    result = []
+    try:
+        pids = (entry for entry in os.listdir("/proc") if entry.isdigit())
+    except OSError:
+        return result
+    for pid in pids:
+        try:
+            stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8")
+            fields = stat.rpartition(")")[2].strip().split()
+            process_group = int(fields[2])
+        except (OSError, ValueError, IndexError):
+            continue
+        if process_group == group_id:
+            result.append(int(pid))
+    return result
+
+
+def is_process_group_running(group_id: int) -> bool:
+    return bool(process_group_pids(group_id))
+
+
 def _iter_processes() -> list[tuple[int, str, Optional[str]]]:
     """Snapshot of (pid, comm name, exe path or None) for every process.
 

@@ -23,7 +23,7 @@ from pathlib import Path
 from time import time
 from typing import Any, Optional
 
-from gi.repository import Adw, GObject, Gtk
+from gi.repository import Adw, GLib, GObject, Gtk
 
 from cartridges import shared
 from cartridges.game_cover import GameCover
@@ -50,6 +50,7 @@ class Game(Gtk.Box):
     title = Gtk.Template.Child()
     play_button = Gtk.Template.Child()
     cover = Gtk.Template.Child()
+    source_badge = Gtk.Template.Child()
     spinner = Gtk.Template.Child()
     cover_button = Gtk.Template.Child()
     menu_button = Gtk.Template.Child()
@@ -66,6 +67,7 @@ class Game(Gtk.Box):
     game_id: str
     source: str
     hidden: bool = False
+    is_launcher: bool = False
     last_played: int = 0
     playtime: int = 0
     name: str
@@ -85,6 +87,16 @@ class Game(Gtk.Box):
     gamepad_recommended: bool = False
     # Steam's short_description pitch.
     description: Optional[str] = None
+    # TheGamesDB augments non-Steam games and supplies artwork fallbacks.
+    # URLs are persisted so the details view never needs another API request.
+    tgdb_id: Optional[int] = None
+    tgdb_checked: int = 0
+    tgdb_platform: Optional[str] = None
+    tgdb_players: Optional[int] = None
+    tgdb_age_rating: Optional[str] = None
+    tgdb_coop: Optional[str] = None
+    tgdb_screenshots: list[str] = []
+    tgdb_fanart: list[str] = []
     # STEAM_METADATA_VERSION at the last successful Steam lookup, or 0 for a
     # game that predates the marker.
     steam_checked: int = 0
@@ -125,6 +137,16 @@ class Game(Gtk.Box):
     blacklisted: bool = False
     game_cover: GameCover = None
     version: int = 0
+    game_mode_use_gamemode: Optional[bool] = None
+    game_mode_use_mangohud: Optional[bool] = None
+    launch_working_directory: str = ""
+    launch_environment: dict[str, str] = {}
+    gamescope_options: str = ""
+    fps_limit: int = 0
+    game_resolution: str = ""
+    scaling_mode: str = ""
+    track_process: bool = False
+    process_executable: str = ""
 
     @property
     def has_update(self) -> bool:
@@ -145,6 +167,13 @@ class Game(Gtk.Box):
     def definir_status(self, status: str) -> None:
         era_zerado = self.zerado
         self.status = status
+        # Jogos Zerados is an archive of beaten games.  Merely storing the
+        # status used to leave an installed game in the regular library,
+        # although the UI had just told the user it was "Zerado".  Move it to
+        # the archive as part of the same state transition; changing the
+        # status again restores games that still have an executable below.
+        if status == "beaten" and not self.blacklisted:
+            self.removed = True
         if era_zerado and not self.zerado and self.executable:
             self.removed = False
 
@@ -164,6 +193,12 @@ class Game(Gtk.Box):
         self.version = shared.SPEC_VERSION
 
         self.update_values(data)
+        # Class attributes provide backwards-compatible defaults for games
+        # created before launch profiles existed.  Keep the mutable value
+        # private to each instance so editing one game cannot affect another.
+        self.launch_environment = dict(self.launch_environment or {})
+        self.tgdb_screenshots = list(self.tgdb_screenshots or [])
+        self.tgdb_fanart = list(self.tgdb_fanart or [])
         self.base_source = self.source.split("_")[0]
 
         self.set_play_icon()
@@ -208,11 +243,43 @@ class Game(Gtk.Box):
         shared.win.toast_queue.add(toast)
 
     def launch(self) -> None:
+        try:
+            launcher = run_executable(
+                self.executable,
+                use_gamemode=self.game_mode_use_gamemode,
+                use_mangohud=self.game_mode_use_mangohud,
+                working_directory=self.launch_working_directory or None,
+                environment=self.launch_environment,
+                gamescope_options=self.gamescope_options,
+                fps_limit=self.fps_limit,
+                resolution=self.game_resolution,
+                scaling_mode=self.scaling_mode,
+            )
+        except OSError as error:
+            logging.error("Could not launch %s: %s", self.name, error)
+            self.create_toast(_("{} could not be launched"))
+            return
+
         self.last_played = int(time())
         self.save()
         self.update()
 
-        run_executable(self.executable)
+        def check_launcher() -> bool:
+            status = launcher.poll()
+            if status is not None and status != 0:
+                logging.error("Launcher for %s exited with status %s", self.name, status)
+                from cartridges.process_session import ProcessSession
+
+                if (
+                    ProcessSession.active is not None
+                    and ProcessSession.active.game is self
+                    and not ProcessSession.active.started
+                ):
+                    ProcessSession.active.stop(record=False)
+                self.create_toast(_("{} could not be launched"))
+            return GLib.SOURCE_REMOVE
+
+        GLib.timeout_add_seconds(2, check_launcher)
 
         # Automatic playtime tracking. Skipped when disabled, when another
         # session is already running it is ended first, and when the game
@@ -223,15 +290,24 @@ class Game(Gtk.Box):
 
             if ProcessSession.active is not None:
                 ProcessSession.active.stop(record=True)
-            session = ProcessSession(self)
-            if session.exe_name or session.install_dir:
+            session = ProcessSession(self, launcher.pid)
+            if (
+                session.launcher_pid
+                or session.exe_name
+                or session.install_dir
+                or session.steam_appid
+                or session.flatpak_id
+            ):
                 session.start()
             else:
                 logging.debug(
                     "%s is not followable, skipping playtime tracking", self.name
                 )
 
-        if shared.schema.get_boolean("exit-after-launch"):
+        if (
+            shared.schema.get_boolean("exit-after-launch")
+            and not shared.runtime.is_game_mode
+        ):
             self.app.quit()
 
         # The variable is the title of the game

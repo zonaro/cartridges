@@ -1,25 +1,23 @@
-blueprints = custom_target(
-  'blueprints',
-  input: files(
-    'gtk/details-dialog.blp',
-    'gtk/fita-wizard.blp',
-    'gtk/game.blp',
-    'gtk/logo-picker.blp',
-    'gtk/preferences.blp',
-    'gtk/sgdb-picker.blp',
-    'gtk/shortcuts-dialog.blp',
-    'gtk/wallpaper-picker.blp',
-    'gtk/window.blp',
-  ),
-  output: '.',
-  command: [
-    find_program('blueprint-compiler'),
-    'batch-compile',
-    '@OUTPUT@',
-    '@CURRENT_SOURCE_DIR@',
-    '@INPUT@',
-  ],
-)
+blueprint_compiler = find_program('blueprint-compiler')
+blueprints = []
+foreach name : [
+  'details-dialog',
+  'fita-wizard',
+  'game',
+  'logo-picker',
+  'preferences',
+  'sgdb-picker',
+  'shortcuts-dialog',
+  'wallpaper-picker',
+  'window',
+]
+  blueprints += custom_target(
+    name + '-blueprint',
+    input: 'gtk/' + name + '.blp',
+    output: name + '.ui',
+    command: [blueprint_compiler, 'compile', '--output', '@OUTPUT@', '@INPUT@'],
+  )
+endforeach
 
 if host_machine.system() == 'windows'
   desktop_file = configure_file(
@@ -98,12 +96,14 @@ if host_machine.system() != 'windows'
   endif
 endif
 
+schema_file = configure_file(
+  input: 'page.kramo.Cartridges.gschema.xml.in',
+  output: app_id + '.gschema.xml',
+  configuration: conf,
+)
+
 install_data(
-  configure_file(
-    input: 'page.kramo.Cartridges.gschema.xml.in',
-    output: app_id + '.gschema.xml',
-    configuration: conf,
-  ),
+  schema_file,
   install_dir: join_paths(get_option('datadir'), 'glib-2.0/schemas'),
 )
 
@@ -112,8 +112,21 @@ if compile_schemas.found()
   test(
     'Validate schema file',
     compile_schemas,
-    args: ['--strict', '--dry-run', meson.current_source_dir()],
+    args: ['--strict', '--dry-run', meson.current_build_dir()],
   )
 endif
 
 subdir('icons')
+
+if host_machine.system() == 'linux' and get_option('prefix') in ['/usr', '/usr/local']
+  configure_file(
+    input: 'page.kramo.Cartridges.GameMode.policy.in',
+    output: app_id + '.GameMode.policy',
+    configuration: conf,
+    install: true,
+    # Polkit uses a system integration directory. User-local builds leave
+    # this file to the dedicated Game Mode installer instead of requiring
+    # root for an otherwise user-local application update.
+    install_dir: '/usr/share/polkit-1/actions',
+  )
+endif

@@ -1,6 +1,6 @@
 project(
   'cartridges',
-  version: '2.13.1',
+  version: '2.14.0',
   meson_version: '>= 0.59.0',
   default_options: [
     'warning_level=2',
@@ -46,9 +46,20 @@ conf.set('TIFF_COMPRESSION', get_option('tiff_compression'))
 conf.set('localedir', join_paths(get_option('prefix'), get_option('localedir')))
 conf.set('pkgdatadir', pkgdatadir)
 conf.set('libexecdir', libexecdir)
+conf.set('bindir', join_paths(get_option('prefix'), get_option('bindir')))
+conf.set('datadir', join_paths(get_option('prefix'), get_option('datadir')))
+if host_machine.system() == 'linux'
+  conf.set('game_session_datadir', '/usr/share')
+else
+  conf.set(
+    'game_session_datadir',
+    join_paths(get_option('prefix'), get_option('datadir')),
+  )
+endif
 
 subdir('data')
 subdir('cartridges')
+subdir('tests')
 
 if host_machine.system() == 'windows'
   subdir('build-aux/windows')

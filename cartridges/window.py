@@ -19,18 +19,25 @@
 
 # pyright: reportAssignmentType=none
 
+import hashlib
+import logging
+import threading
+from pathlib import Path
 from sys import platform
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from cartridges import shared
 from cartridges.botao_tarefas import BotaoTarefas
+from cartridges.controller import name_for_button
 from cartridges.game import Game, STATUS_LABELS, status_label
 from cartridges.game_cover import GameCover
 from cartridges.session_history import SessionHistoryDialog
-from cartridges.utils import restauracao, session_fita, session_log, session_wallpaper, tarefas
+from cartridges.utils import agrupamento, launcher, restauracao, session_fita, session_log, session_wallpaper, tarefas
 from cartridges.utils.animated_flow_box import AnimatedFlowBox
 from cartridges.utils.format_playtime import format_playtime, format_stopwatch
 from cartridges.utils.install_size import format_size
+from cartridges.utils.download import download_bytes
 from cartridges.utils.news_feed import NewsPost
 from cartridges.utils.open_uri import open_uri
 from cartridges.utils.relative_date import relative_date
@@ -52,6 +59,11 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
     overlay_split_view: Adw.OverlaySplitView = Gtk.Template.Child()
     navigation_view: Adw.NavigationView = Gtk.Template.Child()
+    game_mode_home_page: Adw.NavigationPage = Gtk.Template.Child()
+    game_mode_avatar: Adw.Avatar = Gtk.Template.Child()
+    game_mode_welcome_label: Gtk.Label = Gtk.Template.Child()
+    game_mode_continue_button: Gtk.Button = Gtk.Template.Child()
+    game_mode_library_button: Gtk.Button = Gtk.Template.Child()
     sidebar_navigation_page: Adw.NavigationPage = Gtk.Template.Child()
     sidebar: Gtk.ListBox = Gtk.Template.Child()
     all_games_row_box: Gtk.Box = Gtk.Template.Child()
@@ -80,6 +92,21 @@ class CartridgesWindow(Adw.ApplicationWindow):
     search_bar: Gtk.SearchBar = Gtk.Template.Child()
     search_entry: Gtk.SearchEntry = Gtk.Template.Child()
     search_button: Gtk.ToggleButton = Gtk.Template.Child()
+    game_mode_keyboard_button: Gtk.Button = Gtk.Template.Child()
+    launchers_bar: Gtk.Box = Gtk.Template.Child()
+    launchers_box: Gtk.Box = Gtk.Template.Child()
+
+    gamepad_test_page: Adw.NavigationPage = Gtk.Template.Child()
+    gamepad_test_device_label: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_event_label: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_buttons: Gtk.FlowBox = Gtk.Template.Child()
+    gamepad_test_axis_0: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_axis_1: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_axis_2: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_axis_3: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_axis_4: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_axis_5: Gtk.Label = Gtk.Template.Child()
+    gamepad_test_hat_label: Gtk.Label = Gtk.Template.Child()
 
     details_page: Adw.NavigationPage = Gtk.Template.Child()
     details_view_toolbar_view: Adw.ToolbarView = Gtk.Template.Child()
@@ -89,6 +116,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
     details_view_blurred_cover: Gtk.Picture = Gtk.Template.Child()
     details_view_play_button: Gtk.Button = Gtk.Template.Child()
     details_view_developer: Gtk.Label = Gtk.Template.Child()
+    details_view_metadata: Gtk.Label = Gtk.Template.Child()
+    details_view_description: Gtk.Label = Gtk.Template.Child()
+    details_view_screenshots_group: Gtk.Box = Gtk.Template.Child()
+    details_view_screenshots: Gtk.Box = Gtk.Template.Child()
     details_view_added: Gtk.ShortcutLabel = Gtk.Template.Child()
     details_view_last_played: Gtk.Label = Gtk.Template.Child()
     details_view_size: Gtk.Label = Gtk.Template.Child()
@@ -114,6 +145,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     hidden_search_bar: Gtk.SearchBar = Gtk.Template.Child()
     hidden_search_entry: Gtk.SearchEntry = Gtk.Template.Child()
     hidden_search_button: Gtk.ToggleButton = Gtk.Template.Child()
+    hidden_game_mode_keyboard_button: Gtk.Button = Gtk.Template.Child()
 
     zerados_library_page: Adw.NavigationPage = Gtk.Template.Child()
     zerados_primary_menu_button: Gtk.MenuButton = Gtk.Template.Child()
@@ -132,6 +164,16 @@ class CartridgesWindow(Adw.ApplicationWindow):
     news_refresh_button: Gtk.Button = Gtk.Template.Child()
     news_retry_button: Gtk.Button = Gtk.Template.Child()
 
+    xcloud_page: Adw.NavigationPage = Gtk.Template.Child()
+    xcloud_header_bar: Adw.HeaderBar = Gtk.Template.Child()
+    xcloud_close_button: Gtk.Button = Gtk.Template.Child()
+    xcloud_reload_button: Gtk.Button = Gtk.Template.Child()
+    xcloud_fullscreen_button: Gtk.Button = Gtk.Template.Child()
+    xcloud_box: Gtk.Overlay = Gtk.Template.Child()
+    xcloud_spinner: Adw.Spinner = Gtk.Template.Child()
+    xcloud_container: Gtk.Box = Gtk.Template.Child()
+    xcloud_error: Adw.StatusPage = Gtk.Template.Child()
+
     game_covers: dict = {}
     toasts: dict = {}
     toast_queue: ToastQueue
@@ -143,8 +185,13 @@ class CartridgesWindow(Adw.ApplicationWindow):
     session_game: Optional[Game] = None
     session_timer_id: int = 0
     botao_tarefas: BotaoTarefas
+    _xcloud_webview: Optional[Any] = None
+    _xcloud_loading: bool = False
+    _xcloud_load_generation: int = 0
+    _xcloud_was_fullscreen: bool = False
     _playtime_clickable = False
     details_view_game_cover: Optional[GameCover] = None
+    _details_images_generation: int = 0
     sort_state: str = "last_played"
     filter_state: str = "all"
     source_rows: dict = {}
@@ -153,6 +200,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.toast_queue.add(toast)
 
     def create_source_rows(self) -> None:
+        theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+
         def get_removed(source_id: str) -> Any:
             removed = tuple(
                 game.removed or game.hidden or game.blacklisted
@@ -209,9 +258,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
             row.append(
                 Gtk.Image.new_from_icon_name(
-                    "user-desktop-symbolic"
-                    if (split_id := source_id.split("_")[0]) == "desktop"
-                    else f"{split_id}-source-symbolic"
+                    self._icone_disponivel(
+                        theme,
+                        launcher.nomes_de_icone_da_fonte(source_id),
+                    )
                 )
             )
 
@@ -256,6 +306,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.sidebar.get_row_at_index(2).set_visible(True)
 
         self.all_games_no_label.set_label(str(total_games_no))
+        self.atualizar_launchers()
 
         if not restored:
             self.sidebar.select_row(self.all_games_row_box.get_parent())
@@ -281,6 +332,15 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        self.game_mode_home_page.set_visible(shared.runtime.is_game_mode)
+        if not shared.runtime.is_game_mode:
+            # The landing page is the template's initial navigation root.
+            # Hiding it is not enough: leaving it below the library makes
+            # HeaderBar expose a Back button that pops to an invisible page.
+            self.navigation_view.replace([self.library_page])
+        elif shared.schema.get_boolean("game-mode-start-library"):
+            self.navigation_view.push(self.library_page)
 
         if platform == "darwin":
             self.sidebar_navigation_page.set_title("")
@@ -317,6 +377,20 @@ class CartridgesWindow(Adw.ApplicationWindow):
         add_zerado.connect("activate", lambda *_: ZeradosPicker().present(self))
         self.add_action(add_zerado)
 
+        launch_via = Gio.SimpleAction.new("launch_via", GLib.VariantType.new("s"))
+        launch_via.connect("activate", self.on_launch_via_action)
+        self.add_action(launch_via)
+
+        desagrupar = Gio.SimpleAction.new("desagrupar", GLib.VariantType.new("s"))
+        desagrupar.connect("activate", self.on_desagrupar_action)
+        self.add_action(desagrupar)
+
+        toggle_launcher = Gio.SimpleAction.new(
+            "toggle_launcher", GLib.VariantType.new("s")
+        )
+        toggle_launcher.connect("activate", self.on_toggle_launcher_action)
+        self.add_action(toggle_launcher)
+
         set_status = Gio.SimpleAction.new("set_status", GLib.VariantType.new("s"))
         set_status.connect("activate", self.on_set_status_action)
         self.add_action(set_status)
@@ -331,6 +405,11 @@ class CartridgesWindow(Adw.ApplicationWindow):
             "visible",
             Gio.SettingsBindFlags.GET,
         )
+        shared.schema.connect(
+            "changed::xbox-cloud-gaming", lambda *_: self.atualizar_launchers()
+        )
+        shared.schema.connect("changed::better-xcloud", self._better_xcloud_changed)
+        self.connect("notify::fullscreened", self._update_xcloud_fullscreen_button)
         self.news_refresh_button.connect("clicked", self.on_news_refresh_clicked)
         self.news_retry_button.connect("clicked", self.on_news_refresh_clicked)
 
@@ -355,6 +434,15 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.search_entry.connect("search-changed", self.search_changed, False)
         self.hidden_search_entry.connect("search-changed", self.search_changed, True)
 
+        for button, entry in (
+            (self.game_mode_keyboard_button, self.search_entry),
+            (self.hidden_game_mode_keyboard_button, self.hidden_search_entry),
+        ):
+            # Controller input is supported in both the desktop and Gaming
+            # Mode interfaces, so controller-only text entry must be too.
+            button.set_visible(True)
+            button.connect("clicked", self.show_gamepad_keyboard, entry)
+
         self.search_entry.connect("activate", self.show_details_page_search)
         self.hidden_search_entry.connect("activate", self.show_details_page_search)
         self.details_view_update_notice.connect(
@@ -371,6 +459,17 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.navigation_view.connect("pushed", self.set_show_hidden)
 
         self.sidebar.connect("row-selected", self.row_selected)
+
+        self._gamepad_button_widgets = {}
+        for code in (304, 305, 307, 308, 310, 311, 314, 315, 316, 317, 318):
+            label = Gtk.Label(
+                label=name_for_button(code),
+                width_request=92,
+                height_request=44,
+                css_classes=["gamepad-input"],
+            )
+            self._gamepad_button_widgets[code] = label
+            self.gamepad_test_buttons.append(label)
 
         style_manager = Adw.StyleManager.get_default()
         style_manager.connect("notify::dark", self.set_details_view_opacity)
@@ -394,6 +493,211 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.library.set_max_children_per_line(10)
             self.hidden_library.set_max_children_per_line(10)
 
+    def configure_user_profile(self, profile: Any) -> None:
+        self.game_mode_welcome_label.set_label(
+            _("Welcome, {}").format(profile.display_name)
+        )
+        self.game_mode_avatar.set_text(profile.display_name)
+        if profile.avatar is not None:
+            try:
+                self.game_mode_avatar.set_custom_image(
+                    Gdk.Texture.new_from_filename(str(profile.avatar))
+                )
+            except GLib.Error:
+                pass
+
+    def update_game_mode_home(self) -> None:
+        games = [
+            game
+            for game in shared.store
+            if not game.removed and game.executable and game.last_played > 0
+        ]
+        recent = max(games, key=lambda game: game.last_played, default=None)
+        self.game_mode_continue_button.set_sensitive(recent is not None)
+        self.game_mode_continue_button.set_tooltip_text(
+            recent.name if recent is not None else _("No recently played game")
+        )
+
+    def focus_game_mode_home(self) -> None:
+        if self.navigation_view.get_visible_page() == self.game_mode_home_page:
+            (
+                self.game_mode_continue_button
+                if self.game_mode_continue_button.get_sensitive()
+                else self.game_mode_library_button
+            ).grab_focus()
+
+    def on_open_library_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() != self.library_page:
+            self.navigation_view.push(self.library_page)
+
+    def gamepad_back(self) -> None:
+        dialog = self.get_visible_dialog()
+        if dialog is not None:
+            dialog.close()
+        elif self.navigation_view.get_visible_page() not in (
+            self.game_mode_home_page,
+            self.library_page,
+        ):
+            self.navigation_view.pop()
+        elif (
+            shared.runtime.is_game_mode
+            and self.navigation_view.get_visible_page() == self.library_page
+        ):
+            self.navigation_view.pop()
+
+    @property
+    def gamepad_test_active(self) -> bool:
+        return self.navigation_view.get_visible_page() == self.gamepad_test_page
+
+    def on_open_gamepad_test_action(self, *_args: Any) -> None:
+        if not self.gamepad_test_active:
+            self.navigation_view.push(self.gamepad_test_page)
+
+    def set_gamepad_devices(self, names: list[str]) -> None:
+        self.gamepad_test_device_label.set_label(
+            _("Conectado: {}").format(", ".join(names))
+            if names
+            else _("Nenhum gamepad conectado")
+        )
+
+    def update_gamepad_button(self, button: int, pressed: bool) -> None:
+        name = name_for_button(button)
+        self.gamepad_test_event_label.set_label(
+            _("{} pressionado").format(name)
+            if pressed
+            else _("{} solto").format(name)
+        )
+        label = self._gamepad_button_widgets.get(button)
+        if label is None:
+            label = Gtk.Label(
+                label=name,
+                width_request=92,
+                height_request=44,
+                css_classes=["gamepad-input"],
+            )
+            self._gamepad_button_widgets[button] = label
+            self.gamepad_test_buttons.append(label)
+        if pressed:
+            label.add_css_class("active")
+        else:
+            label.remove_css_class("active")
+
+    def update_gamepad_axis(self, axis: int, value: float) -> None:
+        self.gamepad_test_event_label.set_label(
+            _("Eixo {}: {:.2f}").format(axis, value)
+        )
+        label = getattr(self, f"gamepad_test_axis_{axis}", None)
+        if label is not None:
+            label.set_label(f"{value:+.2f}")
+
+    def update_gamepad_trigger(self, trigger: str, pressed: bool) -> None:
+        """Reflect digital trigger events in the trigger axis rows."""
+        value = 1.0 if pressed else 0.0
+        axis = 2 if trigger == "LT" else 5
+        getattr(self, f"gamepad_test_axis_{axis}").set_label(f"{value:.2f}")
+        self.gamepad_test_event_label.set_label(
+            _("{}: {:.2f}").format(trigger, value)
+        )
+
+    def update_gamepad_hat(self, axis: int, value: int) -> None:
+        directions = {
+            15: _("esquerda"),
+            16: _("cima"),
+            17: _("direita"),
+            18: _("baixo"),
+        }
+        direction = (
+            _("centralizado")
+            if value == 0
+            else directions.get(axis + value, str(value))
+        )
+        self.gamepad_test_hat_label.set_label(
+            _("Direcional {}: {}").format(axis, direction)
+        )
+        self.gamepad_test_event_label.set_label(
+            _("Direcional: {}").format(direction)
+        )
+
+    def gamepad_search(self) -> None:
+        page = self.navigation_view.get_visible_page()
+        if page not in (self.library_page, self.hidden_library_page):
+            if page == self.game_mode_home_page:
+                self.navigation_view.push(self.library_page)
+            else:
+                self.navigation_view.pop_to_page(self.library_page)
+        self.on_toggle_search_action()
+
+    def gamepad_game_menu(self) -> None:
+        widget = self.get_focus()
+        game = None
+        while widget is not None and not isinstance(widget, Game):
+            if isinstance(widget, Gtk.FlowBoxChild) and isinstance(
+                widget.get_child(), Game
+            ):
+                game = widget.get_child()
+                break
+            widget = widget.get_parent()
+        if isinstance(widget, Game):
+            game = widget
+        if game is not None:
+            game.menu_revealer.set_reveal_child(True)
+            game.menu_button.popup()
+
+    def gamepad_main_menu(self) -> None:
+        if self.navigation_view.get_visible_page() not in (
+            self.library_page,
+            self.hidden_library_page,
+            self.zerados_library_page,
+        ):
+            if self.navigation_view.get_visible_page() == self.game_mode_home_page:
+                self.navigation_view.push(self.library_page)
+            else:
+                self.navigation_view.pop_to_page(self.library_page)
+        GLib.idle_add(self.on_open_menu_action)
+
+    def gamepad_toggle_sidebar(self) -> None:
+        self.on_show_sidebar_action()
+
+    def show_gamepad_keyboard(
+        self, _button: Gtk.Button, entry: Gtk.SearchEntry
+    ) -> None:
+        """Show a focus-navigable keyboard for controller-only searches."""
+        dialog = Adw.AlertDialog.new(
+            _("On-screen keyboard"),
+            _("Choose characters with the controller."),
+        )
+        grid = Gtk.Grid(column_spacing=4, row_spacing=4, halign=Gtk.Align.CENTER)
+        first_button = None
+        for index, character in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"):
+            key = Gtk.Button(label=character, width_request=42, height_request=42)
+            key.connect(
+                "clicked",
+                lambda _key, value=character: entry.set_text(
+                    entry.get_text() + value
+                ),
+            )
+            grid.attach(key, index % 10, index // 10, 1, 1)
+            first_button = first_button or key
+
+        backspace = Gtk.Button(label=_("Backspace"))
+        backspace.connect(
+            "clicked", lambda *_args: entry.set_text(entry.get_text()[:-1])
+        )
+        grid.attach(backspace, 0, 4, 3, 1)
+        space = Gtk.Button(label=_("Space"))
+        space.connect("clicked", lambda *_args: entry.set_text(entry.get_text() + " "))
+        grid.attach(space, 3, 4, 3, 1)
+        clear = Gtk.Button(label=_("Clear"))
+        clear.connect("clicked", lambda *_args: entry.set_text(""))
+        grid.attach(clear, 6, 4, 4, 1)
+        dialog.set_extra_child(grid)
+        dialog.add_response("done", _("Done"))
+        dialog.set_default_response("done")
+        dialog.set_close_response("done")
+        dialog.present(self)
+        if first_button is not None:
+            first_button.grab_focus()
+
     def search_changed(self, _widget: Any, hidden: bool) -> None:
         # Refresh search filter on keystroke in search box
         (self.hidden_library if hidden else self.library).invalidate_filter()
@@ -407,6 +711,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         for game in shared.store:
             if game.blacklisted or restauracao.e_pendente(game.game_id):
+                continue
+            if game.is_launcher and not game.hidden:
                 continue
             if game.removed:
                 if not game.zerado:
@@ -470,17 +776,24 @@ class CartridgesWindow(Adw.ApplicationWindow):
             )
         )
 
-        filtered = text != "" and not (
-            text in game.name.lower()
-            or (text in game.developer.lower() if game.developer else False)
-            or (text in game.publisher.lower() if game.publisher else False)
-            or (text in game.notes.lower() if game.notes else False)
-        )
+        members = [game] if em_zerados else agrupamento.membros(game)
 
-        if not filtered:
+        def casa(member: Game) -> bool:
+            return (
+                text in member.name.lower()
+                or (text in member.developer.lower() if member.developer else False)
+                or (text in member.publisher.lower() if member.publisher else False)
+                or (text in member.notes.lower() if member.notes else False)
+            )
+
+        filtered = text != "" and not any(casa(member) for member in members)
+
+        if not filtered and not em_zerados:
             if self.filter_state == "all":
                 pass
-            elif game.base_source != self.filter_state:
+            elif all(
+                member.base_source != self.filter_state for member in members
+            ):
                 filtered = True
 
         game.filtered = filtered
@@ -499,6 +812,29 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         self.details_view_developer.set_label(game.developer or "")
         self.details_view_developer.set_visible(bool(game.developer))
+
+        metadata = []
+        if game.tgdb_platform:
+            metadata.append(_("Plataforma: {}").format(game.tgdb_platform))
+        if game.release_date:
+            metadata.append(_("Lançamento: {}").format(game.release_date))
+        if game.publisher:
+            metadata.append(_("Publicadora: {}").format(game.publisher))
+        if game.genre:
+            metadata.append(_("Gênero: {}").format(game.genre))
+        if game.tgdb_players:
+            metadata.append(_("Jogadores: {}").format(game.tgdb_players))
+        if game.tgdb_age_rating:
+            metadata.append(_("Classificação: {}").format(game.tgdb_age_rating))
+        if game.tgdb_coop:
+            metadata.append(_("Cooperativo: {}").format(game.tgdb_coop))
+        self.details_view_metadata.set_label("  •  ".join(metadata))
+        self.details_view_metadata.set_visible(bool(metadata))
+
+        description = (game.description or "").strip()
+        self.details_view_description.set_label(description)
+        self.details_view_description.set_visible(bool(description))
+        self._load_details_screenshots(game)
 
         icon, text = "view-conceal-symbolic", _("Hide")
         if game.hidden:
@@ -543,6 +879,60 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.set_focus(self.details_view_play_button)
 
         self.set_details_view_opacity()
+
+    def _load_details_screenshots(self, game: Game) -> None:
+        """Populate cached TheGamesDB screenshots without blocking GTK."""
+        self._details_images_generation += 1
+        generation = self._details_images_generation
+        while child := self.details_view_screenshots.get_first_child():
+            self.details_view_screenshots.remove(child)
+
+        urls = list(game.tgdb_screenshots or [])[:6]
+        self.details_view_screenshots_group.set_visible(bool(urls))
+        if not urls:
+            return
+
+        cache_dir = shared.cache_dir / "cartridges" / "thegamesdb" / game.game_id
+
+        def worker() -> None:
+            try:
+                cache_dir.mkdir(parents=True, exist_ok=True)
+            except OSError:
+                return
+            for url in urls:
+                suffix = Path(urlparse(url).path).suffix.lower()
+                if suffix not in (".jpg", ".jpeg", ".png", ".webp"):
+                    suffix = ".jpg"
+                filename = hashlib.sha256(url.encode("utf-8")).hexdigest() + suffix
+                path = cache_dir / filename
+                try:
+                    if not path.is_file():
+                        path.write_bytes(download_bytes(url, timeout=20))
+                except Exception as error:  # pylint: disable=broad-except
+                    logging.info("Could not load TheGamesDB screenshot: %s", error)
+                    continue
+                GLib.idle_add(self._add_details_screenshot, path, game, generation)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _add_details_screenshot(
+        self, path: Path, game: Game, generation: int
+    ) -> bool:
+        if generation != self._details_images_generation or self.active_game is not game:
+            return GLib.SOURCE_REMOVE
+        try:
+            texture = Gdk.Texture.new_from_filename(str(path))
+        except GLib.Error as error:
+            logging.info("Invalid TheGamesDB screenshot: %s", error)
+            path.unlink(missing_ok=True)
+            return GLib.SOURCE_REMOVE
+        picture = Gtk.Picture(paintable=texture)
+        picture.set_content_fit(Gtk.ContentFit.COVER)
+        picture.set_size_request(240, 135)
+        picture.set_overflow(Gtk.Overflow.HIDDEN)
+        picture.add_css_class("card")
+        self.details_view_screenshots.append(picture)
+        return GLib.SOURCE_REMOVE
 
     def set_details_view_opacity(self, *_args: Any) -> None:
         if self.navigation_view.get_visible_page() != self.details_page:
@@ -837,6 +1227,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.primary_menu_button.popup()
         elif self.navigation_view.get_visible_page() == self.hidden_library_page:
             self.hidden_primary_menu_button.popup()
+        elif self.navigation_view.get_visible_page() == self.zerados_library_page:
+            self.zerados_primary_menu_button.popup()
 
     def on_close_action(self, *_args: Any) -> None:
         self.close()
@@ -929,6 +1321,310 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.library.invalidate_filter()
             self.zerados_library.invalidate_filter()
 
+    def build_card_menu(
+        self, game: Game, members: Optional[list] = None
+    ) -> Gio.Menu:
+        grouped = bool(members and len(members) > 1)
+        menu = Gio.Menu()
+        if grouped:
+            vias = Gio.Menu()
+            for member in sorted(members, key=lambda m: m.name.casefold()):
+                item = Gio.MenuItem.new(
+                    self.get_application().get_source_name(member.source), None
+                )
+                item.set_action_and_target_value(
+                    "win.launch_via", GLib.Variant("s", member.game_id)
+                )
+                vias.append_item(item)
+            # The variable is the section title listing the launchers
+            menu.append_section(_("Jogar via"), vias)
+
+        base = Gio.Menu()
+        for label, action in (
+            (_("Edit"), "app.edit_game"),
+            (_("Unhide") if game.hidden else _("Hide"), "app.hide_game"),
+            (_("Remove"), "app.remove_game"),
+        ):
+            item = Gio.MenuItem.new(label, None)
+            item.set_action_and_target_value(action, None)
+            base.append_item(item)
+        menu.append_section(None, base)
+
+        alternar = Gio.Menu()
+        item = Gio.MenuItem.new(
+            _("Marcar como jogo")
+            if game.is_launcher
+            else _("Marcar como launcher"),
+            None,
+        )
+        item.set_action_and_target_value(
+            "win.toggle_launcher", GLib.Variant("s", game.game_id)
+        )
+        alternar.append_item(item)
+        menu.append_section(None, alternar)
+
+        if grouped:
+            grupo = Gio.Menu()
+            item = Gio.MenuItem.new(_("Desagrupar"), None)
+            item.set_action_and_target_value(
+                "win.desagrupar", GLib.Variant("s", agrupamento.atualizar(game))
+            )
+            grupo.append_item(item)
+            menu.append_section(None, grupo)
+        return menu
+
+    def on_launch_via_action(self, _action: Any, target: GLib.Variant) -> None:
+        game = shared.store.get(target.get_string())
+        if game is None:
+            return
+        agrupamento.definir_preferido(game)
+        for member in agrupamento.membros(game):
+            member.update()
+        game.launch()
+
+    def on_desagrupar_action(self, _action: Any, target: GLib.Variant) -> None:
+        chave = target.get_string()
+        agrupamento.desagrupar_chave(chave)
+        for game in shared.store:
+            if agrupamento.atualizar(game) == chave:
+                game.update()
+
+    def on_toggle_launcher_action(
+        self, _action: Any, target: GLib.Variant
+    ) -> None:
+        game = shared.store.get(target.get_string())
+        if game is None:
+            return
+        chave = agrupamento.atualizar(game)
+        game.is_launcher = not game.is_launcher
+        launcher.registrar(game, game.is_launcher)
+        game.save()
+        for outro in shared.store:
+            if agrupamento.atualizar(outro) == chave:
+                outro.update()
+        agrupamento.reconciliar()
+
+    def atualizar_launchers(self) -> None:
+        while (child := self.launchers_box.get_first_child()) is not None:
+            self.launchers_box.remove(child)
+        items = launcher.listar()
+        xbox_enabled = shared.schema.get_boolean("xbox-cloud-gaming")
+        # The gamepad tester is always present in this bar, even when there are
+        # no external launchers configured.
+        self.launchers_bar.set_visible(True)
+        theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+        for game in items:
+            icon_name = self._icone_disponivel(
+                theme,
+                launcher.nomes_de_icone(game),
+            )
+            button = Gtk.Button(
+                tooltip_text=game.name,
+                css_classes=["flat", "circular"],
+                width_request=40,
+                height_request=40,
+                valign=Gtk.Align.CENTER,
+            )
+            button.set_child(Gtk.Image.new_from_icon_name(icon_name))
+            button.connect("clicked", self.on_launcher_clicked, game)
+            right = Gtk.GestureClick.new()
+            right.set_button(3)
+            right.connect("released", self.on_launcher_menu, game, button)
+            button.add_controller(right)
+            self.launchers_box.append(button)
+        if xbox_enabled:
+            self.launchers_box.append(self.build_xcloud_card(theme))
+
+    def on_launcher_clicked(self, _button: Gtk.Button, game: Game) -> None:
+        game.launch()
+
+    def on_launcher_menu(
+        self,
+        _gesture: Gtk.GestureClick,
+        _n_press: int,
+        _x: float,
+        _y: float,
+        game: Game,
+        button: Gtk.Button,
+    ) -> None:
+        menu = Gio.Menu()
+        item = Gio.MenuItem.new(_("Marcar como jogo"), None)
+        item.set_action_and_target_value(
+            "win.toggle_launcher", GLib.Variant("s", game.game_id)
+        )
+        menu.append_item(item)
+        popover = Gtk.PopoverMenu.new_from_model(menu)
+        popover.set_parent(button)
+        popover.set_position(Gtk.PositionType.BOTTOM)
+        popover.popup()
+
+    def build_xcloud_card(self, theme: Gtk.IconTheme) -> Gtk.Button:
+        icon_name = self._icone_disponivel(
+            theme,
+            ("xbox-cloud-symbolic", "xbox-symbolic", "xbox"),
+        )
+        button = Gtk.Button(
+            tooltip_text=_("Xbox Cloud Gaming"),
+            css_classes=["flat", "circular", "xcloud-card"],
+            width_request=40,
+            height_request=40,
+            valign=Gtk.Align.CENTER,
+        )
+        button.set_child(Gtk.Image.new_from_icon_name(icon_name))
+        button.connect("clicked", lambda *_: self.on_open_xcloud_action())
+        return button
+
+    @staticmethod
+    def _icone_disponivel(
+        theme: Gtk.IconTheme,
+        candidates: tuple[str, ...],
+    ) -> str:
+        return next(
+            (name for name in candidates if theme.has_icon(name)),
+            "application-x-executable-symbolic",
+        )
+
+    def on_open_xcloud_action(self, *_args: Any) -> None:
+        from cartridges import xcloud
+
+        if not shared.schema.get_boolean("xbox-cloud-gaming"):
+            return
+        if not xcloud.webkit_available():
+            self.toast_queue.add(
+                Adw.Toast.new(
+                    _("Xbox Cloud Gaming precisa do WebKitGTK instalado")
+                )
+            )
+            return
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            # This page is a reusable template object rather than an initial
+            # child in the navigation stack, so push it directly. Looking it
+            # up by tag only searches pages already owned by the view.
+            self._xcloud_was_fullscreen = self.get_fullscreened()
+            self.navigation_view.push(self.xcloud_page)
+        self._update_xcloud_fullscreen_button()
+        self.xcloud_close_button.grab_focus()
+        self._load_xcloud_fresh()
+
+    def _load_xcloud_fresh(self) -> None:
+        from cartridges import xcloud
+
+        self._xcloud_load_generation += 1
+        generation = self._xcloud_load_generation
+        self._xcloud_loading = True
+        self.xcloud_error.set_visible(False)
+        self.xcloud_container.set_visible(False)
+        self.xcloud_spinner.set_visible(True)
+
+        def done(script: Optional[str], _from_network: bool) -> None:
+            if generation != self._xcloud_load_generation:
+                return
+            self._xcloud_loading = False
+            if self.navigation_view.get_visible_page() != self.xcloud_page:
+                return
+            if self._xcloud_webview is not None:
+                try:
+                    self.xcloud_container.remove(self._xcloud_webview)
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+                self._xcloud_webview = None
+            better_xcloud_enabled = shared.schema.get_boolean("better-xcloud")
+            if script is None and better_xcloud_enabled:
+                self.toast_queue.add(
+                    Adw.Toast.new(
+                        _("Sem o Better xCloud: abrindo o xCloud puro")
+                    )
+                )
+            webview = xcloud.create_xcloud_webview(
+                script if better_xcloud_enabled else None
+            )
+            if webview is None:
+                self.xcloud_spinner.set_visible(False)
+                self.xcloud_error.set_visible(True)
+                return
+            webview.set_hexpand(True)
+            webview.set_vexpand(True)
+            webview.set_halign(Gtk.Align.FILL)
+            webview.set_valign(Gtk.Align.FILL)
+            self._xcloud_webview = webview
+            self.xcloud_container.append(webview)
+            self.xcloud_spinner.set_visible(False)
+            self.xcloud_container.set_visible(True)
+            if better_xcloud_enabled and script is not None:
+                xcloud.watch_script_active(webview, self._on_xcloud_script_check)
+            xcloud.load_xcloud_home(webview)
+
+        if shared.schema.get_boolean("better-xcloud"):
+            xcloud.fetch_better_xcloud_async(done)
+        else:
+            done(None, False)
+
+    def _better_xcloud_changed(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() == self.xcloud_page:
+            self._load_xcloud_fresh()
+
+    def _on_xcloud_script_check(self, active: bool) -> None:
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            return
+        if active:
+            logging.info("Better xCloud ativo na página do xCloud")
+        else:
+            self.toast_queue.add(
+                Adw.Toast.new(
+                    _("Better xCloud não detectado na página do xCloud")
+                )
+            )
+
+    def _update_xcloud_fullscreen_button(self, *_args: Any) -> None:
+        fullscreened = self.get_fullscreened()
+        self.xcloud_header_bar.set_visible(not fullscreened)
+        self.xcloud_fullscreen_button.set_icon_name(
+            "view-restore-symbolic" if fullscreened else "view-fullscreen-symbolic"
+        )
+        self.xcloud_fullscreen_button.set_tooltip_text(
+            _("Sair da tela cheia") if fullscreened else _("Tela cheia")
+        )
+
+    def on_toggle_xcloud_fullscreen_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            return
+        if self.get_fullscreened():
+            self.unfullscreen()
+        else:
+            self.fullscreen()
+
+    def on_xcloud_escape_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            return
+        if self.get_fullscreened() and not self._xcloud_was_fullscreen:
+            self.unfullscreen()
+        else:
+            self.on_close_xcloud_action()
+
+    def on_reload_xcloud_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            return
+        if self._xcloud_webview is not None:
+            try:
+                self._xcloud_webview.reload()
+                return
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
+        self._load_xcloud_fresh()
+
+    def on_close_xcloud_action(self, *_args: Any) -> None:
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            return
+        self.navigation_view.pop()
+        if self.navigation_view.get_visible_page() == self.xcloud_page:
+            self.navigation_view.push(self.library_page)
+        if not self._xcloud_was_fullscreen and self.get_fullscreened():
+            self.unfullscreen()
+        if shared.runtime.is_game_mode and (
+            self.navigation_view.get_visible_page() == self.game_mode_home_page
+        ):
+            self.focus_game_mode_home()
+
     def on_delete_game_action(self, *_args: Any) -> None:
         game = getattr(self, "active_game", None)
         if game is None or not game.zerado:
@@ -956,6 +1652,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         self.retirar_da_grade(game)
         shared.store.excluir(game)
+        agrupamento.reconciliar()
 
         if self.navigation_view.get_visible_page() == self.details_page:
             self.navigation_view.pop()

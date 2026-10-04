@@ -71,3 +71,29 @@
 .playtime-clickable {
   text-decoration-line: underline;
 }
+
+.source-badge {
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.game-mode button {
+  min-height: 44px;
+}
+
+.game-mode button:focus-visible,
+.game-mode flowboxchild:focus-visible,
+.game-mode row:focus-visible {
+  box-shadow: 0 0 0 3px @accent_color;
+}
+
+.gamepad-input {
+  padding: 8px 12px;
+  border-radius: 9999px;
+  background-color: alpha(currentColor, 0.08);
+}
+
+.gamepad-input.active {
+  color: var(--accent-fg-color, white);
+  background-color: var(--accent-bg-color, #3584e4);
+}

@@ -74,6 +74,20 @@ template $Game: Box {
               hexpand: true;
               vexpand: true;
             }
+
+            [overlay]
+            Label source_badge {
+              halign: start;
+              valign: end;
+              margin-start: 6;
+              margin-bottom: 6;
+
+              styles [
+                "osd",
+                "caption-heading",
+                "source-badge",
+              ]
+            }
           }
 
           Label title {

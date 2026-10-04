@@ -21,6 +21,11 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         subtitle: _("Swaps the behavior of the cover image and the play button");
       }
 
+      Adw.SwitchRow agrupar_duplicados_switch {
+        title: _("Agrupar jogos duplicados");
+        subtitle: _("Mostra num card só o mesmo jogo de fontes diferentes");
+      }
+
       Adw.SwitchRow playtime_tracking_switch {
         title: _("Contar horas de jogo");
         subtitle: _("Registra o tempo de cada sessão");
@@ -33,6 +38,35 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       Adw.SwitchRow high_quality_images_switch {
         title: _("High Quality Images");
         subtitle: _("Save game covers losslessly at the cost of storage");
+      }
+    }
+
+    Adw.PreferencesGroup cloud_gaming_group {
+      title: _("Cloud Gaming");
+
+      Adw.SwitchRow xbox_cloud_gaming_switch {
+        title: _("Xbox Cloud Gaming");
+        subtitle: _("Mostra o card do Xbox Cloud Gaming junto aos launchers");
+      }
+
+      Adw.SwitchRow better_xcloud_switch {
+        title: _("Better xCloud");
+        subtitle: _("Baixa e injeta o userscript mais recente diretamente do GitHub");
+        sensitive: bind xbox_cloud_gaming_switch.active;
+      }
+
+      Adw.ActionRow better_xcloud_update_row {
+        title: _("Script Better xCloud");
+        subtitle: _("Nunca baixado");
+        sensitive: bind xbox_cloud_gaming_switch.active;
+        activatable-widget: better_xcloud_update_button;
+
+        [suffix]
+        Button better_xcloud_update_button {
+          valign: center;
+          icon-name: "view-refresh-symbolic";
+          tooltip-text: _("Baixar agora o script mais recente do GitHub");
+        }
       }
     }
 
@@ -77,6 +111,54 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
     name: "session";
     title: _("Sessão");
     icon-name: "video-joined-displays-symbolic";
+
+    Adw.PreferencesGroup game_mode_group {
+      title: _("Game Mode");
+      description: _("Settings used by the dedicated Gamescope session and game launches.");
+
+      Adw.SwitchRow game_mode_use_gamemode_switch {
+        title: _("Enable GameMode for games");
+        subtitle: _("Uses gamemoderun when it is installed");
+      }
+
+      Adw.SwitchRow game_mode_use_mangohud_switch {
+        title: _("Enable MangoHud for games");
+        subtitle: _("Optional; ignored when MangoHud is not installed");
+      }
+
+      Adw.SwitchRow game_mode_enable_fps_limiter_switch {
+        title: _("Enable Gamescope FPS limiter");
+      }
+
+      Adw.SwitchRow game_mode_enable_vrr_switch {
+        title: _("Enable VRR when supported");
+      }
+
+      Adw.SwitchRow game_mode_start_library_switch {
+        title: _("Start in Library");
+      }
+
+      Adw.SwitchRow game_mode_hide_mouse_cursor_switch {
+        title: _("Hide mouse cursor when using a controller");
+      }
+    }
+
+    Adw.PreferencesGroup game_mode_devices_group {
+      title: _("Session devices");
+      description: _("Leave blank to use the system default. Gamescope expects a DRM connector such as HDMI-A-1 or DP-1.");
+
+      Adw.ComboRow game_mode_monitor_entry_row {
+        title: _("Monitor connector");
+      }
+
+      Adw.ComboRow game_mode_audio_output_entry_row {
+        title: _("Audio output");
+      }
+
+      Adw.ComboRow game_mode_audio_input_entry_row {
+        title: _("Audio input");
+      }
+    }
 
     Adw.PreferencesGroup {
       title: _("Barra superior");
@@ -491,6 +573,33 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         }
       }
 
+      Adw.ExpanderRow twintail_expander_row {
+        title: _("TwinTail");
+        show-enable-switch: true;
+
+        [prefix]
+        Image {
+          icon-name: "twintail-source-symbolic";
+        }
+
+        Adw.ActionRow twintail_data_action_row {
+          title: _("Install Location");
+
+          Button twintail_data_file_chooser_button {
+            icon-name: "folder-symbolic";
+            valign: center;
+
+            styles [
+              "flat"
+            ]
+          }
+
+          styles [
+            "property"
+          ]
+        }
+      }
+
       Adw.ExpanderRow flatpak_expander_row {
         title: _("Flatpak");
         show-enable-switch: true;
@@ -595,6 +704,49 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
           }
 
           Adw.Spinner sgdb_spinner {
+            visible: false;
+            valign: center;
+          }
+        }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    name: "thegamesdb";
+    title: _("TheGamesDB");
+    icon-name: "applications-games-symbolic";
+
+    Adw.PreferencesGroup thegamesdb_key_group {
+      title: _("Autenticação");
+
+      Adw.EntryRow thegamesdb_key_entry_row {
+        title: _("Chave da API");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Metadados e imagens");
+
+      Adw.SwitchRow thegamesdb_switch {
+        title: _("Usar TheGamesDB");
+        subtitle: _("Completa detalhes e usa capas e fanarts como fallback");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      Adw.ActionRow {
+        title: _("Atualizar biblioteca");
+        subtitle: _("Busca dados e imagens para os jogos já adicionados");
+        sensitive: bind thegamesdb_switch.active;
+
+        Stack thegamesdb_stack {
+          Button thegamesdb_fetch_button {
+            label: _("Atualizar");
+            valign: center;
+          }
+
+          Adw.Spinner thegamesdb_spinner {
             visible: false;
             valign: center;
           }

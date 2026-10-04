@@ -23,6 +23,8 @@ from pathlib import Path
 
 from gi.repository import Gdk, Gio, GLib
 
+from cartridges.runtime import RuntimeContext
+
 
 class AppState(IntEnum):
     DEFAULT = auto()
@@ -37,10 +39,14 @@ VERSION = "@VERSION@"
 PREFIX = "@PREFIX@"
 PROFILE = "@PROFILE@"
 TIFF_COMPRESSION = "@TIFF_COMPRESSION@"
+LIBEXECDIR = "@libexecdir@"
+GAME_MODE_HELPER = Path(LIBEXECDIR) / "cartridges-game-mode-setup"
+GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "page.kramo.Cartridges.GameMode.desktop"
 SPEC_VERSION = 1.5  # The version of the game_id.json spec
 
 schema = Gio.Settings.new(APP_ID)
 state_schema = Gio.Settings.new(APP_ID + ".State")
+runtime = RuntimeContext()
 
 home = Path.home()
 

@@ -25,6 +25,8 @@ from cartridges.game_cover import GameCover
 from cartridges.store.managers.manager import Manager
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
+from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
+from cartridges.utils import agrupamento
 
 
 def is_main_thread() -> bool:
@@ -34,7 +36,7 @@ def is_main_thread() -> bool:
 class DisplayManager(Manager):
     """Manager in charge of adding a game to the UI"""
 
-    run_after = (SteamAPIManager, SgdbManager)
+    run_after = (SteamAPIManager, TheGamesDBManager, SgdbManager)
     signals = {"update-ready"}
 
     def main(self, game: Game, _additional_data: dict) -> None:
@@ -48,6 +50,45 @@ class DisplayManager(Manager):
         )
 
         game.title.set_label(game.name)
+
+        if game.is_launcher and not game.hidden:
+            shared.win.set_library_child()
+            if shared.win.get_application().state == shared.AppState.DEFAULT:
+                shared.win.create_source_rows()
+            return
+
+        agrupamento.atualizar(game)
+
+        members = agrupamento.membros(game)
+        grouped = len(members) > 1
+        primary = agrupamento.primario(members) if grouped else game
+        is_primary = primary.game_id == game.game_id
+
+        if grouped and not is_primary:
+            agrupamento.garantir(game)
+            shared.win.set_library_child()
+            if shared.win.get_application().state == shared.AppState.DEFAULT:
+                shared.win.create_source_rows()
+            return
+
+        game.menu_button.set_menu_model(
+            shared.win.build_card_menu(game, members if grouped else None)
+        )
+
+        try:
+            source_name = shared.win.get_application().get_source_name(game.source)
+        except Exception:  # pylint: disable=broad-exception-caught
+            source_name = game.base_source
+        if game.source == "imported" or not source_name or source_name == game.source:
+            game.source_badge.set_visible(False)
+        elif grouped:
+            game.source_badge.set_label(
+                f"{source_name} +{len(members) - 1}"
+            )
+            game.source_badge.set_visible(True)
+        else:
+            game.source_badge.set_label(str(source_name))
+            game.source_badge.set_visible(True)
 
         game.menu_button.get_popover().connect(
             "notify::visible", game.toggle_play, None
@@ -69,7 +110,10 @@ class DisplayManager(Manager):
         ):
             shared.win.show_details_page(game)
 
-        if not game.removed and not game.blacklisted:
+        if game.zerado:
+            shared.win.zerados_library.append(game)
+            game.get_parent().set_focusable(False)
+        elif not game.removed and not game.blacklisted:
             if game.hidden:
                 shared.win.hidden_library.append(game)
             else:

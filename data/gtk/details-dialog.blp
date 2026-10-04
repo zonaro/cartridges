@@ -55,6 +55,21 @@ template $DetailsDialog: Adw.Dialog {
               }
 
               [overlay]
+              Button cover_button_browse {
+                icon-name: "edit-find-symbolic";
+                tooltip-text: _("Search covers on SteamGridDB");
+                halign: start;
+                valign: end;
+                margin-bottom: 6;
+                margin-start: 6;
+
+                styles [
+                  "circular",
+                  "osd"
+                ]
+              }
+
+              [overlay]
               Revealer cover_button_delete_revealer {
                 transition-type: crossfade;
                 margin-end: 40;
@@ -303,6 +318,68 @@ template $DetailsDialog: Adw.Dialog {
               "flat"
             ]
           }
+        }
+      }
+
+      Adw.PreferencesGroup {
+        title: _("Game profile");
+        description: _("Overrides used only when launching this game.");
+
+        Adw.ComboRow profile_gamemode {
+          title: _("GameMode");
+          model: StringList {
+            strings [_("Use global setting"), _("Enabled"), _("Disabled")]
+          };
+        }
+
+        Adw.ComboRow profile_mangohud {
+          title: _("MangoHud");
+          model: StringList {
+            strings [_("Use global setting"), _("Enabled"), _("Disabled")]
+          };
+        }
+
+        Adw.EntryRow profile_working_directory {
+          title: _("Working directory");
+        }
+
+        Adw.SwitchRow profile_track_process {
+          title: _("Track a specific process");
+          subtitle: _("Useful for launchers that hand off to another executable");
+        }
+
+        Adw.EntryRow profile_process_executable {
+          title: _("Process executable name");
+          sensitive: bind profile_track_process.active;
+        }
+
+        Adw.EntryRow profile_environment {
+          title: _("Environment (JSON)");
+        }
+
+        Adw.EntryRow profile_gamescope_options {
+          title: _("Gamescope options");
+        }
+
+        Adw.SpinRow profile_fps_limit {
+          title: _("FPS limit (0 = disabled)");
+          adjustment: Adjustment {
+            lower: 0;
+            upper: 360;
+            step-increment: 1;
+            page-increment: 10;
+          };
+        }
+
+        Adw.EntryRow profile_resolution {
+          title: _("Resolution (for example 1920x1080)");
+        }
+
+        Adw.ComboRow profile_scaling {
+          title: _("Scaling mode");
+          model: StringList {
+            strings [_("Default"), _("Auto"), _("Integer"), _("Fit"), _("Fill"), _("Stretch")]
+          };
         }
       }
 

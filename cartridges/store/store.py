@@ -18,13 +18,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+import shutil
 from typing import Any, Generator, MutableMapping, Optional
 
 from cartridges import shared
 from cartridges.game import Game
 from cartridges.store.managers.manager import Manager
 from cartridges.store.pipeline import Pipeline
-from cartridges.utils import session_log
+from cartridges.utils import launcher, session_log
 from cartridges.utils.game_logo import IMAGE_SUFFIXES as LOGO_SUFFIXES
 from cartridges.utils.game_logo import remove_logo
 from cartridges.utils.wallhaven import IMAGE_SUFFIXES as WALLPAPER_SUFFIXES
@@ -129,6 +130,10 @@ class Store:
             path.unlink(missing_ok=True)
 
         remove_logo(game.game_id)
+        shutil.rmtree(
+            shared.cache_dir / "cartridges" / "thegamesdb" / game.game_id,
+            ignore_errors=True,
+        )
 
         if apagar_sessoes:
             session_log.apagar_jogo(game.game_id)
@@ -155,7 +160,11 @@ class Store:
             return None
 
         # Scanned game is already removed, just clean it up
-        if game.removed:
+        # (unless it's a zerado: removed + beaten must survive restarts
+        # to appear in Jogos Zerados)
+        if game.removed and not (
+            game.status == "beaten" and not game.blacklisted
+        ):
             self.cleanup_game(game)
             return None
 
@@ -164,7 +173,15 @@ class Store:
         if not stored_game:
             # New game, do as normal
             logging.debug("New store game %s (%s)", game.name, game.game_id)
+            launcher.marcar_se_detectado(game)
             self.new_game_ids.add(game.game_id)
+        elif stored_game is game:
+            # Editing an existing game reuses its in-memory object.  This is
+            # especially important when the edit has just marked it beaten:
+            # it is now ``removed`` by design, but it is not a newly scanned
+            # replacement and its cover/metadata must not be cleaned up.
+            logging.debug("Updated store game %s (%s)", game.name, game.game_id)
+            return None
         elif stored_game.removed:
             # Will replace a removed game, cleanup its remains
             logging.debug(
@@ -173,6 +190,8 @@ class Store:
                 game.game_id,
             )
             self.cleanup_game(stored_game)
+            game.is_launcher = stored_game.is_launcher
+            launcher.marcar_se_detectado(game)
             self.new_game_ids.add(game.game_id)
         else:
             # Duplicate game, ignore it

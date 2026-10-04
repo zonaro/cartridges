@@ -30,8 +30,35 @@ install_data(
     'wallpaper_picker.py',
     'zerados_picker.py',
     'session_history.py',
+    'runtime.py',
+    'game_launch.py',
+    'power.py',
+    'user_profile.py',
+    'hardware.py',
+    'controller.py',
+    'launchers.py',
+    'xcloud.py',
     'sgdb_picker.py',
     configure_file(input: 'shared.py.in', output: 'shared.py', configuration: conf),
   ],
   install_dir: moduledir,
 )
+
+if host_machine.system() == 'linux'
+  configure_file(
+    input: '../session/cartridges-session.in',
+    output: 'cartridges-session',
+    configuration: conf,
+    install: true,
+    install_mode: 'rwxr-xr-x',
+    install_dir: get_option('bindir'),
+  )
+  configure_file(
+    input: '../session/cartridges-game-mode-setup.in',
+    output: 'cartridges-game-mode-setup',
+    configuration: conf,
+    install: true,
+    install_mode: 'rwxr-xr-x',
+    install_dir: get_option('libexecdir'),
+  )
+endif

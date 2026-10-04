@@ -41,6 +41,7 @@ import time
 from io import BytesIO
 from pathlib import Path
 from typing import Any, NamedTuple, Optional, TYPE_CHECKING
+from urllib.parse import urlparse
 from uuid import uuid4
 
 from gi.repository import Gdk, Gio, GLib
@@ -512,6 +513,27 @@ def _fonte(
                 game.game_id, game.name, destino.name, Posicoes(), travado=False
             )
             return destino, Posicoes()
+
+    # TheGamesDB fanart is the artwork fallback when Wallhaven has no useful
+    # result (or is unavailable). It is already associated with the exact game
+    # selected during metadata lookup, so no second fuzzy search is needed.
+    for url in game.tgdb_fanart or []:
+        try:
+            conteudo = download_bytes(str(url), timeout=30)
+            sufixo = Path(urlparse(str(url)).path).suffix.lower()
+            if sufixo not in IMAGE_SUFFIXES:
+                sufixo = ".jpg"
+            destino = shared.wallpapers_dir / f"{game.game_id}{sufixo}"
+            shared.wallpapers_dir.mkdir(parents=True, exist_ok=True)
+            _apagar_imagens(game.game_id, manter=destino.name)
+            destino.write_bytes(conteudo)
+        except Exception as erro:  # pylint: disable=broad-except
+            logging.info("Não foi possível baixar a fanart do TheGamesDB: %s", erro)
+            continue
+        _gravar_sidecar(
+            game.game_id, game.name, destino.name, Posicoes(), travado=False
+        )
+        return destino, Posicoes()
 
     # Último degrau: a capa. Não fica guardada como fonte — ela já está em
     # `covers`, e uma cópia aqui envelheceria sozinha quando a capa mudasse.

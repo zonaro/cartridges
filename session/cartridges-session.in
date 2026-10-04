@@ -1,0 +1,128 @@
+#!/usr/bin/bash
+# X-Cartridges-Managed=true
+# Standalone GDM/Wayland session. Never run this program as root.
+set -u
+
+readonly SESSION_TAG="cartridges-session"
+readonly CARTRIDGES_BIN="@bindir@/cartridges"
+gamescope_pid=""
+previous_audio_output=""
+previous_audio_input=""
+
+log() {
+    logger --tag "$SESSION_TAG" -- "$*" 2>/dev/null || printf '%s\n' "$*" >&2
+}
+
+cleanup() {
+    trap - EXIT INT TERM HUP
+    if [[ -n "$gamescope_pid" ]] && kill -0 "$gamescope_pid" 2>/dev/null; then
+        log "Stopping Gamescope process group $gamescope_pid"
+        kill -TERM -- "-$gamescope_pid" 2>/dev/null || kill -TERM "$gamescope_pid" 2>/dev/null || true
+        wait "$gamescope_pid" 2>/dev/null || true
+    fi
+    [[ -n "$previous_audio_output" ]] && wpctl set-default "$previous_audio_output" 2>/dev/null || true
+    [[ -n "$previous_audio_input" ]] && wpctl set-default "$previous_audio_input" 2>/dev/null || true
+}
+handle_signal() {
+    local status="$1"
+    log "Game session received a termination signal"
+    cleanup
+    exit "$status"
+}
+trap cleanup EXIT
+trap 'handle_signal 130' INT
+trap 'handle_signal 143' TERM
+trap 'handle_signal 129' HUP
+
+if [[ ${EUID:-$(id -u)} -eq 0 ]]; then
+    log "Refusing to run a graphical game session as root"
+    exit 77
+fi
+if ! command -v gamescope >/dev/null 2>&1; then
+    log "Gamescope was not found; install the gamescope package"
+    exit 127
+fi
+if [[ ! -x "$CARTRIDGES_BIN" ]]; then
+    log "Cartridges executable was not found at $CARTRIDGES_BIN"
+    exit 127
+fi
+
+export CARTRIDGES_GAME_SESSION=1
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=Cartridges
+export XDG_SESSION_DESKTOP=cartridges
+export DESKTOP_SESSION=cartridges
+export GDK_BACKEND=wayland,x11
+
+setting_bool() {
+    gsettings get @APP_ID@ "$1" 2>/dev/null | grep -qx true
+}
+setting_string() {
+    gsettings get @APP_ID@ "$1" 2>/dev/null | sed -e "s/^'//" -e "s/'$//"
+}
+
+pipewire_default_id() {
+    wpctl inspect "$1" 2>/dev/null | awk 'NR == 1 {gsub(",", "", $2); print $2}'
+}
+pipewire_node_id() {
+    wpctl status -n 2>/dev/null | awk -v target="$1" '
+        { for (i = 1; i <= NF; i++) if ($i == target)
+            for (j = i - 1; j >= 1; j--) if ($j ~ /^[0-9]+\.$/) {
+                sub(/\.$/, "", $j); print $j; exit
+            }
+        }'
+}
+select_audio_node() {
+    local setting="$1" default_object="$2" selected node_id at='@'
+    selected="$(setting_string "$setting")"
+    [[ -z "$selected" ]] && return 0
+    command -v wpctl >/dev/null 2>&1 || {
+        log "wpctl is unavailable; keeping the default audio device"
+        return 0
+    }
+    node_id="$(pipewire_node_id "$selected")"
+    if [[ -z "$node_id" ]]; then
+        log "Configured audio node was not found: $selected"
+        return 0
+    fi
+    if [[ "$setting" == game-mode-audio-output ]]; then
+        previous_audio_output="$(pipewire_default_id "${at}${default_object}${at}")"
+    else
+        previous_audio_input="$(pipewire_default_id "${at}${default_object}${at}")"
+    fi
+    wpctl set-default "$node_id" || log "Could not select audio node $selected"
+}
+
+base_args=(--expose-wayland --force-windows-fullscreen)
+optional_args=()
+monitor="$(setting_string game-mode-monitor)"
+[[ -n "$monitor" ]] && optional_args+=(--prefer-output "$monitor")
+setting_bool game-mode-enable-vrr && optional_args+=(--adaptive-sync)
+setting_bool game-mode-enable-fps-limiter && optional_args+=(--framerate-limit 60)
+setting_bool game-mode-hide-mouse-cursor && base_args+=(--hide-cursor-delay 3000)
+select_audio_node game-mode-audio-output DEFAULT_AUDIO_SINK
+select_audio_node game-mode-audio-input DEFAULT_AUDIO_SOURCE
+
+run_session() {
+    local -a extra=("$@")
+    log "Starting Gamescope (${extra[*]:-safe defaults})"
+    setsid gamescope "${base_args[@]}" "${extra[@]}" -- \
+        "$CARTRIDGES_BIN" --game-mode --session &
+    gamescope_pid=$!
+    set +e
+    wait "$gamescope_pid"
+    local status=$?
+    gamescope_pid=""
+    return "$status"
+}
+
+start_seconds=$SECONDS
+run_session "${optional_args[@]}"
+status=$?
+if (( status != 0 && SECONDS - start_seconds < 10 && ${#optional_args[@]} > 0 )); then
+    log "Gamescope failed early with optional settings (status $status); retrying safe defaults"
+    run_session
+    status=$?
+fi
+log "Game session ended with status $status"
+exit "$status"

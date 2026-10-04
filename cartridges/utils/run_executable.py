@@ -22,13 +22,32 @@ import os
 import re
 import subprocess
 from shlex import quote
+from shutil import which
 
 from cartridges import shared
+from cartridges.game_launch import build_game_command
+from cartridges.launchers import resolve_steam_command
 
 
 _AUMID_CHARS = re.compile(r"[\w.!+\-]+")
 
 _MARKER_RE = re.compile(re.escape("shell:AppsFolder\\"), re.IGNORECASE)
+
+
+def _available_program(name: str):
+    if os.getenv("FLATPAK_ID") != shared.APP_ID:
+        return which(name)
+    try:
+        result = subprocess.run(
+            ("flatpak-spawn", "--host", "sh", "-c", 'command -v -- "$1"', "sh", name),
+            capture_output=True,
+            encoding="utf-8",
+            check=False,
+            timeout=2,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return result.stdout.strip() or None
 
 
 def aumid_from_command(executable: str) -> str:
@@ -40,18 +59,68 @@ def aumid_from_command(executable: str) -> str:
     return match.group() if match else ""
 
 
-def run_executable(executable) -> None:
+def run_executable(
+    executable,
+    *,
+    use_gamemode=None,
+    use_mangohud=None,
+    working_directory=None,
+    environment=None,
+    gamescope_options="",
+    fps_limit=0,
+    resolution="",
+    scaling_mode="",
+):
+    """Launch a game in its own process group and return the launcher process."""
+    if use_gamemode is None:
+        use_gamemode = shared.schema.get_boolean("game-mode-use-gamemode")
+    if use_mangohud is None:
+        use_mangohud = shared.schema.get_boolean("game-mode-use-mangohud")
+
+    resolved_executable = (
+        resolve_steam_command(executable)
+        if shared.runtime.is_game_mode and os.name == "posix"
+        else executable
+    )
+    command, integrations = build_game_command(
+        resolved_executable,
+        use_gamemode=use_gamemode,
+        use_mangohud=use_mangohud,
+        gamescope_options=gamescope_options,
+        fps_limit=fps_limit,
+        resolution=resolution,
+        scaling_mode=scaling_mode,
+        allow_gamescope=not shared.runtime.is_session,
+        find_program=_available_program,
+    )
+    clean_environment = {
+        str(key): str(value)
+        for key, value in (environment or {}).items()
+        if str(key)
+        and str(key).replace("_", "").isalnum()
+        and not str(key)[0].isdigit()
+    }
+    if clean_environment:
+        assignments = " ".join(
+            f"{key}={quote(value)}" for key, value in clean_environment.items()
+        )
+        command = f"env {assignments} {command}"
     args = (
-        "flatpak-spawn --host /bin/sh -c " + quote(executable)  # Flatpak
+        "flatpak-spawn --host /bin/sh -c " + quote(command)  # Flatpak
         if os.getenv("FLATPAK_ID") == shared.APP_ID
-        else executable  # Others
+        else command  # Others
     )
 
-    logging.info("Launching `%s`", str(args))
+    logging.info(
+        "Launching `%s`%s",
+        str(args),
+        f" with {', '.join(integrations)}" if integrations else "",
+    )
     # pylint: disable=consider-using-with
-    subprocess.Popen(
+    return subprocess.Popen(
         args,
-        cwd=shared.home,
+        cwd=working_directory or shared.home,
+        env={**os.environ, **clean_environment},
         shell=True,
         start_new_session=True,
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,  # type: ignore

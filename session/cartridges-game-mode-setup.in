@@ -1,0 +1,93 @@
+#!/usr/bin/bash
+# X-Cartridges-Managed=true
+# Privileged helper invoked by pkexec. It accepts only the fixed operations below.
+set -euo pipefail
+
+readonly action="${1:-}"
+readonly session_file="@game_session_datadir@/wayland-sessions/page.kramo.Cartridges.GameMode.desktop"
+readonly session_launcher="@bindir@/cartridges-session"
+
+. /etc/os-release
+distro_name="${NAME:-Linux}"
+distro_name="${distro_name% Linux}"
+distro_name="${distro_name//$'\n'/ }"
+
+if [[ "$action" == name ]]; then
+    printf '%s Gaming Mode\n' "$distro_name"
+    exit 0
+fi
+
+if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
+    printf 'This helper must be run through pkexec or sudo.\n' >&2
+    exit 77
+fi
+if [[ "$action" != install && "$action" != uninstall ]]; then
+    printf 'Usage: cartridges-game-mode-setup install|uninstall|name\n' >&2
+    exit 64
+fi
+
+is_managed() {
+    [[ -f "$session_file" ]] && grep -Eq '^X-Cartridges-Managed=true$' "$session_file"
+}
+
+if [[ "$action" == uninstall ]]; then
+    if is_managed; then
+        rm -- "$session_file"
+        printf 'Gaming Mode session removed.\n'
+    elif [[ -e "$session_file" ]]; then
+        printf 'Refusing to remove an unmanaged session file: %s\n' "$session_file" >&2
+        exit 73
+    else
+        printf 'Gaming Mode is not installed.\n'
+    fi
+    exit 0
+fi
+
+if [[ ! -x "$session_launcher" ]]; then
+    printf 'Session launcher not found: %s\n' "$session_launcher" >&2
+    exit 69
+fi
+
+if [[ "${ID:-}" == fedora ]]; then
+    missing=()
+    for package in gamescope gamemode libmanette desktop-file-utils polkit wireplumber; do
+        rpm -q "$package" >/dev/null 2>&1 || missing+=("$package")
+    done
+    if (( ${#missing[@]} )); then
+        dnf install --refresh --assumeyes "${missing[@]}"
+    fi
+elif ! command -v gamescope >/dev/null 2>&1; then
+    printf 'Install Gamescope with your distribution package manager first.\n' >&2
+    exit 69
+fi
+
+install -d -m 0755 -- "$(dirname -- "$session_file")"
+if [[ -e "$session_file" ]] && ! is_managed; then
+    backup="$session_file.backup.$(date +%Y%m%d%H%M%S)"
+    cp --preserve=mode,timestamps -- "$session_file" "$backup"
+    printf 'Existing unmanaged session preserved as %s\n' "$backup"
+fi
+
+temporary="$(mktemp "${session_file}.tmp.XXXXXX.desktop")"
+trap 'rm -f -- "$temporary"' EXIT
+printf '%s\n' \
+    '[Desktop Entry]' \
+    "Name=$distro_name Gaming Mode" \
+    "Comment=Gaming session powered by Gamescope and Cartridges" \
+    "Exec=$session_launcher" \
+    "TryExec=$session_launcher" \
+    'Type=Application' \
+    'X-GDM-SessionRegisters=true' \
+    'X-Cartridges-Managed=true' > "$temporary"
+if command -v desktop-file-validate >/dev/null 2>&1; then
+    desktop-file-validate "$temporary"
+fi
+chmod 0644 "$temporary"
+mv -- "$temporary" "$session_file"
+trap - EXIT
+if command -v systemctl >/dev/null 2>&1 \
+    && systemctl is-active --quiet polkit.service; then
+    systemctl reload polkit.service || \
+        printf 'Warning: polkit will load the new action after its next restart.\n' >&2
+fi
+printf '%s Gaming Mode installed.\n' "$distro_name"

@@ -89,6 +89,105 @@ template $CartridgesWindow: Adw.ApplicationWindow {
   Adw.ToastOverlay toast_overlay {
     Overlay session_overlay {
       Adw.NavigationView navigation_view {
+      Adw.NavigationPage game_mode_home_page {
+        title: _("Gaming Mode");
+
+        Adw.ToolbarView {
+          [top]
+          Adw.HeaderBar {
+            show-start-title-buttons: false;
+            show-end-title-buttons: false;
+
+            [end]
+            Button {
+              icon-name: "system-shutdown-symbolic";
+              tooltip-text: _("Power menu");
+              action-name: "app.power_menu";
+            }
+          }
+
+          ScrolledWindow {
+            hscrollbar-policy: never;
+
+            Adw.Clamp {
+              maximum-size: 900;
+              tightening-threshold: 700;
+
+              Box {
+                orientation: vertical;
+                spacing: 24;
+                margin-top: 36;
+                margin-bottom: 36;
+                margin-start: 24;
+                margin-end: 24;
+
+                Adw.Avatar game_mode_avatar {
+                  size: 96;
+                  show-initials: true;
+                  halign: center;
+                }
+
+                Label game_mode_welcome_label {
+                  label: _("Welcome");
+                  halign: center;
+
+                  styles [
+                    "title-1",
+                  ]
+                }
+
+                Label {
+                  label: _("What would you like to play?");
+                  halign: center;
+
+                  styles [
+                    "dim-label",
+                  ]
+                }
+
+                Button game_mode_continue_button {
+                  label: _("Continue playing");
+                  action-name: "app.continue_game";
+                  height-request: 64;
+
+                  styles [
+                    "suggested-action",
+                    "pill",
+                  ]
+                }
+
+                Button game_mode_library_button {
+                  label: _("Library");
+                  action-name: "win.open_library";
+                  height-request: 56;
+
+                  styles [
+                    "pill",
+                  ]
+                }
+
+                Box {
+                  homogeneous: true;
+                  spacing: 12;
+
+                  Button {
+                    label: _("Settings");
+                    action-name: "app.preferences";
+                    height-request: 52;
+                  }
+
+                  Button {
+                    label: _("Power");
+                    action-name: "app.power_menu";
+                    height-request: 52;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
       Adw.NavigationPage library_page {
         title: _("All Games");
 
@@ -273,17 +372,60 @@ template $CartridgesWindow: Adw.ApplicationWindow {
                 maximum-size: 500;
                 tightening-threshold: 500;
 
-                SearchEntry search_entry {
-                  placeholder-text: _("Search");
-                  hexpand: true;
+                Box {
+                  spacing: 6;
 
-                  ShortcutController {
-                    Shortcut {
-                      trigger: "Escape";
-                      action: "action(win.toggle_search)";
+                  SearchEntry search_entry {
+                    placeholder-text: _("Search");
+                    hexpand: true;
+
+                    ShortcutController {
+                      Shortcut {
+                        trigger: "Escape";
+                        action: "action(win.toggle_search)";
+                      }
                     }
                   }
+
+                  Button game_mode_keyboard_button {
+                    visible: false;
+                    icon-name: "input-keyboard-symbolic";
+                    tooltip-text: _("On-screen keyboard");
+                  }
                 }
+              }
+            }
+
+            [top]
+            Box launchers_bar {
+              visible: true;
+              halign: center;
+              spacing: 6;
+              margin-start: 15;
+              margin-end: 15;
+              margin-top: 10;
+
+              Box launchers_box {
+                spacing: 6;
+              }
+
+              Separator {
+                orientation: vertical;
+                margin-top: 6;
+                margin-bottom: 6;
+              }
+
+              Button {
+                icon-name: "input-gaming-symbolic";
+                tooltip-text: _("Testar gamepad");
+                action-name: "win.open_gamepad_test";
+                width-request: 40;
+                height-request: 40;
+
+                styles [
+                  "flat",
+                  "circular",
+                ]
               }
             }
 
@@ -311,7 +453,6 @@ template $CartridgesWindow: Adw.ApplicationWindow {
         }
       }
      }
-   }
 
       [overlay]
       Box session_blocker {
@@ -399,6 +540,117 @@ template $CartridgesWindow: Adw.ApplicationWindow {
         }
       }
    }
+  }
+}
+
+Adw.NavigationPage gamepad_test_page {
+  title: _("Teste de gamepad");
+  tag: "gamepad-test";
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    ScrolledWindow {
+      hscrollbar-policy: never;
+
+      Adw.Clamp {
+        maximum-size: 760;
+        tightening-threshold: 560;
+        margin-top: 24;
+        margin-bottom: 24;
+        margin-start: 18;
+        margin-end: 18;
+
+        Box {
+          orientation: vertical;
+          spacing: 18;
+
+          Label {
+            label: _("Pressione os botões e mova os analógicos para conferir cada entrada.");
+            wrap: true;
+            justify: center;
+            styles ["title-3"]
+          }
+
+          Label gamepad_test_device_label {
+            label: _("Nenhum gamepad conectado");
+            wrap: true;
+            justify: center;
+            styles ["dim-label"]
+          }
+
+          Label {
+            label: _("A selecionar  •  B voltar  •  X menu do jogo  •  Y pesquisar  •  Menu menu principal  •  Guide barra lateral");
+            wrap: true;
+            justify: center;
+            styles ["caption", "dim-label"]
+          }
+
+          Label gamepad_test_event_label {
+            label: _("Aguardando entrada…");
+            wrap: true;
+            justify: center;
+            styles ["heading"]
+          }
+
+          FlowBox gamepad_test_buttons {
+            homogeneous: true;
+            selection-mode: none;
+            min-children-per-line: 3;
+            max-children-per-line: 5;
+            column-spacing: 8;
+            row-spacing: 8;
+          }
+
+          Adw.PreferencesGroup {
+            title: _("Eixos e gatilhos");
+
+            Adw.ActionRow {
+              title: _("Analógico esquerdo / eixo 0");
+              [suffix]
+              Label gamepad_test_axis_0 { label: "0.00"; styles ["numeric"] }
+            }
+
+            Adw.ActionRow {
+              title: _("Analógico esquerdo / eixo 1");
+              [suffix]
+              Label gamepad_test_axis_1 { label: "0.00"; styles ["numeric"] }
+            }
+
+            Adw.ActionRow {
+              title: _("LT / eixo 2");
+              [suffix]
+              Label gamepad_test_axis_2 { label: "0.00"; styles ["numeric"] }
+            }
+
+            Adw.ActionRow {
+              title: _("Analógico direito / eixo 3");
+              [suffix]
+              Label gamepad_test_axis_3 { label: "0.00"; styles ["numeric"] }
+            }
+
+            Adw.ActionRow {
+              title: _("Analógico direito / eixo 4");
+              [suffix]
+              Label gamepad_test_axis_4 { label: "0.00"; styles ["numeric"] }
+            }
+
+            Adw.ActionRow {
+              title: _("RT / eixo 5");
+              [suffix]
+              Label gamepad_test_axis_5 { label: "0.00"; styles ["numeric"] }
+            }
+          }
+
+          Label gamepad_test_hat_label {
+            label: _("Direcional: centralizado");
+            styles ["dim-label"]
+          }
+        }
+      }
+    }
+  }
 }
 
 Adw.NavigationPage hidden_library_page {
@@ -438,9 +690,19 @@ Adw.NavigationPage hidden_library_page {
         maximum-size: 500;
         tightening-threshold: 500;
 
-        SearchEntry hidden_search_entry {
-          placeholder-text: _("Search");
-          hexpand: true;
+        Box {
+          spacing: 6;
+
+          SearchEntry hidden_search_entry {
+            placeholder-text: _("Search");
+            hexpand: true;
+          }
+
+          Button hidden_game_mode_keyboard_button {
+            visible: false;
+            icon-name: "input-keyboard-symbolic";
+            tooltip-text: _("On-screen keyboard");
+          }
         }
       }
     }
@@ -522,7 +784,6 @@ Adw.NavigationPage zerados_library_page {
 
 Adw.NavigationPage news_page {
   title: _("Novidades");
-
   Adw.ToolbarView news_view {
     [top]
     Adw.HeaderBar {
@@ -597,6 +858,77 @@ Adw.NavigationPage news_page {
             ]
           }
         };
+      }
+    }
+  }
+}
+
+Adw.NavigationPage xcloud_page {
+  title: _("Xbox Cloud Gaming");
+  tag: "xcloud";
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar xcloud_header_bar {
+      show-title: true;
+
+      [start]
+      Button xcloud_close_button {
+        icon-name: "window-close-symbolic";
+        tooltip-text: _("Fechar o Xbox Cloud Gaming");
+        action-name: "win.close_xcloud";
+      }
+
+      [end]
+      Button xcloud_fullscreen_button {
+        icon-name: "view-fullscreen-symbolic";
+        tooltip-text: _("Tela cheia");
+        action-name: "win.toggle_xcloud_fullscreen";
+      }
+
+      [end]
+      Button xcloud_reload_button {
+        icon-name: "view-refresh-symbolic";
+        tooltip-text: _("Recarregar");
+        action-name: "win.reload_xcloud";
+      }
+    }
+
+    Overlay xcloud_box {
+      hexpand: true;
+      vexpand: true;
+
+      Box xcloud_container {
+        halign: fill;
+        valign: fill;
+        hexpand: true;
+        vexpand: true;
+        visible: false;
+      }
+
+      [overlay]
+      Adw.Spinner xcloud_spinner {
+        halign: center;
+        valign: center;
+        width-request: 32;
+        height-request: 32;
+      }
+
+      [overlay]
+      Adw.StatusPage xcloud_error {
+        visible: false;
+        icon-name: "network-error-symbolic";
+        title: _("Xbox Cloud Gaming indisponível");
+        description: _("Instale o WebKitGTK para navegar no xCloud dentro do Cartridges.");
+        vexpand: true;
+        valign: center;
+      }
+    }
+
+    ShortcutController {
+      Shortcut {
+        trigger: "Escape";
+        action: "action(win.xcloud_escape)";
       }
     }
   }
@@ -715,6 +1047,58 @@ Adw.NavigationPage details_page {
                 wrap-mode: word_char;
                 natural-wrap-mode: word;
                 justify: center;
+              }
+            }
+
+            Label details_view_metadata {
+              margin-top: 12;
+              hexpand: true;
+              halign: start;
+              xalign: 0;
+              max-width-chars: 72;
+              wrap: true;
+              wrap-mode: word_char;
+              visible: false;
+
+              styles [
+                "dim-label",
+              ]
+            }
+
+            Label details_view_description {
+              margin-top: 15;
+              hexpand: true;
+              halign: start;
+              xalign: 0;
+              max-width-chars: 72;
+              wrap: true;
+              wrap-mode: word_char;
+              visible: false;
+            }
+
+            Box details_view_screenshots_group {
+              orientation: vertical;
+              margin-top: 18;
+              hexpand: true;
+              visible: false;
+
+              Label {
+                label: _("Capturas de tela");
+                halign: start;
+
+                styles [
+                  "heading",
+                ]
+              }
+
+              ScrolledWindow {
+                margin-top: 8;
+                height-request: 150;
+                vscrollbar-policy: never;
+
+                Box details_view_screenshots {
+                  spacing: 9;
+                }
               }
             }
 
@@ -967,6 +1351,24 @@ menu primary_menu {
   }
 
   section {
+    item {
+      label: _("Instalar Gaming Mode");
+      action: "app.install_game_mode";
+      hidden-when: "action-disabled";
+    }
+
+    item {
+      label: _("Desinstalar Gaming Mode");
+      action: "app.uninstall_game_mode";
+      hidden-when: "action-disabled";
+    }
+
+    item {
+      label: _("Game Mode Menu");
+      action: "app.power_menu";
+      hidden-when: "action-disabled";
+    }
+
     item (_("Preferences"), "app.preferences")
     item (_("Keyboard Shortcuts"), "app.shortcuts")
     item (_("About Cartridges"), "app.about")

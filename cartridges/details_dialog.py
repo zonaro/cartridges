@@ -19,6 +19,7 @@
 
 # pyright: reportAssignmentType=none
 
+import json
 import math
 import shlex
 from pathlib import Path
@@ -37,6 +38,7 @@ from cartridges.logo_picker import LogoPicker
 from cartridges.sgdb_picker import SgdbPicker
 from cartridges.store.managers.cover_manager import CoverManager
 from cartridges.store.managers.sgdb_manager import SgdbManager
+from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
 from cartridges.utils import session_fita
 from cartridges.utils.create_dialog import create_dialog
 from cartridges.utils.game_logo import (
@@ -65,6 +67,7 @@ class DetailsDialog(Adw.Dialog):
     cover_overlay: Gtk.Overlay = Gtk.Template.Child()
     cover: Gtk.Picture = Gtk.Template.Child()
     cover_button_edit: Gtk.Button = Gtk.Template.Child()
+    cover_button_browse: Gtk.Button = Gtk.Template.Child()
     cover_button_delete_revealer: Gtk.Revealer = Gtk.Template.Child()
     cover_button_delete: Gtk.Button = Gtk.Template.Child()
     spinner: Adw.Spinner = Gtk.Template.Child()
@@ -96,6 +99,16 @@ class DetailsDialog(Adw.Dialog):
     fita_brilho_row: Adw.SpinRow = Gtk.Template.Child()
     executable_group: Adw.PreferencesGroup = Gtk.Template.Child()
     updates_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    profile_gamemode: Adw.ComboRow = Gtk.Template.Child()
+    profile_mangohud: Adw.ComboRow = Gtk.Template.Child()
+    profile_working_directory: Adw.EntryRow = Gtk.Template.Child()
+    profile_environment: Adw.EntryRow = Gtk.Template.Child()
+    profile_gamescope_options: Adw.EntryRow = Gtk.Template.Child()
+    profile_fps_limit: Adw.SpinRow = Gtk.Template.Child()
+    profile_resolution: Adw.EntryRow = Gtk.Template.Child()
+    profile_scaling: Adw.ComboRow = Gtk.Template.Child()
+    profile_track_process: Adw.SwitchRow = Gtk.Template.Child()
+    profile_process_executable: Adw.EntryRow = Gtk.Template.Child()
 
     exec_info_label: Gtk.Label = Gtk.Template.Child()
     exec_info_popover: Gtk.Popover = Gtk.Template.Child()
@@ -160,6 +173,31 @@ class DetailsDialog(Adw.Dialog):
             self._rating = self.game.stars
             self.executable.set_text(self.game.executable)
             self.track_updates_switch.set_active(self.game.track_updates)
+            self.profile_gamemode.set_selected(
+                self.profile_override_position(self.game.game_mode_use_gamemode)
+            )
+            self.profile_mangohud.set_selected(
+                self.profile_override_position(self.game.game_mode_use_mangohud)
+            )
+            self.profile_working_directory.set_text(
+                self.game.launch_working_directory
+            )
+            self.profile_environment.set_text(
+                json.dumps(self.game.launch_environment, ensure_ascii=False)
+                if self.game.launch_environment
+                else ""
+            )
+            self.profile_gamescope_options.set_text(self.game.gamescope_options)
+            self.profile_fps_limit.set_value(self.game.fps_limit)
+            self.profile_resolution.set_text(self.game.game_resolution)
+            scaling_values = ("", "auto", "integer", "fit", "fill", "stretch")
+            self.profile_scaling.set_selected(
+                scaling_values.index(self.game.scaling_mode)
+                if self.game.scaling_mode in scaling_values
+                else 0
+            )
+            self.profile_track_process.set_active(self.game.track_process)
+            self.profile_process_executable.set_text(self.game.process_executable)
             self.update_rating_stars()
             self.apply_button.set_label(_("Apply"))
 
@@ -554,6 +592,24 @@ class DetailsDialog(Adw.Dialog):
         final_controller_support = self.get_controller_support()
         final_status = self.get_status()
         final_executable = self.executable.get_text()
+        try:
+            final_environment = (
+                json.loads(self.profile_environment.get_text())
+                if self.profile_environment.get_text().strip()
+                else {}
+            )
+            if not isinstance(final_environment, dict) or not all(
+                isinstance(key, str) and isinstance(value, str)
+                for key, value in final_environment.items()
+            ):
+                raise ValueError
+        except (json.JSONDecodeError, ValueError):
+            create_dialog(
+                self,
+                _("Invalid environment"),
+                _("Use a JSON object containing text keys and values."),
+            )
+            return
 
         if not self.game:
             if final_name == "":
@@ -629,6 +685,30 @@ class DetailsDialog(Adw.Dialog):
         self.game.definir_status(final_status)
         self.game.rating = self._rating
         self.game.executable = final_executable
+        self.game.game_mode_use_gamemode = self.profile_override_value(
+            self.profile_gamemode.get_selected()
+        )
+        self.game.game_mode_use_mangohud = self.profile_override_value(
+            self.profile_mangohud.get_selected()
+        )
+        self.game.launch_working_directory = (
+            self.profile_working_directory.get_text().strip()
+        )
+        self.game.launch_environment = final_environment
+        self.game.gamescope_options = self.profile_gamescope_options.get_text().strip()
+        self.game.fps_limit = round(self.profile_fps_limit.get_value())
+        self.game.game_resolution = self.profile_resolution.get_text().strip()
+        scaling_values = ("", "auto", "integer", "fit", "fill", "stretch")
+        selected_scaling = self.profile_scaling.get_selected()
+        self.game.scaling_mode = (
+            scaling_values[selected_scaling]
+            if selected_scaling < len(scaling_values)
+            else ""
+        )
+        self.game.track_process = self.profile_track_process.get_active()
+        self.game.process_executable = (
+            self.profile_process_executable.get_text().strip()
+        )
 
         if self.game.game_id in shared.win.game_covers.keys():
             shared.win.game_covers[self.game.game_id].animation = None
@@ -670,6 +750,8 @@ class DetailsDialog(Adw.Dialog):
             sgdb_manager = shared.store.managers[SgdbManager]
             sgdb_manager.reset_cancellable()
             sgdb_manager.process_game(self.game, {}, self.update_cover_callback)
+        elif self._thegamesdb_enabled():
+            self._update_from_thegamesdb(loading=False)
 
         self.game_cover.pictures.remove(self.cover)
 
@@ -677,10 +759,6 @@ class DetailsDialog(Adw.Dialog):
         shared.win.show_details_page(self.game)
 
     def update_cover_callback(self, manager: SgdbManager) -> None:
-        # Set the game as not loading
-        self.game.set_loading(-1)
-        self.game.update()
-
         # Handle errors that occured
         for error in manager.collect_errors():
             # On auth error, inform the user
@@ -692,6 +770,53 @@ class DetailsDialog(Adw.Dialog):
                     "open_preferences",
                     _("Preferences"),
                 ).connect("response", self.update_cover_error_response)
+
+        if self._thegamesdb_enabled():
+            self._update_from_thegamesdb(loading=True)
+            return
+
+        self.game.set_loading(-1)
+        self.game.update()
+
+    @staticmethod
+    def _thegamesdb_enabled() -> bool:
+        return shared.schema.get_boolean("thegamesdb") and bool(
+            shared.schema.get_string("thegamesdb-key").strip()
+        )
+
+    def _update_from_thegamesdb(self, loading: bool) -> None:
+        manager = shared.store.managers[TheGamesDBManager]
+        manager.reset_cancellable()
+        manager.process_game(
+            self.game,
+            {},
+            lambda current: self.update_thegamesdb_callback(current, loading),
+        )
+
+    def update_thegamesdb_callback(
+        self, manager: TheGamesDBManager, loading: bool
+    ) -> None:
+        if loading:
+            self.game.set_loading(-1)
+        self.game.save()
+        self.game.update()
+        for error in manager.collect_errors():
+            if isinstance(error, FriendlyError):
+                create_dialog(
+                    shared.win,
+                    error.title,
+                    error.subtitle,
+                    "open_preferences",
+                    _("Preferences"),
+                ).connect("response", self.update_thegamesdb_error_response)
+
+    def update_thegamesdb_error_response(
+        self, _widget: Any, response: str
+    ) -> None:
+        if response == "open_preferences":
+            shared.win.get_application().on_preferences_action(
+                page_name="thegamesdb"
+            )
 
     def update_cover_error_response(self, _widget: Any, response: str) -> None:
         if response == "open_preferences":
@@ -708,6 +833,14 @@ class DetailsDialog(Adw.Dialog):
 
     def get_controller_support(self) -> Optional[str]:
         return self.CONTROLLER_VALUES.get(self.controller_support.get_selected())
+
+    @staticmethod
+    def profile_override_position(value: Optional[bool]) -> int:
+        return 0 if value is None else 1 if value else 2
+
+    @staticmethod
+    def profile_override_value(position: int) -> Optional[bool]:
+        return None if position == 0 else position == 1
 
     STATUS_VALUES = ("", *STATUS_LABELS)
 
