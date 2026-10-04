@@ -140,6 +140,24 @@
     <key name="wallhaven-key" type="s">
       <default>""</default>
     </key>
+    <key name="wallhaven-categorias" type="s">
+      <default>"100"</default>
+    </key>
+    <key name="wallhaven-pureza" type="s">
+      <default>"100"</default>
+    </key>
+    <key name="wallhaven-ordenacao" type="s">
+      <default>"relevance"</default>
+    </key>
+    <key name="wallhaven-ordem" type="s">
+      <default>"desc"</default>
+    </key>
+    <key name="wallhaven-alcance" type="s">
+      <default>"1M"</default>
+    </key>
+    <key name="wallhaven-cores" type="s">
+      <default>""</default>
+    </key>
     <key name="library-rows" type="u">
       <default>0</default>
     </key>

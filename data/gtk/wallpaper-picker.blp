@@ -30,6 +30,18 @@ template $WallpaperPicker: Adw.Dialog {
       }
     }
 
+    // A régua da busca: categorias, pureza, ordenação e cor. O conteúdo é
+    // montado no código (botões e listas a partir dos filtros guardados) e
+    // some junto com a busca quando a tela mostra o ajuste ou um arquivo.
+    [top]
+    Box filter_box {
+      orientation: vertical;
+      spacing: 6;
+      margin-start: 12;
+      margin-end: 12;
+      margin-top: 6;
+    }
+
     Stack stack {
       transition-type: crossfade;
       vexpand: true;
