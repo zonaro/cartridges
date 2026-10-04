@@ -71,6 +71,22 @@ class DisplayManager(Manager):
                 shared.win.create_source_rows()
             return
 
+        if grouped and is_primary:
+            for member in members:
+                if member.game_id == game.game_id:
+                    continue
+                try:
+                    parent = member.get_parent()
+                    if parent is None:
+                        continue
+                    grand = parent.get_parent()
+                    if grand is not None:
+                        grand.remove(member)
+                    if member.get_parent():
+                        member.get_parent().set_child()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    continue
+
         game.menu_button.set_menu_model(
             shared.win.build_card_menu(game, members if grouped else None)
         )

@@ -53,6 +53,9 @@ class Importer(ErrorProducer):
     removed_game_ids: set[str]
     imported_game_ids: set[str]
 
+    # Só remove jogos de fontes varridas até o fim nesta importação.
+    scanned_source_ids: set[str]
+
     close_attempt_id: int
 
     def __init__(self) -> None:
@@ -66,6 +69,7 @@ class Importer(ErrorProducer):
 
         self.removed_game_ids = set()
         self.imported_game_ids = set()
+        self.scanned_source_ids = set()
 
         self.game_pipelines = set()
         self.sources = set()
@@ -187,6 +191,7 @@ class Importer(ErrorProducer):
             return
 
         keys = shared.schema.list_keys()
+        scanned = set(self.scanned_source_ids)
 
         for game in shared.store:
             if game.removed:
@@ -196,6 +201,8 @@ class Importer(ErrorProducer):
             if (game.base_source in keys) and (
                 not shared.schema.get_boolean(game.base_source)
             ):
+                continue
+            if game.base_source not in scanned:
                 continue
             if game.game_id in shared.store.duplicate_game_ids:
                 continue
@@ -208,6 +215,27 @@ class Importer(ErrorProducer):
             game.save()
             game.update()
             self.removed_game_ids.add(game.game_id)
+
+        if self.removed_game_ids:
+            from cartridges.utils import agrupamento
+
+            afetadas = set()
+            for game_id in self.removed_game_ids:
+                jogo = shared.store.get(game_id)
+                if jogo is None:
+                    continue
+                try:
+                    afetadas.add(agrupamento.atualizar(jogo))
+                except Exception:  # pylint: disable=broad-exception-caught
+                    continue
+            for jogo in shared.store:
+                if jogo.removed or jogo.game_id in self.removed_game_ids:
+                    continue
+                try:
+                    if agrupamento.atualizar(jogo) in afetadas:
+                        jogo.update()
+                except Exception:  # pylint: disable=broad-exception-caught
+                    continue
 
     """Import Actions — Threaded; None of this should touch GUI"""
 
@@ -267,6 +295,8 @@ class Importer(ErrorProducer):
                     self.pipeline_advanced_callback,
                 )
                 self.game_pipelines.add(pipeline)
+
+        self.scanned_source_ids.add(source.source_id)
 
     def source_callback(self, _obj: Any, _result: Any, data: tuple) -> None:
         """Callback executed when a source is fully scanned"""
