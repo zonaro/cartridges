@@ -1,6 +1,6 @@
 # flatpak_source.py
 #
-# Copyright 2022-2023 kramo
+# Copyright 2022-2023 redclaw
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,17 +47,17 @@ class FlatpakSourceIterable(SourceIterable):
 
         blacklist = (
             {
-                "hu.kramo.Cartridges",
-                "hu.kramo.Cartridges.Devel",
-                "page.kramo.Cartridges",
-                "page.kramo.Cartridges.Devel",
+                "hu.redclaw.Cartridges",
+                "hu.redclaw.Cartridges.Devel",
+                "page.redclaw.Cartridges",
+                "page.redclaw.Cartridges.Devel",
             }
             if shared.schema.get_boolean("flatpak-import-launchers")
             else {
-                "hu.kramo.Cartridges",
-                "hu.kramo.Cartridges.Devel",
-                "page.kramo.Cartridges",
-                "page.kramo.Cartridges.Devel",
+                "hu.redclaw.Cartridges",
+                "hu.redclaw.Cartridges.Devel",
+                "page.redclaw.Cartridges",
+                "page.redclaw.Cartridges.Devel",
                 "com.valvesoftware.Steam",
                 "net.lutris.Lutris",
                 "com.heroicgameslauncher.hgl",
