@@ -38,11 +38,15 @@ jobs:
         run: echo tag_name=${GITHUB_REF#refs/tags/} >> $GITHUB_OUTPUT
 
       - name: Publish release
+        # A release ja existe (criada por scripts/publish-release.sh com o
+        # tarball Linux); aqui apenas anexamos os artefatos Windows/macOS do
+        # CI e o corpo das notas. fail_on_unmatched_files=false permite
+        # releases so-Linux quando o CI de outra plataforma nao rodou.
         uses: softprops/action-gh-release@v2.2.2
         with:
           files: |
             Windows Installer/Cartridges Windows.exe
             macOS Application/Cartridges macOS.zip
-          fail_on_unmatched_files: true
+          fail_on_unmatched_files: false
           tag_name: ${{ steps.get_tag_name.outputs.tag_name }}
           body_path: release_notes

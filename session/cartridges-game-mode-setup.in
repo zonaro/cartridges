@@ -5,7 +5,15 @@ set -euo pipefail
 
 readonly action="${1:-}"
 readonly session_file="@game_session_datadir@/wayland-sessions/page.kramo.Cartridges.GameMode.desktop"
-readonly session_launcher="@bindir@/cartridges-session"
+# Deduza o launcher a partir deste helper (libexec/../bin) para que o
+# tarball binario da release funcione em qualquer $PREFIX
+# (fallback: caminho da compilacao).
+readonly _SETUP_BINDIR="$(dirname -- "$(readlink -f -- "$0")")/../bin"
+if [[ -x "$_SETUP_BINDIR/cartridges-session" ]]; then
+    readonly session_launcher="$_SETUP_BINDIR/cartridges-session"
+else
+    readonly session_launcher="@bindir@/cartridges-session"
+fi
 
 . /etc/os-release
 distro_name="${NAME:-Linux}"

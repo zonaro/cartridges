@@ -8,6 +8,14 @@ ROOT = Path(__file__).parents[1]
 
 
 class ConfigurationTests(unittest.TestCase):
+    def test_entrypoint_prioritizes_its_matching_python_modules(self):
+        entrypoint = (ROOT / "cartridges" / "cartridges.in").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('PYTHONDIR = "@pythondir@"', entrypoint)
+        self.assertIn("sys.path.insert(0, PYTHONDIR)", entrypoint)
+        self.assertNotIn("sys.path.insert(1, PKGDATADIR)", entrypoint)
+
     def test_game_mode_schema_has_safe_defaults(self):
         schema = ET.parse(
             ROOT / "data" / "page.kramo.Cartridges.gschema.xml.in"

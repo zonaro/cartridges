@@ -1,5 +1,3 @@
-moduledir = python_dir / 'cartridges'
-
 configure_file(
   input: 'cartridges.in',
   output: 'cartridges',

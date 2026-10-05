@@ -35,13 +35,25 @@ for package in gamescope gamemode libmanette desktop-file-utils polkit wireplumb
     printf '✓ %s\n' "$package"
 done
 
-cartridges_executable="$(command -v cartridges || true)"
+if [[ -n "${CARTRIDGES_EXECUTABLE:-}" ]]; then
+    cartridges_executable="$CARTRIDGES_EXECUTABLE"
+elif [[ -x "$HOME/.local/bin/cartridges" ]]; then
+    # A user installation takes precedence even when the display manager's
+    # minimal PATH happens to find a stale /usr/local copy first.
+    cartridges_executable="$HOME/.local/bin/cartridges"
+else
+    cartridges_executable="$(command -v cartridges || true)"
+fi
 if [[ -z "$cartridges_executable" && ! -x "$bindir/cartridges" ]]; then
     printf 'Cartridges must be installed before enabling its GDM session.\n' >&2
     printf 'Build it with Meson first, or install with: meson install -C build\n' >&2
     exit 1
 fi
 [[ -n "$cartridges_executable" ]] || cartridges_executable="$bindir/cartridges"
+if [[ ! -x "$cartridges_executable" ]]; then
+    printf 'Cartridges executable is not runnable: %s\n' "$cartridges_executable" >&2
+    exit 1
+fi
 cartridges_bindir="$(dirname -- "$cartridges_executable")"
 
 tmp_dir="$(mktemp -d)"

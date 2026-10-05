@@ -165,14 +165,27 @@ class _Fundo:
         return False
 
     def vestir(self, monitor: str, caminho: str) -> bool:
-        """Troca a parede. Diz se o GNOME aceitou."""
+        """Troca a parede. Diz se o GNOME aceitou.
+
+        Aceita caminho de arquivo ou URI ``file://``: o original guardado
+        em ``session-wallpaper-saved`` já é URI (é o que :meth:`papel`
+        devolve), e convertê-lo de novo com ``Path.as_uri`` embaralhava
+        o endereço — a devolução escrevia lixo no GSettings e o papel
+        anterior se perdia. Vazio (``""``) limpa para "sem imagem",
+        que era o estado de antes, em vez de falhar.
+        """
         _ = monitor
-        if self._config is None or not caminho:
+        if self._config is None:
             return False
-        try:
-            uri = Path(caminho).as_uri()
-        except Exception:
-            return False
+        if not caminho:
+            uri = ""
+        elif caminho.startswith("file://"):
+            uri = caminho
+        else:
+            try:
+                uri = Path(caminho).as_uri()
+            except Exception:
+                return False
         try:
             self._config.set_string(_PAREDE_CHAVE, uri)
             try:
@@ -703,14 +716,14 @@ def restaurar() -> None:
 
     try:
         with _Fundo() as area:
-            # Vazio não volta: sem imagem na chave não há URI para devolver,
-            # e o monitor fica com a arte da sessão até a próxima troca.
+            # Vazio volta como "sem imagem": era o estado de antes, e
+            # :meth:`_Fundo.vestir` já sabe limpar a chave nesse caso.
             recusados = {
                 monitor: caminho
                 for monitor, caminho in originais.items()
-                if not area.vestir(monitor, str(caminho))
+                if not area.vestir(monitor, str(caminho or ""))
             }
-    except OSError as erro:
+    except Exception as erro:  # pylint: disable=broad-except
         # A chave fica. Ela é o único registro dos originais, a sessão
         # seguinte não a sobrescreve (só acrescenta monitores que faltem) e o
         # próximo arranque tenta a volta de novo.

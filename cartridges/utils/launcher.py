@@ -129,18 +129,39 @@ def nomes_de_icone_da_fonte(source_id: str) -> tuple[str, ...]:
     return (f"{tipo}-source-symbolic", *(_APLICATIVOS.get(tipo, ())))
 
 
+# Tipos que nunca viram ícone no topo. O próprio Cartridges chega via
+# Flatpak/Desktop como qualquer launcher, mas abrir o app dentro dele
+# mesmo não faz sentido: detectado como launcher ele já some da grade,
+# e fora do listar() some do topo também.
+_OCULTOS = frozenset({"cartridges"})
+
+
 def listar() -> list:
-    return sorted(
-        (
-            game
-            for game in shared.store
-            if game.is_launcher
+    grupos: dict[str, list] = {}
+    for game in shared.store:
+        if not (
+            game.is_launcher
             and not game.removed
             and not game.hidden
             and not game.blacklisted
-        ),
-        key=lambda game: (game.name or "").casefold(),
+        ):
+            continue
+        tipo = _tipo(game)
+        if tipo in _OCULTOS:
+            continue
+        grupos.setdefault(tipo or game.game_id, []).append(game)
+    primarios = (
+        max(
+            membros,
+            key=lambda game: (
+                game.last_played or 0,
+                game.added or 0,
+                game.game_id,
+            ),
+        )
+        for membros in grupos.values()
     )
+    return sorted(primarios, key=lambda game: (game.name or "").casefold())
 
 
 _ARQUIVO = "launcher.json"

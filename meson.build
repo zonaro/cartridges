@@ -1,6 +1,13 @@
 project(
   'cartridges',
-  version: '2.14.0',
+  # Versionamento por data da compilacao: YY.DDD.HHMM (ano 2 digitos,
+  # dia do ano, hora+minuto 24h). Calculado por build-aux/get-version.py
+  # a cada `meson setup`; defina CARTRIDGES_VERSION para congelar uma versao.
+  version: run_command(
+    'python3',
+    files('build-aux/get-version.py'),
+    check: true,
+  ).stdout().strip(),
   meson_version: '>= 0.59.0',
   default_options: [
     'warning_level=2',
@@ -25,6 +32,7 @@ py_installation = python.find_installation('python3')
 python_dir = join_paths(get_option('prefix'), py_installation.get_install_dir())
 pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
 libexecdir = join_paths(get_option('prefix'), get_option('libexecdir'))
+moduledir = python_dir / 'cartridges'
 
 profile = get_option('profile')
 if profile == 'development'
@@ -45,6 +53,7 @@ conf.set('PROFILE', profile)
 conf.set('TIFF_COMPRESSION', get_option('tiff_compression'))
 conf.set('localedir', join_paths(get_option('prefix'), get_option('localedir')))
 conf.set('pkgdatadir', pkgdatadir)
+conf.set('pythondir', python_dir)
 conf.set('libexecdir', libexecdir)
 conf.set('bindir', join_paths(get_option('prefix'), get_option('bindir')))
 conf.set('datadir', join_paths(get_option('prefix'), get_option('datadir')))

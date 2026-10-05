@@ -87,6 +87,24 @@ from cartridges.utils.news_checker import NewsChecker
 from cartridges.utils.updates_checker import UpdatesChecker
 from cartridges.window import CartridgesWindow
 
+
+def _exit_failed_game_session(
+    exception_type: type[BaseException],
+    exception: BaseException,
+    traceback: Any,
+) -> None:
+    """Return an unusable dedicated session to the display manager.
+
+    PyGObject reports exceptions raised by signal callbacks through
+    ``sys.excepthook`` and then keeps the GTK main loop alive.  In a Gamescope
+    login session that leaves only the compositor's grey background on screen.
+    Desktop mode keeps Python's normal behaviour, but a dedicated session must
+    fail closed so Gamescope and GDM can tear it down.
+    """
+    sys.__excepthook__(exception_type, exception, traceback)
+    os._exit(1)  # pylint: disable=protected-access
+
+
 class CartridgesApplication(Adw.Application):
     state = shared.AppState.DEFAULT
     win: CartridgesWindow
@@ -818,6 +836,9 @@ def relancar() -> None:
 
 def main(_version: int) -> Any:
     """App entry point"""
+    if RuntimeContext.detect(sys.argv, os.environ).is_session:
+        sys.excepthook = _exit_failed_game_session
+
     # Before anything is loaded: a second copy must not read the game files
     # at all, let alone save over them. GApplication's own uniqueness check
     # runs over the D-Bus session bus, which may not exist on all platforms.

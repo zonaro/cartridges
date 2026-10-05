@@ -54,6 +54,7 @@ from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
 from cartridges.utils import backup
+from cartridges.utils import global_shortcut
 from cartridges.utils import session_fita
 from cartridges.utils.create_dialog import create_dialog
 from cartridges.utils.na_tela import entregar_na_tela
@@ -80,6 +81,9 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
     auto_import_switch: Adw.SwitchRow = Gtk.Template.Child()
     remove_missing_switch: Adw.SwitchRow = Gtk.Template.Child()
+
+    atalho_global_row: Adw.ActionRow = Gtk.Template.Child()
+    atalho_global_button: Gtk.Button = Gtk.Template.Child()
 
     steam_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     steam_data_action_row: Adw.ActionRow = Gtk.Template.Child()
@@ -161,6 +165,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     show_news_button_switch: Adw.SwitchRow = Gtk.Template.Child()
     session_wallpaper_switch: Adw.SwitchRow = Gtk.Template.Child()
     wallhaven_key_entry_row: Adw.EntryRow = Gtk.Template.Child()
+    wallpaper_restore_row: Adw.ActionRow = Gtk.Template.Child()
+    wallpaper_restore_button: Gtk.Button = Gtk.Template.Child()
     session_fita_switch: Adw.SwitchRow = Gtk.Template.Child()
     game_mode_group: Adw.PreferencesGroup = Gtk.Template.Child()
     game_mode_use_gamemode_switch: Adw.SwitchRow = Gtk.Template.Child()
@@ -414,6 +420,9 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             "clicked", self.atualizar_better_xcloud
         )
         self.reler_better_xcloud()
+        self.atalho_global_button.connect("clicked", self.alternar_atalho_global)
+        self._atalho_ativo = False
+        self.atualizar_atalho_global()
 
         sinks, sources = pipewire_nodes()
         self.setup_device_row(
@@ -458,6 +467,11 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             "changed", wallhaven_key_changed
         )
         self.reler_wallhaven()
+        self.wallpaper_restore_button.connect("clicked", self.restaurar_parede)
+        self.atualizar_parede()
+        shared.schema.connect(
+            "changed::session-wallpaper-saved", lambda *_: self.atualizar_parede()
+        )
         self.setup_fita_rows()
         self.reler_fitas()
 
@@ -486,6 +500,81 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
         xcloud.fetch_better_xcloud_async(done)
 
+    def atualizar_atalho_global(self) -> None:
+        try:
+            estado = global_shortcut.get_status()
+        except Exception:  # pylint: disable=broad-exception-caught
+            logging.exception("Não foi possível ler o atalho global")
+            estado = global_shortcut.ShortcutStatus(backend=None, registered=False)
+        self._atalho_ativo = estado.registered
+        botao = self.atalho_global_button
+        if estado.backend is None:
+            self.atalho_global_row.set_subtitle(
+                _("Sem suporte neste ambiente. No GNOME: Configurações > "
+                  "Teclado > Atalhos personalizados.")
+            )
+            botao.set_label(_("Ativar"))
+            botao.set_sensitive(False)
+            return
+        ambiente = "GNOME" if estado.backend == "gnome" else "KDE"
+        botao.set_sensitive(True)
+        if estado.registered:
+            self.atalho_global_row.set_subtitle(
+                _("Ativo no {} — Super+G abre o Cartridges de qualquer lugar").format(
+                    ambiente
+                )
+            )
+            botao.set_label(_("Remover"))
+        elif estado.conflict:
+            self.atalho_global_row.set_subtitle(
+                _("Super+G está com {} — ativar move para o Cartridges ({})").format(
+                    estado.conflict, ambiente
+                )
+            )
+            botao.set_label(_("Ativar"))
+        else:
+            self.atalho_global_row.set_subtitle(
+                _("Abre o Cartridges de qualquer lugar ({})").format(ambiente)
+            )
+            botao.set_label(_("Ativar"))
+
+    def alternar_atalho_global(self, *_args: Any) -> None:
+        alvo = not self._atalho_ativo
+        self.atalho_global_button.set_sensitive(False)
+        self.atalho_global_row.set_subtitle(_("Aplicando…"))
+
+        def trabalho() -> None:
+            try:
+                global_shortcut.set_enabled(alvo)
+            except global_shortcut.ShortcutError as erro:
+                entregar_na_tela(self._atalho_global_pronto, False, str(erro))
+            except Exception as erro:  # pylint: disable=broad-exception-caught
+                logging.exception("Não foi possível alternar o atalho global")
+                entregar_na_tela(self._atalho_global_pronto, False, str(erro))
+            else:
+                entregar_na_tela(self._atalho_global_pronto, True, "")
+
+        threading.Thread(target=trabalho, daemon=True).start()
+
+    def _atalho_global_pronto(self, ok: bool, mensagem: str) -> bool:
+        if ok:
+            self.add_toast(
+                Adw.Toast.new(
+                    _("Atalho Super+G ativo")
+                    if self._atalho_ativo is False
+                    else _("Atalho Super+G removido")
+                )
+            )
+        else:
+            create_dialog(
+                self,
+                _("Não foi possível configurar o atalho"),
+                mensagem
+                or _("Verifique as permissões do ambiente e tente novamente."),
+            )
+        self.atualizar_atalho_global()
+        return False
+
     def reler_wallhaven(self) -> None:
         self.wallhaven_key_entry_row.handler_block(self._wallhaven_key_changed_id)
         try:
@@ -496,6 +585,27 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             self.wallhaven_key_entry_row.handler_unblock(
                 self._wallhaven_key_changed_id
             )
+
+    def atualizar_parede(self) -> None:
+        tem_salvo = bool(shared.schema.get_string("session-wallpaper-saved"))
+        self.wallpaper_restore_row.set_subtitle(
+            _("Há um papel de parede de sessão a devolver")
+            if tem_salvo
+            else _("Nenhum papel de parede de sessão a devolver")
+        )
+        self.wallpaper_restore_row.set_sensitive(tem_salvo)
+
+    def restaurar_parede(self, *_args: Any) -> None:
+        from cartridges.utils import session_wallpaper
+
+        session_wallpaper.restaurar()
+        self.atualizar_parede()
+        if shared.schema.get_string("session-wallpaper-saved"):
+            self.add_toast(
+                Adw.Toast.new(_("Não foi possível devolver o papel de parede"))
+            )
+        else:
+            self.add_toast(Adw.Toast.new(_("Papel de parede restaurado")))
 
     def setup_fita_rows(self) -> None:
         self._fita_brilho_changed_id = self.fita_brilho_row.connect(

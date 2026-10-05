@@ -34,12 +34,34 @@ class AppState(IntEnum):
     UNDO_REMOVE_ALL_GAMES = auto()
 
 
+def _detect_prefix() -> "Path | None":
+    """Devolve o prefix de instalacao deduzido do caminho deste modulo.
+
+    Permite extrair o tarball binario da release em qualquer $PREFIX
+    (ex: ~/.local) em vez do prefix usado na compilacao. Devolve None
+    quando a arvore relocada nao e encontrada (fallback: paths de build).
+    """
+    try:
+        for parent in Path(__file__).resolve().parents:
+            if (parent / "share" / "cartridges" / "cartridges.gresource").exists():
+                return parent
+    except OSError:
+        pass
+    return None
+
+
+_DETECTED_PREFIX = _detect_prefix()
+
 APP_ID = "@APP_ID@"
 VERSION = "@VERSION@"
-PREFIX = "@PREFIX@"
+PREFIX = str(_DETECTED_PREFIX) if _DETECTED_PREFIX is not None else "@PREFIX@"
 PROFILE = "@PROFILE@"
 TIFF_COMPRESSION = "@TIFF_COMPRESSION@"
-LIBEXECDIR = "@libexecdir@"
+LIBEXECDIR = (
+    str(_DETECTED_PREFIX / "libexec")
+    if _DETECTED_PREFIX is not None and (_DETECTED_PREFIX / "libexec").is_dir()
+    else "@libexecdir@"
+)
 GAME_MODE_HELPER = Path(LIBEXECDIR) / "cartridges-game-mode-setup"
 GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "page.kramo.Cartridges.GameMode.desktop"
 SPEC_VERSION = 1.5  # The version of the game_id.json spec

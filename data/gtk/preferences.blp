@@ -32,6 +32,26 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       }
     }
 
+    Adw.PreferencesGroup atalho_global_group {
+      title: _("Atalho global");
+
+      Adw.ActionRow atalho_global_row {
+        title: _("Abrir com Super+G");
+        subtitle: _("Verificando…");
+        activatable-widget: atalho_global_button;
+
+        [suffix]
+        Button atalho_global_button {
+          label: _("Ativar");
+          valign: center;
+
+          styles [
+            "suggested-action"
+          ]
+        }
+      }
+    }
+
     Adw.PreferencesGroup images_group {
       title: _("Images");
 
@@ -180,6 +200,23 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       Adw.EntryRow wallhaven_key_entry_row {
         title: _("Chave da API do wallhaven (opcional)");
         sensitive: bind session_wallpaper_switch.active;
+      }
+
+      Adw.ActionRow wallpaper_restore_row {
+        title: _("Restaurar o papel de parede anterior");
+        subtitle: _("Devolve o papel de parede de antes da sessão");
+        activatable-widget: wallpaper_restore_button;
+
+        [suffix]
+        Button wallpaper_restore_button {
+          valign: center;
+          icon-name: "edit-undo-symbolic";
+          tooltip-text: _("Restaurar agora");
+
+          styles [
+            "flat"
+          ]
+        }
       }
     }
 

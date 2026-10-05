@@ -29,13 +29,52 @@ from platform import system
 
 VERSION = "@VERSION@"
 
-if os.name == "nt":
-    PKGDATADIR = os.path.join(os.path.dirname(__file__), "..", "share", "cartridges")
-else:
-    PKGDATADIR = "@pkgdatadir@"
-    LOCALEDIR = "@localedir@"
 
-sys.path.insert(1, PKGDATADIR)
+def _detect_prefix() -> "str | None":
+    """Devolve o prefix de instalacao deduzido do caminho deste script.
+
+    Permite extrair o tarball binario da release em qualquer $PREFIX
+    (ex: ~/.local) em vez do prefix usado na compilacao. Devolve None
+    quando a arvore relocada nao e encontrada (fallback: paths de build).
+    """
+    try:
+        script_dir = Path(__file__).resolve().parent  # $prefix/bin
+        prefix = script_dir.parent
+        if (prefix / "share" / "cartridges" / "cartridges.gresource").exists():
+            return str(prefix)
+    except OSError:
+        pass
+    return None
+
+
+def _detect_python_dir(prefix: str) -> "str | None":
+    """Localiza o site-packages do app dentro do prefix detectado."""
+    base = Path(prefix)
+    candidates = sorted(base.glob("lib/python3*/site-packages")) + sorted(
+        base.glob("lib64/python3*/site-packages")
+    )
+    for candidate in candidates:
+        if (candidate / "cartridges" / "shared.py").exists():
+            return str(candidate)
+    return None
+
+
+_DETECTED_PREFIX = _detect_prefix()
+if _DETECTED_PREFIX is None:
+    PKGDATADIR = "@pkgdatadir@"
+    PYTHONDIR = "@pythondir@"
+    LOCALEDIR = "@localedir@"
+else:
+    PKGDATADIR = os.path.join(_DETECTED_PREFIX, "share", "cartridges")
+    PYTHONDIR = _detect_python_dir(_DETECTED_PREFIX) or "@pythondir@"
+    LOCALEDIR = os.path.join(_DETECTED_PREFIX, "share", "locale")
+
+# Keep the executable, Python package and resource bundle from the same Meson
+# installation.  Python normally puts the per-user site-packages directory
+# ahead of /usr or /usr/local, which can otherwise combine newer Python code
+# with an older Gtk resource bundle and make the window template fail to load.
+if os.name != "nt":
+    sys.path.insert(0, PYTHONDIR)
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if system() == "Linux":

@@ -4,7 +4,14 @@
 set -u
 
 readonly SESSION_TAG="cartridges-session"
-readonly CARTRIDGES_BIN="@bindir@/cartridges"
+# Deduza o binario a partir deste script para que o tarball binario da
+# release funcione em qualquer $PREFIX (fallback: caminho da compilacao).
+readonly _SESSION_BINDIR="$(dirname -- "$(readlink -f -- "$0")")"
+if [[ -x "$_SESSION_BINDIR/cartridges" ]]; then
+    readonly CARTRIDGES_BIN="$_SESSION_BINDIR/cartridges"
+else
+    readonly CARTRIDGES_BIN="@bindir@/cartridges"
+fi
 gamescope_pid=""
 previous_audio_output=""
 previous_audio_input=""

@@ -71,15 +71,17 @@ Thank you for your generosity! 💜
 
 ## Linux
 
-On Fedora, install the latest source build for your user with:
+On Fedora, install the latest binary release for your user with:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/zonaro/cartridges/main/install.sh | bash
 ```
 
-The installer downloads the source into a temporary directory, installs any
-missing build dependencies, compiles and installs Cartridges under `~/.local`,
-then removes the cloned repository and build files.
+The installer downloads the prebuilt binary from the latest GitHub Release,
+installs any missing runtime dependencies and extracts Cartridges under
+`~/.local`. To compile from source instead, pipe into `bash -s -- --source`.
+Each build is versioned `YY.DDD.HHMM` (2-digit year, day of year, 24h
+hour+minute of the compilation) — see `scripts/publish-release.sh`.
 
 The original app is also available on Flathub.
 
