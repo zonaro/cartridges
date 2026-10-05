@@ -53,7 +53,7 @@ from typing import Any, Callable, Optional
 # silently falls open, which is the case it was added to prevent.
 #
 # The name is arbitrary but must never change: it is the identity of the lock.
-_MUTEX_NAME = "Local\\page.kramo.Cartridges.SingleInstance"
+_MUTEX_NAME = "Local\\page.redclaw.Cartridges.SingleInstance"
 
 _ERROR_ALREADY_EXISTS = 183
 
@@ -140,7 +140,7 @@ _MAIN_WINDOW_TITLE = "Cartridges"
 # uma janela que o GTK escondeu não volta por Win32 — o GTK segue achando que ela
 # não está na tela. Só a primeira cópia sabe se mostrar. Mesmo escopo e mesma
 # regra do mutex: o nome nunca muda.
-_EVENT_NAME = "Local\\page.kramo.Cartridges.Present"
+_EVENT_NAME = "Local\\page.redclaw.Cartridges.Present"
 
 _EVENT_MODIFY_STATE = 0x0002
 _INFINITE = 0xFFFFFFFF

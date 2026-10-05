@@ -41,7 +41,7 @@ _APLICATIVOS = {
         "twintail-source-symbolic",
     ),
     "itch": ("io.itch.itch", "itch", "itch-source-symbolic"),
-    "cartridges": ("page.kramo.Cartridges", "cartridges"),
+    "cartridges": ("page.redclaw.Cartridges", "cartridges"),
     "parsec": ("com.parsecgaming.parsec", "parsec"),
     "greenlight": ("io.github.unknownskl.greenlight", "greenlight"),
     "moonlight": ("com.moonlight_stream.Moonlight", "moonlight"),

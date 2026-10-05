@@ -86,7 +86,7 @@ def resolve_command() -> str:
     if shutil.which("flatpak"):
         try:
             subprocess.run(
-                ["flatpak", "info", "page.kramo.Cartridges"],
+                ["flatpak", "info", "page.redclaw.Cartridges"],
                 capture_output=True,
                 check=True,
                 timeout=15,
@@ -94,7 +94,7 @@ def resolve_command() -> str:
         except (subprocess.SubprocessError, OSError):
             pass
         else:
-            return "flatpak run page.kramo.Cartridges"
+            return "flatpak run page.redclaw.Cartridges"
     return "cartridges"
 
 
@@ -326,7 +326,7 @@ def kde_desktop_entry(command: str) -> str:
         "Name=Cartridges\n"
         "Comment=Abrir o Cartridges com Super+G\n"
         f"Exec={command}\n"
-        "Icon=page.kramo.Cartridges\n"
+        "Icon=page.redclaw.Cartridges\n"
         "Terminal=false\n"
         "Categories=Game;\n"
         "NoDisplay=true\n"

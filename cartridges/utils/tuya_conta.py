@@ -26,7 +26,7 @@ from typing import NamedTuple, Optional
 from gi.repository import Secret
 
 _SCHEMA = Secret.Schema.new(
-    "page.kramo.Cartridges.tuya",
+    "page.redclaw.Cartridges.tuya",
     Secret.SchemaFlags.NONE,
     {"app": Secret.SchemaAttributeType.STRING},
 )
