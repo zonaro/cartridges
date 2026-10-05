@@ -5,7 +5,7 @@
 # Kimmo Kujansuu <mrkujansuu@gmail.com>, 2023.
 # Kopimi <tatuus@tutanota.com>, 2023.
 # Jiri Grönroos <jiri.gronroos@iki.fi>, 2023.
-# kramo <contact@kramo.hu>, 2023.
+# redclaw <contact@redclaw.hu>, 2023.
 # Scott Anecito <scott.anecito@linux.com>, 2024.
 # Ricky Tigg <ricky.tigg@gmail.com>, 2024, 2025.
 msgid ""
@@ -24,30 +24,30 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.15-dev\n"
 
-#: data/page.kramo.Cartridges.desktop.in:3
-#: data/page.kramo.Cartridges.metainfo.xml.in:9
-#: data/page.kramo.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
+#: data/page.redclaw.Cartridges.desktop.in:3
+#: data/page.redclaw.Cartridges.metainfo.xml.in:9
+#: data/page.redclaw.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
 #: data/gtk/window.blp:83
 msgid "Cartridges"
 msgstr "Cartridges"
 
-#: data/page.kramo.Cartridges.desktop.in:4
+#: data/page.redclaw.Cartridges.desktop.in:4
 msgid "Game Launcher"
 msgstr "Pelin käynnistin"
 
-#: data/page.kramo.Cartridges.desktop.in:5
-#: data/page.kramo.Cartridges.metainfo.xml.in:10
+#: data/page.redclaw.Cartridges.desktop.in:5
+#: data/page.redclaw.Cartridges.metainfo.xml.in:10
 msgid "Launch all your games"
 msgstr "Käynnistä kaikki pelisi"
 
-#: data/page.kramo.Cartridges.desktop.in:11
+#: data/page.redclaw.Cartridges.desktop.in:11
 msgid ""
 "gaming;launcher;steam;lutris;heroic;bottles;itch;flatpak;legendary;retroarch;"
 msgstr ""
 "gaming;launcher;steam;lutris;heroic;bottles;itch;flatpak;legendary;retroarch;"
 "peli;pelaaminen;pullot;"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:12
+#: data/page.redclaw.Cartridges.metainfo.xml.in:12
 msgid ""
 "Cartridges is a simple game launcher for all of your games. It has support "
 "for importing games from Steam, Lutris, Heroic and more with no login "
@@ -59,16 +59,16 @@ msgstr ""
 "kirjautumista. Voit lajitella ja piilottaa pelejä tai ladata kansikuvia "
 "SteamGridDB:stä."
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
+#: data/page.redclaw.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
 #: cartridges/details_dialog.py:77
 msgid "Game Details"
 msgstr "Pelin tiedot"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:48
+#: data/page.redclaw.Cartridges.metainfo.xml.in:48
 msgid "Edit Game Details"
 msgstr "Muokkaa pelin tietoja"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
+#: data/page.redclaw.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
 #: data/gtk/window.blp:543 cartridges/details_dialog.py:279
 #: cartridges/importer/importer.py:319 cartridges/importer/importer.py:369
 msgid "Preferences"

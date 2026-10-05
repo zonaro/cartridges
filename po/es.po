@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the cartridges package.
 # Óscar Fernández Díaz <oscfdezdz@users.noreply.hosted.weblate.org>, 2023, 2024.
 # gallegonovato <fran-carro@hotmail.es>, 2023, 2024.
-# kramo <contact@kramo.hu>, 2023.
+# redclaw <contact@redclaw.hu>, 2023.
 # Francisco Serrador <fserrador@gmail.com>, 2025.
 # Weblate Translation Memory <noreply-mt-weblate-translation-memory@weblate.org>, 2025.
 msgid ""
@@ -22,28 +22,28 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.11-dev\n"
 
-#: data/page.kramo.Cartridges.desktop.in:2
-#: data/page.kramo.Cartridges.metainfo.xml.in:9
-#: data/page.kramo.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:63
+#: data/page.redclaw.Cartridges.desktop.in:2
+#: data/page.redclaw.Cartridges.metainfo.xml.in:9
+#: data/page.redclaw.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:63
 #: data/gtk/window.blp:199
 msgid "Cartridges"
 msgstr "Cartuchos"
 
-#: data/page.kramo.Cartridges.desktop.in:3
+#: data/page.redclaw.Cartridges.desktop.in:3
 msgid "Game Launcher"
 msgstr "Lanzador de juegos"
 
-#: data/page.kramo.Cartridges.desktop.in:4
-#: data/page.kramo.Cartridges.metainfo.xml.in:10
+#: data/page.redclaw.Cartridges.desktop.in:4
+#: data/page.redclaw.Cartridges.metainfo.xml.in:10
 msgid "Launch all your games"
 msgstr "Lance todos sus juegos"
 
 #. Translators: Leave "cartridges" untranslated here.
-#: data/page.kramo.Cartridges.desktop.in:11
+#: data/page.redclaw.Cartridges.desktop.in:11
 msgid "gaming;games;play;cartridges;launch;launcher;steam;lutris;heroic;epic;bottles;itch;legendary;retroarch;"
 msgstr "juegos;juegos;jugar;cartridges;lanzamiento;lanzador;vapor;lutris;heroico;épico;botellas;picazón;legendario;retroarch;"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:12
+#: data/page.redclaw.Cartridges.metainfo.xml.in:12
 msgid ""
 "Cartridges is a simple game launcher for all of your games. It has support "
 "for importing games from Steam, Lutris, Heroic and more with no login "
@@ -55,16 +55,16 @@ msgstr ""
 "iniciar sesión. Puede ordenar y ocultar juegos o descargar portadas de "
 "SteamGridDB."
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:930
+#: data/page.redclaw.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:930
 #: cartridges/details_dialog.py:161
 msgid "Game Details"
 msgstr "Detalles del juego"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:48
+#: data/page.redclaw.Cartridges.metainfo.xml.in:48
 msgid "Edit Game Details"
 msgstr "Editar detalles del juego"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:52
+#: data/page.redclaw.Cartridges.metainfo.xml.in:52
 #: data/gtk/shortcuts-dialog.blp:14 data/gtk/window.blp:1364
 #: cartridges/details_dialog.py:771 cartridges/details_dialog.py:810
 #: cartridges/importer/importer.py:338 cartridges/importer/importer.py:388

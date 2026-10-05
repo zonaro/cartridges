@@ -1,19 +1,19 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the cartridges package.
-# kramo, 2023.
+# redclaw, 2023.
 #
-# kramo <contact@kramo.hu>, 2023, 2024.
+# redclaw <contact@redclaw.hu>, 2023, 2024.
 # Balázs Meskó <meskobalazs@mailbox.org>, 2024.
 # Weblate Translation Memory <noreply-mt-weblate-translation-memory@weblate.org>, 2024.
-# kramo <contact@kramo.page>, 2024.
+# redclaw <contact@redclaw.page>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-11-05 14:01+0100\n"
 "PO-Revision-Date: 2024-11-29 13:00+0000\n"
-"Last-Translator: kramo <contact@kramo.page>\n"
+"Last-Translator: redclaw <contact@redclaw.page>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/cartridges/"
 "cartridges/hu/>\n"
 "Language: hu\n"
@@ -23,29 +23,29 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.9-dev\n"
 
-#: data/page.kramo.Cartridges.desktop.in:3
-#: data/page.kramo.Cartridges.metainfo.xml.in:9
-#: data/page.kramo.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
+#: data/page.redclaw.Cartridges.desktop.in:3
+#: data/page.redclaw.Cartridges.metainfo.xml.in:9
+#: data/page.redclaw.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
 #: data/gtk/window.blp:83
 msgid "Cartridges"
 msgstr "Kazetták"
 
-#: data/page.kramo.Cartridges.desktop.in:4
+#: data/page.redclaw.Cartridges.desktop.in:4
 msgid "Game Launcher"
 msgstr "Játékindító"
 
-#: data/page.kramo.Cartridges.desktop.in:5
-#: data/page.kramo.Cartridges.metainfo.xml.in:10
+#: data/page.redclaw.Cartridges.desktop.in:5
+#: data/page.redclaw.Cartridges.metainfo.xml.in:10
 msgid "Launch all your games"
 msgstr "Indítsa el az összes játékát"
 
-#: data/page.kramo.Cartridges.desktop.in:11
+#: data/page.redclaw.Cartridges.desktop.in:11
 msgid ""
 "gaming;launcher;steam;lutris;heroic;bottles;itch;flatpak;legendary;retroarch;"
 msgstr ""
 "játék;indító;steam;lutris;heroic;palackok;itch;flatpak;legendary;retroarch;"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:12
+#: data/page.redclaw.Cartridges.metainfo.xml.in:12
 msgid ""
 "Cartridges is a simple game launcher for all of your games. It has support "
 "for importing games from Steam, Lutris, Heroic and more with no login "
@@ -57,16 +57,16 @@ msgstr ""
 "Rendezheti és elrejtheti a játékait, valamint letölthet borítóképeket a "
 "SteamGridDB-ről."
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
+#: data/page.redclaw.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
 #: cartridges/details_dialog.py:77
 msgid "Game Details"
 msgstr "Játék tulajdonságai"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:48
+#: data/page.redclaw.Cartridges.metainfo.xml.in:48
 msgid "Edit Game Details"
 msgstr "Játék szerkesztése"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
+#: data/page.redclaw.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
 #: data/gtk/window.blp:543 cartridges/details_dialog.py:279
 #: cartridges/importer/importer.py:319 cartridges/importer/importer.py:369
 msgid "Preferences"
@@ -688,8 +688,8 @@ msgstr "Ellenőrizze az API-kulcsát a beállításokban"
 #~ msgstr[0] "1 eltávolítva"
 #~ msgstr[1] "{} eltávolítva"
 
-#~ msgid "kramo"
-#~ msgstr "kramo"
+#~ msgid "redclaw"
+#~ msgstr "redclaw"
 
 #~ msgid "Cache Location"
 #~ msgstr "Gyorsítótár helye"
