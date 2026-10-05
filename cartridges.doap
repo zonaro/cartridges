@@ -11,9 +11,9 @@
 Cartridges is a simple game launcher for all of your games. It has support for importing games from Steam, Lutris, Heroic and more with no login necessary. You can sort and hide games or download cover art from SteamGridDB.
   </description>
 
-  <homepage rdf:resource="https://git.kramo.page/cartridges" />
-  <download-page rdf:resource="https://git.kramo.page/cartridges" />
-  <bug-database rdf:resource="https://git.kramo.page/cartridges/issues" />
+  <homepage rdf:resource="https://git.redclaw.page/cartridges" />
+  <download-page rdf:resource="https://git.redclaw.page/cartridges" />
+  <bug-database rdf:resource="https://git.redclaw.page/cartridges/issues" />
 
   <programming-language>Python</programming-language>
   <platform>GTK 4</platform>
@@ -21,18 +21,18 @@ Cartridges is a simple game launcher for all of your games. It has support for i
 
   <maintainer>
     <foaf:Person>
-      <foaf:name>kramo</foaf:name>
-      <foaf:mbox rdf:resource="mailto:contact@kramo.page" />
+      <foaf:name>redclaw</foaf:name>
+      <foaf:mbox rdf:resource="mailto:contact@redclaw.page" />
       <foaf:account>
         <foaf:OnlineAccount>
           <foaf:accountServiceHomepage rdf:resource="https://github.com"/>
-          <foaf:accountName>kra-mo</foaf:accountName>
+          <foaf:accountName>redclaw</foaf:accountName>
         </foaf:OnlineAccount>
       </foaf:account>
       <foaf:account>
         <foaf:OnlineAccount>
           <foaf:accountServiceHomepage rdf:resource="https://gitlab.gnome.org"/>
-          <foaf:accountName>kramo</foaf:accountName>
+          <foaf:accountName>redclaw</foaf:accountName>
         </foaf:OnlineAccount>
       </foaf:account>
     </foaf:Person>

@@ -52,7 +52,7 @@ app = BUNDLE(
     coll,
     name="Cartridges.app",
     icon="./icon.icns",
-    bundle_identifier="page.kramo.Cartridges",
+    bundle_identifier="page.redclaw.Cartridges",
     info_plist={
         "LSApplicationCategoryType": "public.app-category.games",
     },

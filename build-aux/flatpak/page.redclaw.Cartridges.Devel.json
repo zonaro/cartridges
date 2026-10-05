@@ -1,5 +1,5 @@
 {
-  "id": "page.kramo.Cartridges.Devel",
+  "id": "page.redclaw.Cartridges.Devel",
   "runtime": "org.gnome.Platform",
   "runtime-version": "49",
   "sdk": "org.gnome.Sdk",
