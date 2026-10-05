@@ -4,7 +4,7 @@
 <policyconfig>
   <!-- X-Cartridges-Managed=true -->
   <vendor>Cartridges</vendor>
-  <action id="page.kramo.Cartridges.configure-game-mode">
+  <action id="page.redclaw.Cartridges.configure-game-mode">
     <description>Install or remove the Cartridges Gaming Mode login session</description>
     <message>Authentication is required to configure Gaming Mode</message>
     <defaults>

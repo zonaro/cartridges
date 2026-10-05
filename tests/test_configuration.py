@@ -18,7 +18,7 @@ class ConfigurationTests(unittest.TestCase):
 
     def test_game_mode_schema_has_safe_defaults(self):
         schema = ET.parse(
-            ROOT / "data" / "page.kramo.Cartridges.gschema.xml.in"
+            ROOT / "data" / "page.redclaw.Cartridges.gschema.xml.in"
         ).getroot()
         defaults = {
             key.attrib["name"]: key.findtext("default")
