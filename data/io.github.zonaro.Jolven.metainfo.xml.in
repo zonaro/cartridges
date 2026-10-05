@@ -12,10 +12,10 @@
   <description>
     <p>Jolven is a gamepad-first gaming interface for Linux. It gathers your games from Steam, Heroic, Lutris, Bottles, emulators, native games and more into one console-style library. Use it as a regular desktop app, or start a dedicated Jolven Session straight from your display manager for a couch gaming experience. Jolven is an independent fork originally based on Cartridges. It does not replace your distribution: your Linux stays your Linux.</p>
   </description>
-  <url type="homepage">https://github.com/zonaro/cartridges</url>
-  <url type="bugtracker">https://github.com/zonaro/cartridges/issues</url>
-  <url type="vcs-browser">https://github.com/zonaro/cartridges</url>
-  <url type="contribute">https://github.com/zonaro/cartridges/blob/main/CONTRIBUTING.md</url>
+  <url type="homepage">https://github.com/zonaro/jolven</url>
+  <url type="bugtracker">https://github.com/zonaro/jolven/issues</url>
+  <url type="vcs-browser">https://github.com/zonaro/jolven</url>
+  <url type="contribute">https://github.com/zonaro/jolven/blob/main/CONTRIBUTING.md</url>
   <developer id="io.github.zonaro">
     <name translate="no">Jolven contributors</name>
   </developer>
@@ -36,19 +36,19 @@
   </requires>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/zonaro/cartridges/main/data/screenshots/1.png</image>
+      <image>https://raw.githubusercontent.com/zonaro/jolven/main/data/screenshots/1.png</image>
       <caption>Jolven library</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/zonaro/cartridges/main/data/screenshots/2.png</image>
+      <image>https://raw.githubusercontent.com/zonaro/jolven/main/data/screenshots/2.png</image>
       <caption>Game Details</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/zonaro/cartridges/main/data/screenshots/3.png</image>
+      <image>https://raw.githubusercontent.com/zonaro/jolven/main/data/screenshots/3.png</image>
       <caption>Edit Game Details</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/zonaro/cartridges/main/data/screenshots/4.png</image>
+      <image>https://raw.githubusercontent.com/zonaro/jolven/main/data/screenshots/4.png</image>
       <caption>Preferences</caption>
     </screenshot>
   </screenshots>

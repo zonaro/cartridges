@@ -1,7 +1,7 @@
 #define MyAppName "Jolven"
 #define MyAppVersion "@VERSION@"
 #define MyAppPublisher "Jolven contributors"
-#define MyAppURL "https://github.com/zonaro/cartridges"
+#define MyAppURL "https://github.com/zonaro/jolven"
 #define MyAppExeName "pythonw.exe"
 
 [Setup]
@@ -11,7 +11,7 @@ AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
-AppSupportURL=https://github.com/zonaro/cartridges/issues
+AppSupportURL=https://github.com/zonaro/jolven/issues
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf64}\{#MyAppName}
 DisableProgramGroupPage=yes

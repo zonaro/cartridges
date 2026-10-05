@@ -11,9 +11,9 @@
 Jolven is a gamepad-first gaming interface for Linux. It gathers games from Steam, Lutris, Heroic and more into one console-style library, as a desktop app or a dedicated session. Jolven is an independent fork originally based on Cartridges.
   </description>
 
-  <homepage rdf:resource="https://github.com/zonaro/cartridges" />
-  <download-page rdf:resource="https://github.com/zonaro/cartridges" />
-  <bug-database rdf:resource="https://github.com/zonaro/cartridges/issues" />
+  <homepage rdf:resource="https://github.com/zonaro/jolven" />
+  <download-page rdf:resource="https://github.com/zonaro/jolven" />
+  <bug-database rdf:resource="https://github.com/zonaro/jolven/issues" />
 
   <programming-language>Python</programming-language>
   <platform>GTK 4</platform>

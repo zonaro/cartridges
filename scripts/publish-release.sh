@@ -19,7 +19,7 @@ SCRIPT_DIR="$(dirname -- "$(readlink -f -- "$0")")"
 REPO_ROOT="$(dirname -- "$SCRIPT_DIR")"
 cd -- "$REPO_ROOT"
 
-REPOSITORY="${CARTRIDGES_GITHUB_REPOSITORY:-zonaro/cartridges}"
+REPOSITORY="${CARTRIDGES_GITHUB_REPOSITORY:-zonaro/jolven}"
 VERSION_PATTERN='^[0-9]{2}\.[0-9]{3}\.[0-9]{4}$'
 
 DRY_RUN=0

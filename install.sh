@@ -4,7 +4,7 @@
 # Modo padrao (binario): baixa o tarball da ultima GitHub Release e extrai
 # em $PREFIX (sem compilar nada localmente).
 #
-#   curl -fsSL https://raw.githubusercontent.com/zonaro/cartridges/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/zonaro/jolven/main/install.sh | bash
 #
 # Modo source (compila localmente, como antes):
 #
@@ -12,9 +12,9 @@
 #   CARTRIDGES_FROM_SOURCE=1 bash install.sh
 set -Eeuo pipefail
 
-readonly REPOSITORY_URL="${CARTRIDGES_REPOSITORY_URL:-https://github.com/zonaro/cartridges.git}"
+readonly REPOSITORY_URL="${CARTRIDGES_REPOSITORY_URL:-https://github.com/zonaro/jolven.git}"
 readonly REPOSITORY_REF="${CARTRIDGES_REF:-main}"
-readonly GITHUB_REPOSITORY="${CARTRIDGES_GITHUB_REPOSITORY:-zonaro/cartridges}"
+readonly GITHUB_REPOSITORY="${CARTRIDGES_GITHUB_REPOSITORY:-zonaro/jolven}"
 readonly INSTALL_PREFIX="${PREFIX:-$HOME/.local}"
 
 MODE="binary"
@@ -53,7 +53,7 @@ configure_shortcut() {
         printf 'Para o atalho Super+G no GNOME, execute: ./scripts/install-gnome-shortcut.sh\n'
         return 0
     fi
-    local shortcut_url="https://raw.githubusercontent.com/zonaro/cartridges/main/scripts/install-gnome-shortcut.sh"
+    local shortcut_url="https://raw.githubusercontent.com/zonaro/jolven/main/scripts/install-gnome-shortcut.sh"
     if CARTRIDGES_COMMAND="$INSTALL_PREFIX/bin/jolven" \
         bash <(curl -fsSL "$shortcut_url"); then
         printf 'Atalho global configurado: Super+G abre o Jolven.\n'

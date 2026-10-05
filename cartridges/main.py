@@ -519,7 +519,7 @@ class CartridgesApplication(Adw.Application):
         )
         about.set_developers(
             (
-                "Jolven contributors https://github.com/zonaro/cartridges",
+                "Jolven contributors https://github.com/zonaro/jolven",
                 "redclaw https://redclaw.page",
                 "Geoffrey Coulaud https://geoffrey-coulaud.fr",
                 "Rilic https://rilic.red",
@@ -537,8 +537,8 @@ class CartridgesApplication(Adw.Application):
         about.set_translator_credits(_("translator-credits"))
         about.set_debug_info(debug_str)
         about.set_debug_info_filename("jolven.log")
-        about.set_website("https://github.com/zonaro/cartridges")
-        about.set_issue_url("https://github.com/zonaro/cartridges/issues")
+        about.set_website("https://github.com/zonaro/jolven")
+        about.set_issue_url("https://github.com/zonaro/jolven/issues")
         about.add_legal_section(
             "Steam Branding",
             "© 2023 Valve Corporation",
