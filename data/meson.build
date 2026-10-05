@@ -21,7 +21,7 @@ endforeach
 
 if host_machine.system() == 'windows'
   desktop_file = configure_file(
-    input: 'page.kramo.Cartridges.desktop.in',
+    input: 'page.redclaw.Cartridges.desktop.in',
     output: app_id + '.desktop.in',
     configuration: conf,
     install: true,
@@ -30,7 +30,7 @@ if host_machine.system() == 'windows'
 else
   desktop_file = i18n.merge_file(
     input: configure_file(
-      input: 'page.kramo.Cartridges.desktop.in',
+      input: 'page.redclaw.Cartridges.desktop.in',
       output: app_id + '.desktop.in',
       configuration: conf,
     ),
@@ -51,7 +51,7 @@ endif
 
 if host_machine.system() == 'windows'
   appstream_file = configure_file(
-    input: 'page.kramo.Cartridges.metainfo.xml.in',
+    input: 'page.redclaw.Cartridges.metainfo.xml.in',
     output: app_id + '.metainfo.xml',
     configuration: conf,
     install: true,
@@ -60,7 +60,7 @@ if host_machine.system() == 'windows'
 else
   appstream_file = i18n.merge_file(
     input: configure_file(
-      input: 'page.kramo.Cartridges.metainfo.xml.in',
+      input: 'page.redclaw.Cartridges.metainfo.xml.in',
       output: app_id + '.metainfo.xml.in',
       configuration: conf,
     ),
@@ -97,7 +97,7 @@ if host_machine.system() != 'windows'
 endif
 
 schema_file = configure_file(
-  input: 'page.kramo.Cartridges.gschema.xml.in',
+  input: 'page.redclaw.Cartridges.gschema.xml.in',
   output: app_id + '.gschema.xml',
   configuration: conf,
 )
@@ -120,7 +120,7 @@ subdir('icons')
 
 if host_machine.system() == 'linux' and get_option('prefix') in ['/usr', '/usr/local']
   configure_file(
-    input: 'page.kramo.Cartridges.GameMode.policy.in',
+    input: 'page.redclaw.Cartridges.GameMode.policy.in',
     output: app_id + '.GameMode.policy',
     configuration: conf,
     install: true,

@@ -36,11 +36,11 @@ moduledir = python_dir / 'cartridges'
 
 profile = get_option('profile')
 if profile == 'development'
-  app_id = 'page.kramo.Cartridges.Devel'
-  prefix = '/page/kramo/Cartridges/Devel'
+  app_id = 'page.redclaw.Cartridges.Devel'
+  prefix = '/page/redclaw/Cartridges/Devel'
 elif profile == 'release'
-  app_id = 'page.kramo.Cartridges'
-  prefix = '/page/kramo/Cartridges'
+  app_id = 'page.redclaw.Cartridges'
+  prefix = '/page/redclaw/Cartridges'
 endif
 
 conf = configuration_data()
