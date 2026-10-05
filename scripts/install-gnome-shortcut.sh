@@ -26,8 +26,8 @@ resolve_command() {
         return 0
     fi
     if command -v flatpak >/dev/null 2>&1 \
-        && flatpak info page.kramo.Cartridges >/dev/null 2>&1; then
-        printf 'flatpak run page.kramo.Cartridges\n'
+        && flatpak info page.redclaw.Cartridges >/dev/null 2>&1; then
+        printf 'flatpak run page.redclaw.Cartridges\n'
         return 0
     fi
     printf 'cartridges\n'

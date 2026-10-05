@@ -10,7 +10,7 @@ fi
 targets=(
     "$prefix/bin/cartridges-session"
     "$helper"
-    "$prefix/share/polkit-1/actions/page.kramo.Cartridges.GameMode.policy"
+    "$prefix/share/polkit-1/actions/page.redclaw.Cartridges.GameMode.policy"
 )
 for target in "${targets[@]}"; do
     if [[ -e "$target" ]] && grep -q 'X-Cartridges-Managed=true' "$target"; then

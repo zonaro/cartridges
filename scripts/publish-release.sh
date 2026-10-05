@@ -126,7 +126,7 @@ elif [[ -z $NOTES ]]; then
     fi
 fi
 
-METAINFO="data/page.kramo.Cartridges.metainfo.xml.in"
+METAINFO="data/page.redclaw.Cartridges.metainfo.xml.in"
 if ! grep -q '<releases>' "$METAINFO"; then
     printf 'Bloco <releases> nao encontrado em %s\n' "$METAINFO" >&2
     exit 69

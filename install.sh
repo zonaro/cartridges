@@ -138,7 +138,7 @@ install_binary() {
             break
         fi
     done
-    local service_file="$INSTALL_PREFIX/share/dbus-1/services/page.kramo.Cartridges.SearchProvider.service"
+    local service_file="$INSTALL_PREFIX/share/dbus-1/services/page.redclaw.Cartridges.SearchProvider.service"
     if [[ -n $site_dir && -f $service_file ]]; then
         printf 'Exec=env PYTHONPATH=%s %s/libexec/cartridges-search-provider\n' \
             "$site_dir" "$INSTALL_PREFIX" >"$service_file"

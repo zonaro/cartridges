@@ -6,7 +6,7 @@ repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 prefix="${PREFIX:-/usr}"
 bindir="$prefix/bin"
 libexecdir="$prefix/libexec"
-app_id="page.kramo.Cartridges"
+app_id="page.redclaw.Cartridges"
 
 if [[ ! -r /etc/os-release ]]; then
     printf 'Cannot identify this operating system.\n' >&2
@@ -64,8 +64,8 @@ sed -e "s|@bindir@|$bindir|g" -e "s|@game_session_datadir@|$prefix/share|g" \
     "$repo_dir/session/cartridges-game-mode-setup.in" \
     > "$tmp_dir/cartridges-game-mode-setup"
 sed -e "s|@libexecdir@|$libexecdir|g" \
-    "$repo_dir/data/page.kramo.Cartridges.GameMode.policy.in" \
-    > "$tmp_dir/page.kramo.Cartridges.GameMode.policy"
+    "$repo_dir/data/page.redclaw.Cartridges.GameMode.policy.in" \
+    > "$tmp_dir/page.redclaw.Cartridges.GameMode.policy"
 
 for target in "$bindir/cartridges-session" "$libexecdir/cartridges-game-mode-setup"; do
     if [[ -e "$target" ]] && ! grep -q 'X-Cartridges-Managed=true' "$target"; then
@@ -79,8 +79,8 @@ sudo install -d -m 0755 -- "$bindir" "$libexecdir"
 sudo install -m 0755 -- "$tmp_dir/cartridges-session" "$bindir/cartridges-session"
 sudo install -m 0755 -- "$tmp_dir/cartridges-game-mode-setup" "$libexecdir/cartridges-game-mode-setup"
 sudo install -d -m 0755 -- "$prefix/share/polkit-1/actions"
-sudo install -m 0644 -- "$tmp_dir/page.kramo.Cartridges.GameMode.policy" \
-    "$prefix/share/polkit-1/actions/page.kramo.Cartridges.GameMode.policy"
+sudo install -m 0644 -- "$tmp_dir/page.redclaw.Cartridges.GameMode.policy" \
+    "$prefix/share/polkit-1/actions/page.redclaw.Cartridges.GameMode.policy"
 sudo "$libexecdir/cartridges-game-mode-setup" install
 session_name="$("$libexecdir/cartridges-game-mode-setup" name)"
 printf 'Session:\n✓ %s\n' "$session_name"

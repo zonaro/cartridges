@@ -4,7 +4,7 @@
 set -euo pipefail
 
 readonly action="${1:-}"
-readonly session_file="@game_session_datadir@/wayland-sessions/page.kramo.Cartridges.GameMode.desktop"
+readonly session_file="@game_session_datadir@/wayland-sessions/page.redclaw.Cartridges.GameMode.desktop"
 # Deduza o launcher a partir deste helper (libexec/../bin) para que o
 # tarball binario da release funcione em qualquer $PREFIX
 # (fallback: caminho da compilacao).
