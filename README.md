@@ -12,7 +12,7 @@
   <img src="data/screenshots/1.png">
 </div>
 
-Explore the multilingual product page in [landing/](landing/index.html).
+Explore the multilingual product page in [docs/](https://zonaro.github.io/jolven).
 
 > Jolven is an independent fork originally based on [Cartridges](https://github.com/kra-mo/cartridges) (GPL-3.0-or-later, © 2022-2024 kramo). The origin is preserved in copyright headers, credits and the in-app About dialog.
 
