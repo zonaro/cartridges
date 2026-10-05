@@ -1,6 +1,6 @@
 # shared.py.in
 #
-# Copyright 2022-2023 kramo
+# Copyright 2022-2023 redclaw
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,7 +54,12 @@ _DETECTED_PREFIX = _detect_prefix()
 
 APP_ID = "@APP_ID@"
 VERSION = "@VERSION@"
-PREFIX = str(_DETECTED_PREFIX) if _DETECTED_PREFIX is not None else "@PREFIX@"
+# Raiz do GResource (ex: /page/redclaw/Cartridges), e NÃO caminho de disco:
+# Gtk.Template(resource_path=...) e new_from_resource() exigem o caminho do
+# recurso registrado, que independe de onde a árvore foi instalada. O prefix
+# de disco detectado acima serve só ao LIBEXECDIR; apontar o PREFIX para ele
+# quebrava todo template (o app nem abria após `ninja install`).
+PREFIX = "@PREFIX@"
 PROFILE = "@PROFILE@"
 TIFF_COMPRESSION = "@TIFF_COMPRESSION@"
 LIBEXECDIR = (
@@ -63,7 +68,7 @@ LIBEXECDIR = (
     else "@libexecdir@"
 )
 GAME_MODE_HELPER = Path(LIBEXECDIR) / "cartridges-game-mode-setup"
-GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "page.kramo.Cartridges.GameMode.desktop"
+GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "page.redclaw.Cartridges.GameMode.desktop"
 SPEC_VERSION = 1.5  # The version of the game_id.json spec
 
 schema = Gio.Settings.new(APP_ID)

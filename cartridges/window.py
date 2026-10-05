@@ -1,6 +1,6 @@
 # window.py
 #
-# Copyright 2022-2023 kramo
+# Copyright 2022-2023 redclaw
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ from cartridges.utils.animated_flow_box import AnimatedFlowBox
 from cartridges.utils.format_playtime import format_playtime, format_stopwatch
 from cartridges.utils.install_size import format_size
 from cartridges.utils.download import download_bytes
+from cartridges.utils.library_background import resolver_fundo
 from cartridges.utils.news_feed import NewsPost
 from cartridges.utils.open_uri import open_uri
 from cartridges.utils.relative_date import relative_date
@@ -87,6 +88,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     library: AnimatedFlowBox = Gtk.Template.Child()
     scrolledwindow: Gtk.ScrolledWindow = Gtk.Template.Child()
     library_overlay: Gtk.Overlay = Gtk.Template.Child()
+    library_background: Gtk.Picture = Gtk.Template.Child()
     notice_empty: Adw.StatusPage = Gtk.Template.Child()
     notice_no_results: Adw.StatusPage = Gtk.Template.Child()
     search_bar: Gtk.SearchBar = Gtk.Template.Child()
@@ -192,6 +194,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
     _playtime_clickable = False
     details_view_game_cover: Optional[GameCover] = None
     _details_images_generation: int = 0
+    _fundo_biblioteca_geracao: int = 0
+    _fundo_biblioteca_jogo: Optional[str] = None
     sort_state: str = "last_played"
     filter_state: str = "all"
     source_rows: dict = {}
@@ -457,6 +461,14 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         self.navigation_view.connect("popped", self.set_show_hidden)
         self.navigation_view.connect("pushed", self.set_show_hidden)
+        self.navigation_view.connect("popped", self._schedule_library_refocus)
+        self.navigation_view.connect("pushed", self._schedule_library_refocus)
+        self.navigation_view.connect(
+            "notify::visible-page", self._schedule_library_refocus
+        )
+
+        for grade in (self.library, self.hidden_library, self.zerados_library):
+            grade.connect("child-activated", self.on_library_child_activated)
 
         self.sidebar.connect("row-selected", self.row_selected)
 
@@ -529,6 +541,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def on_open_library_action(self, *_args: Any) -> None:
         if self.navigation_view.get_visible_page() != self.library_page:
             self.navigation_view.push(self.library_page)
+        GLib.idle_add(self.focus_first_library_tile)
 
     def gamepad_back(self) -> None:
         dialog = self.get_visible_dialog()
@@ -627,19 +640,99 @@ class CartridgesWindow(Adw.ApplicationWindow):
                 self.navigation_view.pop_to_page(self.library_page)
         self.on_toggle_search_action()
 
-    def gamepad_game_menu(self) -> None:
-        widget = self.get_focus()
-        game = None
-        while widget is not None and not isinstance(widget, Game):
+    @staticmethod
+    def _game_from_widget(widget: Gtk.Widget | None) -> Game | None:
+        while widget is not None:
+            if isinstance(widget, Game):
+                return widget
             if isinstance(widget, Gtk.FlowBoxChild) and isinstance(
                 widget.get_child(), Game
             ):
-                game = widget.get_child()
-                break
+                return widget.get_child()
             widget = widget.get_parent()
-        if isinstance(widget, Game):
-            game = widget
-        if game is not None:
+        return None
+
+    def _game_from_focus(self) -> Game | None:
+        return self._game_from_widget(self.get_focus())
+
+    def _focus_in_library_chrome(self) -> bool:
+        widget = self.get_focus()
+        while widget is not None:
+            if widget in (
+                self.search_entry,
+                self.hidden_search_entry,
+                self.launchers_bar,
+                self.sidebar,
+            ):
+                return True
+            widget = widget.get_parent()
+        return False
+
+    def get_visible_library(self) -> Gtk.FlowBox | None:
+        page = self.navigation_view.get_visible_page()
+        if page == self.library_page:
+            return self.library
+        if page == self.hidden_library_page:
+            return self.hidden_library
+        if page == self.zerados_library_page:
+            return self.zerados_library
+        return None
+
+    def focus_first_library_tile(self) -> bool:
+        grade = self.get_visible_library()
+        if grade is None:
+            return GLib.SOURCE_REMOVE
+        index = 0
+        while child := grade.get_child_at_index(index):
+            index += 1
+            if not child.get_visible():
+                continue
+            child.grab_focus()
+            if isinstance(child.get_child(), Game):
+                self.atualizar_fundo_biblioteca(child.get_child())
+            return GLib.SOURCE_REMOVE
+        if first_launcher := self.launchers_box.get_first_child():
+            first_launcher.grab_focus()
+        return GLib.SOURCE_REMOVE
+
+    def gamepad_navigate(self, direction: Gtk.DirectionType) -> None:
+        moved = self.child_focus(direction)
+        if (game := self._game_from_focus()) is not None:
+            self.atualizar_fundo_biblioteca(game)
+            return
+        if not moved and self.get_visible_library() is not None:
+            self.focus_first_library_tile()
+
+    def gamepad_confirm(self) -> None:
+        if (game := self._game_from_focus()) is not None:
+            game.main_button_clicked(None, False)
+            return
+        if (focus := self.get_focus()) is not None:
+            focus.activate()
+
+    def on_library_child_activated(
+        self, _flowbox: Gtk.FlowBox, child: Gtk.FlowBoxChild
+    ) -> None:
+        if isinstance(child.get_child(), Game):
+            self.show_details_page(child.get_child())
+
+    def _schedule_library_refocus(self, *_args: Any) -> None:
+        GLib.idle_add(self._refocus_library_if_needed)
+
+    def _refocus_library_if_needed(self) -> bool:
+        page = self.navigation_view.get_visible_page()
+        if page == self.game_mode_home_page:
+            self.focus_game_mode_home()
+        elif self.get_visible_library() is not None:
+            if (
+                self._game_from_focus() is None
+                and not self._focus_in_library_chrome()
+            ):
+                self.focus_first_library_tile()
+        return GLib.SOURCE_REMOVE
+
+    def gamepad_game_menu(self) -> None:
+        if (game := self._game_from_focus()) is not None:
             game.menu_revealer.set_reveal_child(True)
             game.menu_button.popup()
 
@@ -933,6 +1026,56 @@ class CartridgesWindow(Adw.ApplicationWindow):
         picture.add_css_class("card")
         self.details_view_screenshots.append(picture)
         return GLib.SOURCE_REMOVE
+
+    def atualizar_fundo_biblioteca(self, game: Game) -> None:
+        """Troca o fundo da grade para a arte do jogo em foco, sem bloquear.
+
+        Resolve fora da UI (rede: IGDB → TheGamesDB → wallhaven) e aplica na
+        volta com guarda de geração: se o foco já mudou, o resultado vencido
+        é descartado. Em caso de falha, não faz nada — o fundo fica como está.
+        """
+        self._fundo_biblioteca_geracao += 1
+        geracao = self._fundo_biblioteca_geracao
+        self._fundo_biblioteca_jogo = game.game_id
+
+        def worker() -> None:
+            try:
+                caminho = resolver_fundo(game)
+            except Exception as erro:  # pylint: disable=broad-except
+                logging.info("Não foi possível resolver o fundo: %s", erro)
+                return
+            if caminho is None:
+                return
+            GLib.idle_add(
+                self._aplicar_fundo_biblioteca, str(caminho), game.game_id, geracao
+            )
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _aplicar_fundo_biblioteca(
+        self, caminho: str, game_id: str, geracao: int
+    ) -> bool:
+        if (
+            geracao != self._fundo_biblioteca_geracao
+            or self._fundo_biblioteca_jogo != game_id
+        ):
+            return GLib.SOURCE_REMOVE
+        try:
+            textura = Gdk.Texture.new_from_filename(caminho)
+        except GLib.Error as erro:
+            logging.info("Fundo da biblioteca inválido: %s", erro)
+            Path(caminho).unlink(missing_ok=True)
+            return GLib.SOURCE_REMOVE
+        self.library_background.set_paintable(textura)
+        return GLib.SOURCE_REMOVE
+
+    def limpar_fundo_biblioteca(self, game: Optional[Game] = None) -> None:
+        """Volta o fundo da grade ao vazio quando o foco sai do tile."""
+        if game is not None and game.game_id != self._fundo_biblioteca_jogo:
+            return
+        self._fundo_biblioteca_geracao += 1
+        self._fundo_biblioteca_jogo = None
+        self.library_background.set_paintable(None)
 
     def set_details_view_opacity(self, *_args: Any) -> None:
         if self.navigation_view.get_visible_page() != self.details_page:

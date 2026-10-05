@@ -1,6 +1,6 @@
 # main.py
 #
-# Copyright 2022-2024 kramo
+# Copyright 2022-2024 redclaw
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,6 +47,8 @@ from cartridges.details_dialog import DetailsDialog
 from cartridges.controller import (
     ControllerAction,
     action_for_button,
+    hat_direction,
+    stick_direction,
     trigger_for_button,
 )
 from cartridges.game import Game
@@ -155,8 +157,7 @@ class CartridgesApplication(Adw.Application):
 
         match action_for_button(button):
             case ControllerAction.CONFIRM:
-                if focus := shared.win.get_focus():
-                    focus.activate()
+                shared.win.gamepad_confirm()
             case ControllerAction.BACK:
                 shared.win.gamepad_back()
             case ControllerAction.GAME_MENU:
@@ -182,7 +183,7 @@ class CartridgesApplication(Adw.Application):
 
         shared.win.update_gamepad_hat(hat[1], hat[2])
 
-        if hat[2] != 0:
+        if hat_direction(hat[1], hat[2]) is not None:
             self.navigate(hat[1] + hat[2])
 
     def gamepad_absolute_axis(self, _device, event) -> None:
@@ -195,7 +196,7 @@ class CartridgesApplication(Adw.Application):
         if axis not in (0, 1):
             return
         previous = getattr(self, "_gamepad_axis", {}).get(axis, 0)
-        direction = -1 if value < -0.55 else 1 if value > 0.55 else 0
+        direction = stick_direction(value)
         if not hasattr(self, "_gamepad_axis"):
             self._gamepad_axis = {}
         self._gamepad_axis[axis] = direction
@@ -205,7 +206,7 @@ class CartridgesApplication(Adw.Application):
             key = Gdk.KEY_Left if direction < 0 else Gdk.KEY_Right
         else:
             key = Gdk.KEY_Up if direction < 0 else Gdk.KEY_Down
-        shared.win.child_focus(
+        shared.win.gamepad_navigate(
             Gtk.DirectionType.LEFT
             if key == Gdk.KEY_Left
             else Gtk.DirectionType.RIGHT
@@ -218,13 +219,13 @@ class CartridgesApplication(Adw.Application):
     def navigate(self, direction: int) -> None:
         match direction:
             case 16:
-                shared.win.child_focus(Gtk.DirectionType.UP)
+                shared.win.gamepad_navigate(Gtk.DirectionType.UP)
             case 18:
-                shared.win.child_focus(Gtk.DirectionType.DOWN)
+                shared.win.gamepad_navigate(Gtk.DirectionType.DOWN)
             case 15:
-                shared.win.child_focus(Gtk.DirectionType.LEFT)
+                shared.win.gamepad_navigate(Gtk.DirectionType.LEFT)
             case 17:
-                shared.win.child_focus(Gtk.DirectionType.RIGHT)
+                shared.win.gamepad_navigate(Gtk.DirectionType.RIGHT)
             case _:
                 logging.debug(
                     "Gamepad: unhandled navigation direction: %s", direction
@@ -517,7 +518,7 @@ class CartridgesApplication(Adw.Application):
         )
         about.set_developers(
             (
-                "kramo https://kramo.page",
+                "redclaw https://redclaw.page",
                 "Geoffrey Coulaud https://geoffrey-coulaud.fr",
                 "Rilic https://rilic.red",
                 "Arcitec https://github.com/Arcitec",
@@ -528,8 +529,8 @@ class CartridgesApplication(Adw.Application):
                 "Sabri Ünal https://github.com/sabriunal",
             )
         )
-        about.set_designers(("kramo https://kramo.page",))
-        about.set_copyright("© 2022-2024 kramo")
+        about.set_designers(("redclaw https://redclaw.page",))
+        about.set_copyright("© 2022-2024 redclaw")
         # Translators: Replace this with Your Name, Your Name <your.email@example.com>, or Your Name https://your-site.com for it to show up in the About dialog.
         about.set_translator_credits(_("translator-credits"))
         about.set_debug_info(debug_str)

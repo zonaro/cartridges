@@ -1,6 +1,6 @@
 # game.py
 #
-# Copyright 2022-2023 kramo
+# Copyright 2022-2023 redclaw
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -207,6 +207,13 @@ class Game(Gtk.Box):
         self.add_controller(self.event_contoller_motion)
         self.event_contoller_motion.connect("enter", self.toggle_play, False)
         self.event_contoller_motion.connect("leave", self.toggle_play, None, None)
+        self.event_contoller_motion.connect("enter", self._ao_focar_tile)
+        self.event_contoller_motion.connect("leave", self._ao_desfocar_tile)
+        self.set_focusable(True)
+        self.foco_tile = Gtk.EventControllerFocus.new()
+        self.add_controller(self.foco_tile)
+        self.foco_tile.connect("enter", self._ao_focar_tile)
+        self.foco_tile.connect("leave", self._ao_desfocar_tile)
         self.cover_button.connect("clicked", self.main_button_clicked, False)
         self.play_button.connect("clicked", self.main_button_clicked, True)
 
@@ -365,6 +372,30 @@ class Game(Gtk.Box):
         if not self.menu_button.get_active():
             self.play_revealer.set_reveal_child(not state)
             self.menu_revealer.set_reveal_child(not state)
+
+    def _ao_focar_tile(self, *_args: Any) -> None:
+        """O tile ganhou o foco (mouse ou teclado): veste o fundo da grade.
+
+        Nunca levanta: sem janela, fora da biblioteca ou com a rede fora, o
+        fundo simplesmente fica como está.
+        """
+        try:
+            win = shared.win
+            if win is None or getattr(win, "library_background", None) is None:
+                return
+            win.atualizar_fundo_biblioteca(self)
+        except Exception:  # pylint: disable=broad-except
+            return
+
+    def _ao_desfocar_tile(self, *_args: Any) -> None:
+        """O foco saiu do tile: o fundo da grade volta ao vazio."""
+        try:
+            win = shared.win
+            if win is None or getattr(win, "library_background", None) is None:
+                return
+            win.limpar_fundo_biblioteca(self)
+        except Exception:  # pylint: disable=broad-except
+            return
 
     def main_button_clicked(self, _widget: Any, button: bool) -> None:
         if shared.schema.get_boolean("cover-launches-game") ^ button:

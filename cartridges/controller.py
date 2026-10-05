@@ -57,3 +57,33 @@ def name_for_button(button: int) -> str:
 def trigger_for_button(button: int) -> str | None:
     """Return a trigger name for digital full-press events."""
     return _TRIGGER_BUTTONS.get(button)
+
+
+# libmanette hat encoding used by ``gamepad_hat_axis``: the event carries a
+# (hat, axis, value) triple and ``axis + value`` identifies the direction.
+# 15 = left, 16 = up, 17 = right, 18 = down.
+_HAT_DIRECTIONS = {
+    15: "left",
+    17: "right",
+    16: "up",
+    18: "down",
+}
+
+#: Stick deflection needed to count as one discrete D-pad step.
+STICK_THRESHOLD = 0.55
+
+
+def hat_direction(hat: int, value: int) -> str | None:
+    """Return a direction name for a hat-axis event, if it is a D-pad step."""
+    if value == 0:
+        return None
+    return _HAT_DIRECTIONS.get(hat + value)
+
+
+def stick_direction(value: float, threshold: float = STICK_THRESHOLD) -> int:
+    """Quantize a stick axis value into -1, 0 or +1."""
+    if value < -threshold:
+        return -1
+    if value > threshold:
+        return 1
+    return 0

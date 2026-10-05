@@ -1,6 +1,6 @@
 # process_session.py
 #
-# Copyright 2024 kramo
+# Copyright 2024 redclaw
 #
 # Linux port of the fork's automatic playtime tracker. The polling core
 # (_poll/_accumulate/flush/stop) is unchanged; what changed is recognition
