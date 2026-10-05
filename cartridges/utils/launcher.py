@@ -125,7 +125,7 @@ def nomes_de_icone_da_fonte(source_id: str) -> tuple[str, ...]:
     """Ícones para uma plataforma/fonte exibida na navegação lateral."""
     tipo = source_id.split("_")[0]
     if tipo == "desktop":
-        return ("user-desktop-symbolic",)
+        return ("desktop-source-symbolic", "user-desktop-symbolic")
     return (f"{tipo}-source-symbolic", *(_APLICATIVOS.get(tipo, ())))
 
 

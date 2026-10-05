@@ -19,6 +19,8 @@
 
 import threading
 
+from gi.repository import Gdk, Gtk
+
 from cartridges import shared
 from cartridges.game import Game
 from cartridges.game_cover import GameCover
@@ -27,10 +29,68 @@ from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
 from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
 from cartridges.utils import agrupamento
+from cartridges.utils import launcher as launcher_utils
 
 
 def is_main_thread() -> bool:
     return threading.current_thread() is threading.main_thread()
+
+
+def _icone_da_fonte(source_id: str) -> str:
+    """Melhor nome de ícone disponível para uma fonte/plataforma."""
+    candidatos = launcher_utils.nomes_de_icone_da_fonte(source_id)
+    try:
+        display = Gdk.Display.get_default()
+        tema = Gtk.IconTheme.get_for_display(display) if display else None
+        if tema is not None:
+            for nome in candidatos:
+                if tema.has_icon(nome):
+                    return nome
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
+    return candidatos[0] if candidatos else "application-x-executable-symbolic"
+
+
+def _atualizar_badge_fontes(game: Game, members: list, grouped: bool) -> None:
+    """Mostra lado a lado os ícones das plataformas do jogo.
+
+    Um ícone por fonte distinta (base_source): jogo sozinho mostra um,
+    jogo agrupado mostra um por plataforma disponível.
+    """
+    badge = game.source_badge
+    while (filho := badge.get_first_child()) is not None:
+        badge.remove(filho)
+
+    alvos = members if grouped else [game]
+    vistos: set[str] = set()
+    nomes: list[str] = []
+    icones: list[str] = []
+    app = shared.win.get_application() if shared.win else None
+    for membro in sorted(alvos, key=lambda m: (getattr(m, "source", "") or "")):
+        base = getattr(membro, "base_source", None) or (membro.source or "").split("_")[0]
+        if not base or base in vistos:
+            continue
+        try:
+            nome = app.get_source_name(membro.source) if app else base
+        except Exception:  # pylint: disable=broad-exception-caught
+            nome = getattr(membro, "base_source", base)
+        if not nome or nome == membro.source and membro.source == "imported":
+            continue
+        vistos.add(base)
+        nomes.append(str(nome))
+        icones.append(_icone_da_fonte(membro.source))
+
+    if not icones:
+        badge.set_visible(False)
+        badge.set_tooltip_text(None)
+        return
+
+    for nome_icone in icones:
+        imagem = Gtk.Image.new_from_icon_name(nome_icone)
+        imagem.set_pixel_size(16)
+        badge.append(imagem)
+    badge.set_tooltip_text(", ".join(nomes))
+    badge.set_visible(True)
 
 
 class DisplayManager(Manager):
@@ -96,15 +156,12 @@ class DisplayManager(Manager):
         except Exception:  # pylint: disable=broad-exception-caught
             source_name = game.base_source
         if game.source == "imported" or not source_name or source_name == game.source:
+            while (filho := game.source_badge.get_first_child()) is not None:
+                game.source_badge.remove(filho)
+            game.source_badge.set_tooltip_text(None)
             game.source_badge.set_visible(False)
-        elif grouped:
-            game.source_badge.set_label(
-                f"{source_name} +{len(members) - 1}"
-            )
-            game.source_badge.set_visible(True)
         else:
-            game.source_badge.set_label(str(source_name))
-            game.source_badge.set_visible(True)
+            _atualizar_badge_fontes(game, members if grouped else [game], grouped)
 
         game.menu_button.get_popover().connect(
             "notify::visible", game.toggle_play, None
@@ -128,13 +185,13 @@ class DisplayManager(Manager):
 
         if game.zerado:
             shared.win.zerados_library.append(game)
-            game.get_parent().set_focusable(False)
+            game.get_parent().set_focusable(True)
         elif not game.removed and not game.blacklisted:
             if game.hidden:
                 shared.win.hidden_library.append(game)
             else:
                 shared.win.library.append(game)
-            game.get_parent().set_focusable(False)
+            game.get_parent().set_focusable(True)
 
         shared.win.set_library_child()
 

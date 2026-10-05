@@ -76,7 +76,9 @@ template $Game: Box {
             }
 
             [overlay]
-            Label source_badge {
+            Box source_badge {
+              orientation: horizontal;
+              spacing: 6;
               halign: start;
               valign: end;
               margin-start: 6;
@@ -84,7 +86,6 @@ template $Game: Box {
 
               styles [
                 "osd",
-                "caption-heading",
                 "source-badge",
               ]
             }

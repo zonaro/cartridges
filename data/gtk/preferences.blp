@@ -489,6 +489,11 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         title: _("Dolphin");
         show-enable-switch: true;
 
+        [prefix]
+        Image {
+          icon-name: "dolphin-source-symbolic";
+        }
+
         Adw.ActionRow dolphin_cache_action_row {
           title: _("Cache Location");
 
@@ -591,6 +596,11 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       Adw.ExpanderRow yuzu_expander_row {
         title: _("Yuzu");
         show-enable-switch: true;
+
+        [prefix]
+        Image {
+          icon-name: "yuzu-source-symbolic";
+        }
 
         Adw.ActionRow yuzu_data_action_row {
           title: _("Install Location");

@@ -17,6 +17,8 @@
   </gresource>
   <gresource prefix="@PREFIX@/icons/scalable/categories/">
   <file alias="bottles-source-symbolic.svg">icons/sources/bottles-source-symbolic.svg</file>
+  <file alias="desktop-source-symbolic.svg">icons/sources/desktop-source-symbolic.svg</file>
+  <file alias="dolphin-source-symbolic.svg">icons/sources/dolphin-source-symbolic.svg</file>
   <file alias="flatpak-source-symbolic.svg">icons/sources/flatpak-source-symbolic.svg</file>
   <file alias="heroic-source-symbolic.svg">icons/sources/heroic-source-symbolic.svg</file>
   <file alias="itch-source-symbolic.svg">icons/sources/itch-source-symbolic.svg</file>
@@ -25,6 +27,7 @@
   <file alias="retroarch-source-symbolic.svg">icons/sources/retroarch-source-symbolic.svg</file>
   <file alias="steam-source-symbolic.svg">icons/sources/steam-source-symbolic.svg</file>
   <file alias="twintail-source-symbolic.svg">icons/sources/twintail-source-symbolic.svg</file>
+  <file alias="yuzu-source-symbolic.svg">icons/sources/yuzu-source-symbolic.svg</file>
   <file alias="xbox-cloud-symbolic.svg">icons/sources/xbox-cloud-symbolic.svg</file>
   </gresource>
   <gresource prefix="@PREFIX@/icons/scalable/actions/">

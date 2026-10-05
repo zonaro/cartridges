@@ -73,8 +73,12 @@
 }
 
 .source-badge {
-  padding: 2px 8px;
+  padding: 5px 8px;
   border-radius: 9999px;
+}
+
+.source-badge image {
+  -gtk-icon-size: 16px;
 }
 
 .game-mode button {
@@ -85,6 +89,11 @@
 .game-mode flowboxchild:focus-visible,
 .game-mode row:focus-visible {
   box-shadow: 0 0 0 3px @accent_color;
+}
+
+flowboxchild:focus-visible {
+  box-shadow: 0 0 0 3px @accent_color;
+  border-radius: 12px;
 }
 
 .gamepad-input {
