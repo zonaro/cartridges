@@ -184,7 +184,7 @@ class WallpaperPicker(Adw.Dialog):
         self._results: dict[Gtk.FlowBoxChild, dict[str, Any]] = {}
         self._added = 0
         self._last_query: Optional[str] = None
-        self._temp_dir = Path(tempfile.mkdtemp(prefix="cartridges_wallpaper_"))
+        self._temp_dir = Path(tempfile.mkdtemp(prefix="jolven_wallpaper_"))
 
         # O que está aberto na tela de ajuste: o original inteiro (que é o que
         # vai ser gravado) e uma cópia pequena, que é de onde cada arrastada da
@@ -839,7 +839,7 @@ class WallpaperPicker(Adw.Dialog):
         # fechar: quem chamou segura o arquivo até o Aplicar da edição — ou
         # até o Cancelar, que continua cancelando.
         try:
-            modelo = f"cartridges_wallpaper_XXXXXX{self._suffix}"
+            modelo = f"jolven_wallpaper_XXXXXX{self._suffix}"
             arquivo, fluxo = Gio.File.new_tmp(modelo)
             # Fechado antes da escrita: aberto, o fluxo que `new_tmp` devolve
             # segura o arquivo até o coletor de lixo passar.

@@ -125,7 +125,7 @@ class SteamRateLimiter(RateLimiter):
         """
         Load the pick history from schema.
 
-        Allows remembering API limits through restarts of Cartridges: the
+        Allows remembering API limits through restarts of Jolven: the
         base class drains the bucket by what is restored here
         (`seed_history`), so a relaunch right after a large import starts
         with the tokens those requests already spent, instead of a full

@@ -259,7 +259,7 @@ class FitaWizard(Adw.Dialog):
         marcadas = {fita.id for fita in escolhidas}
         # Quem sai da configuração sai antes de o arquivo mudar: depois da
         # gravação o app não conhece mais essa fita, não tem como devolvê-la ao
-        # estado de antes, e ela ficaria na cor do Cartridges para sempre.
+        # estado de antes, e ela ficaria na cor do Jolven para sempre.
         saindo = [fita for fita in fitas() if fita.id not in marcadas]
         gravar_fitas(escolhidas)
         if saindo:

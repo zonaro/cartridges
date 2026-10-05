@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-# Configura o atalho global Super+G para abrir o Cartridges no GNOME.
+# Configura o atalho global Super+G para abrir o Jolven no GNOME.
 # Idempotente: preserva atalhos personalizados existentes e apenas garante
-# que a entrada do Cartridges exista com o binding <Super>g.
+# que a entrada do Jolven exista com o binding <Super>g.
 set -Eeuo pipefail
 
-readonly BINDING="${CARTRIDGES_SHORTCUT_BINDING:-<Super>g}"
-readonly SHORTCUT_NAME="${CARTRIDGES_SHORTCUT_NAME:-Cartridges}"
-readonly SHORTCUT_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/cartridges/"
+readonly BINDING="${JOLVEN_SHORTCUT_BINDING:-${CARTRIDGES_SHORTCUT_BINDING:-<Super>g}}"
+readonly SHORTCUT_NAME="${JOLVEN_SHORTCUT_NAME:-${CARTRIDGES_SHORTCUT_NAME:-Jolven}}"
+readonly SHORTCUT_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/jolven/"
 readonly MEDIA_KEYS_SCHEMA="org.gnome.settings-daemon.plugins.media-keys"
 readonly CUSTOM_SCHEMA="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
 
 resolve_command() {
-    if [[ -n "${CARTRIDGES_COMMAND:-}" ]]; then
-        printf '%s\n' "$CARTRIDGES_COMMAND"
+    if [[ -n "${JOLVEN_COMMAND:-${CARTRIDGES_COMMAND:-}}" ]]; then
+        printf '%s\n' "${JOLVEN_COMMAND:-${CARTRIDGES_COMMAND:-}}"
+        return 0
+    fi
+    if [[ -x "$HOME/.local/bin/jolven" ]]; then
+        printf '%s\n' "$HOME/.local/bin/jolven"
         return 0
     fi
     if [[ -x "$HOME/.local/bin/cartridges" ]]; then
@@ -20,17 +24,17 @@ resolve_command() {
         return 0
     fi
     local found=""
-    found="$(command -v cartridges || true)"
+    found="$(command -v jolven || command -v cartridges || true)"
     if [[ -n "$found" ]]; then
         printf '%s\n' "$found"
         return 0
     fi
     if command -v flatpak >/dev/null 2>&1 \
-        && flatpak info page.redclaw.Cartridges >/dev/null 2>&1; then
-        printf 'flatpak run page.redclaw.Cartridges\n'
+        && flatpak info io.github.zonaro.Jolven >/dev/null 2>&1; then
+        printf 'flatpak run io.github.zonaro.Jolven\n'
         return 0
     fi
-    printf 'cartridges\n'
+    printf 'jolven\n'
 }
 
 if ! command -v gsettings >/dev/null 2>&1; then
@@ -43,12 +47,12 @@ readonly COMMAND
 
 # Descobre entradas personalizadas existentes.
 current_list="$(gsettings get "$MEDIA_KEYS_SCHEMA" custom-keybindings)"
-# Garante que o path do Cartridges esteja na lista, sem duplicar.
+# Garante que o path do Jolven esteja na lista, sem duplicar.
 if [[ "$current_list" != *"$SHORTCUT_PATH"* ]]; then
     if [[ "$current_list" == "@as []" || "$current_list" == "[]" ]]; then
         new_list="['$SHORTCUT_PATH']"
     else
-        # "[ 'a', 'b' ]" -> "[ 'a', 'b', 'cartridges/' ]"
+        # "[ 'a', 'b' ]" -> "[ 'a', 'b', 'jolven/' ]"
         new_list="${current_list%]*}, '$SHORTCUT_PATH']"
     fi
     gsettings set "$MEDIA_KEYS_SCHEMA" custom-keybindings "$new_list"
@@ -65,7 +69,7 @@ for path in $existing_paths; do
     other_binding="$(gsettings get "$CUSTOM_SCHEMA:$path" binding 2>/dev/null || true)"
     if [[ "$other_binding" == "'$BINDING'" ]]; then
         other_name="$(gsettings get "$CUSTOM_SCHEMA:$path" name 2>/dev/null || echo '?')"
-        printf 'Aviso: %s (%s) ja usa %s; sera liberado para o Cartridges.\n' \
+        printf 'Aviso: %s (%s) ja usa %s; sera liberado para o Jolven.\n' \
             "$path" "$other_name" "$BINDING"
         conflict_path="$path"
         gsettings set "$CUSTOM_SCHEMA:$path" binding ''

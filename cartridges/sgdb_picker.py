@@ -85,7 +85,7 @@ class SgdbPicker(Adw.Dialog):
         # search-changed atrasado do set_text programático dispara.
         self._added = 0
         self._last_query: Optional[str] = None
-        self._temp_dir = Path(tempfile.mkdtemp(prefix="cartridges_sgdb_"))
+        self._temp_dir = Path(tempfile.mkdtemp(prefix="jolven_sgdb_"))
 
         self.animated_button.set_active(shared.schema.get_boolean("sgdb-animated"))
         self.search_entry.set_text(clean_game_name(name))

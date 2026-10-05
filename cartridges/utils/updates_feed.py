@@ -88,7 +88,7 @@ _MAX_FEED_BYTES = 8 * 1024 * 1024
 
 # Some hosts return a bot page to a blank user agent. A boring browser-ish
 # string is enough to get the plain feed.
-_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Cartridges/updates-feed"
+_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Jolven/updates-feed"
 
 _WHITESPACE_RE = re.compile(r"\s+")
 

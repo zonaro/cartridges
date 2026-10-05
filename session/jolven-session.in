@@ -1,16 +1,19 @@
 #!/usr/bin/bash
-# X-Cartridges-Managed=true
+# X-Jolven-Managed=true
 # Standalone GDM/Wayland session. Never run this program as root.
 set -u
 
-readonly SESSION_TAG="cartridges-session"
+readonly SESSION_TAG="jolven-session"
 # Deduza o binario a partir deste script para que o tarball binario da
 # release funcione em qualquer $PREFIX (fallback: caminho da compilacao).
 readonly _SESSION_BINDIR="$(dirname -- "$(readlink -f -- "$0")")"
-if [[ -x "$_SESSION_BINDIR/cartridges" ]]; then
-    readonly CARTRIDGES_BIN="$_SESSION_BINDIR/cartridges"
+if [[ -x "$_SESSION_BINDIR/jolven" ]]; then
+    readonly JOLVEN_BIN="$_SESSION_BINDIR/jolven"
+elif [[ -x "$_SESSION_BINDIR/cartridges" ]]; then
+    # Compat: binario legado do Cartridges
+    readonly JOLVEN_BIN="$_SESSION_BINDIR/cartridges"
 else
-    readonly CARTRIDGES_BIN="@bindir@/cartridges"
+    readonly JOLVEN_BIN="@bindir@/jolven"
 fi
 gamescope_pid=""
 previous_audio_output=""
@@ -49,16 +52,19 @@ if ! command -v gamescope >/dev/null 2>&1; then
     log "Gamescope was not found; install the gamescope package"
     exit 127
 fi
-if [[ ! -x "$CARTRIDGES_BIN" ]]; then
-    log "Cartridges executable was not found at $CARTRIDGES_BIN"
+if [[ ! -x "$JOLVEN_BIN" ]]; then
+    log "Jolven executable was not found at $JOLVEN_BIN"
     exit 127
 fi
 
+# JOLVEN_GAME_SESSION e o sinal atual; CARTRIDGES_GAME_SESSION e mantido
+# por compatibilidade com instalacoes do fork anterior.
+export JOLVEN_GAME_SESSION=1
 export CARTRIDGES_GAME_SESSION=1
 export XDG_SESSION_TYPE=wayland
-export XDG_CURRENT_DESKTOP=Cartridges
-export XDG_SESSION_DESKTOP=cartridges
-export DESKTOP_SESSION=cartridges
+export XDG_CURRENT_DESKTOP=Jolven
+export XDG_SESSION_DESKTOP=jolven
+export DESKTOP_SESSION=jolven
 export GDK_BACKEND=wayland,x11
 
 setting_bool() {
@@ -114,7 +120,7 @@ run_session() {
     local -a extra=("$@")
     log "Starting Gamescope (${extra[*]:-safe defaults})"
     setsid gamescope "${base_args[@]}" "${extra[@]}" -- \
-        "$CARTRIDGES_BIN" --game-mode --session &
+        "$JOLVEN_BIN" --game-mode --session &
     gamescope_pid=$!
     set +e
     wait "$gamescope_pid"

@@ -1,6 +1,6 @@
 configure_file(
-  input: 'cartridges.in',
-  output: 'cartridges',
+  input: 'jolven.in',
+  output: 'jolven',
   configuration: conf,
   install: true,
   install_dir: get_option('bindir'),
@@ -44,16 +44,16 @@ install_data(
 
 if host_machine.system() == 'linux'
   configure_file(
-    input: '../session/cartridges-session.in',
-    output: 'cartridges-session',
+    input: '../session/jolven-session.in',
+    output: 'jolven-session',
     configuration: conf,
     install: true,
     install_mode: 'rwxr-xr-x',
     install_dir: get_option('bindir'),
   )
   configure_file(
-    input: '../session/cartridges-game-mode-setup.in',
-    output: 'cartridges-game-mode-setup',
+    input: '../session/jolven-game-mode-setup.in',
+    output: 'jolven-game-mode-setup',
     configuration: conf,
     install: true,
     install_mode: 'rwxr-xr-x',

@@ -520,21 +520,21 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         botao.set_sensitive(True)
         if estado.registered:
             self.atalho_global_row.set_subtitle(
-                _("Ativo no {} — Super+G abre o Cartridges de qualquer lugar").format(
+                _("Ativo no {} — Super+G abre o Jolven de qualquer lugar").format(
                     ambiente
                 )
             )
             botao.set_label(_("Remover"))
         elif estado.conflict:
             self.atalho_global_row.set_subtitle(
-                _("Super+G está com {} — ativar move para o Cartridges ({})").format(
+                _("Super+G está com {} — ativar move para o Jolven ({})").format(
                     estado.conflict, ambiente
                 )
             )
             botao.set_label(_("Ativar"))
         else:
             self.atalho_global_row.set_subtitle(
-                _("Abre o Cartridges de qualquer lugar ({})").format(ambiente)
+                _("Abre o Jolven de qualquer lugar ({})").format(ambiente)
             )
             botao.set_label(_("Ativar"))
 
@@ -890,7 +890,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         shared.win.create_source_rows()
 
     def _backup_filters(self) -> Gio.ListStore:
-        backup_filter = Gtk.FileFilter(name=_("Backup do Cartridges"))
+        backup_filter = Gtk.FileFilter(name=_("Backup do Jolven"))
         backup_filter.add_suffix("zip")
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filters.append(backup_filter)
@@ -898,7 +898,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
     def export_backup(self, *_args: Any) -> None:
         dialog = Gtk.FileDialog()
-        dialog.set_initial_name(f"cartridges-backup-{date.today().isoformat()}.zip")
+        dialog.set_initial_name(f"jolven-backup-{date.today().isoformat()}.zip")
         dialog.set_filters(self._backup_filters())
 
         def finish(file_dialog: Gtk.FileDialog, result: Gio.Task) -> None:
@@ -989,7 +989,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         create_dialog(
             self,
             _("Backup inválido"),
-            _("O arquivo não é um backup válido do Cartridges."),
+            _("O arquivo não é um backup válido do Jolven."),
         )
         return False
 
@@ -1009,9 +1009,10 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         return False
 
     def reset_app(self, *_args: Any) -> None:
-        rmtree(shared.data_dir / "cartridges", True)
-        rmtree(shared.config_dir / "cartridges", True)
-        rmtree(shared.cache_dir / "cartridges", True)
+        for dirname in ("jolven", "cartridges"):
+            rmtree(shared.data_dir / dirname, True)
+            rmtree(shared.config_dir / dirname, True)
+            rmtree(shared.cache_dir / dirname, True)
 
         for key in (
             (settings_schema_source := Gio.SettingsSchemaSource.get_default())

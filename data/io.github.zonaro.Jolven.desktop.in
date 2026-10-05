@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Jolven
+GenericName=Console-style game library
+Comment=Turn any Linux PC into a console
+Exec=jolven
+Icon=@APP_ID@
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Game;
+# Translators: Leave "jolven" untranslated here.
+Keywords=gaming;games;play;jolven;console;gamepad;launch;launcher;steam;lutris;heroic;epic;bottles;itch;legendary;retroarch;
+StartupNotify=true
+DBusActivatable=true

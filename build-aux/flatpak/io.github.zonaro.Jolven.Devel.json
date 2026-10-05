@@ -1,9 +1,9 @@
 {
-  "id": "page.redclaw.Cartridges.Devel",
+  "id": "io.github.zonaro.Jolven.Devel",
   "runtime": "org.gnome.Platform",
   "runtime-version": "49",
   "sdk": "org.gnome.Sdk",
-  "command": "cartridges",
+  "command": "jolven",
   "finish-args": [
     "--share=network",
     "--share=ipc",
@@ -178,7 +178,7 @@
       ]
     },
     {
-      "name": "cartridges",
+      "name": "jolven",
       "builddir": true,
       "buildsystem": "meson",
       "run-tests": true,

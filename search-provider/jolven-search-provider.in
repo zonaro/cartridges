@@ -1,9 +1,10 @@
 #!@PYTHON@
 
-# cartridges-search-provider.in
+# jolven-search-provider.in — GNOME search provider do Jolven
 #
 # Copyright (c) 2014-2016 Cedric Bellegarde <cedric.bellegarde@adishatz.org>
-# Copyright 2023 redclaw
+# Copyright 2023 redclaw (projeto original Cartridges)
+# Copyright 2026 Jolven contributors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,7 +94,7 @@ class Server:
             pass
 
 
-class SearchCartridgesService(Server, Gio.Application):
+class SearchJolvenService(Server, Gio.Application):
     """
     <!DOCTYPE node PUBLIC
     '-//freedesktop//DTD D-BUS Object Introspection 1.0//EN'
@@ -177,7 +178,7 @@ class SearchCartridgesService(Server, Gio.Application):
                 continue
 
     def ActivateResult(self, game_id, _array, _utime):
-        argv = ["cartridges", "--launch", game_id]
+        argv = ["jolven", "--launch", game_id]
         (pid, _stdin, _stdout, _stderr) = GLib.spawn_async(
             argv,
             flags=GLib.SpawnFlags.SEARCH_PATH,
@@ -252,7 +253,7 @@ class SearchCartridgesService(Server, Gio.Application):
                     )
                 results.append(d)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print("SearchCartridgesService::GetResultMetas():", e)
+            print("SearchJolvenService::GetResultMetas():", e)
             return []
         return results
 
@@ -261,7 +262,7 @@ class SearchCartridgesService(Server, Gio.Application):
 
     def LaunchSearch(self, terms, _utime):
         search = " ".join(terms)
-        argv = ["cartridges", "--search", search]
+        argv = ["jolven", "--search", search]
         (pid, _stdin, _stdout, _stderr) = GLib.spawn_async(
             argv,
             flags=GLib.SpawnFlags.SEARCH_PATH,
@@ -283,12 +284,12 @@ class SearchCartridgesService(Server, Gio.Application):
                     game_ids.append(game_id)
                     continue
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print("SearchCartridgesService::__search():", e)
+            print("SearchJolvenService::__search():", e)
         return game_ids
 
 
 def main():
-    service = SearchCartridgesService()
+    service = SearchJolvenService()
     service.run()
 
 

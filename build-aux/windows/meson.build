@@ -1,6 +1,6 @@
 configure_file(
-  input: './Cartridges.iss.in',
-  output: 'Cartridges.iss',
+  input: './Jolven.iss.in',
+  output: 'Jolven.iss',
   configuration: conf,
   install: true,
   install_dir: '.',

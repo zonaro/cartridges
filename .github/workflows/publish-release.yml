@@ -24,7 +24,7 @@ jobs:
         shell: python
         run: |
           import re, textwrap
-          open_file = open("./data/page.redclaw.Cartridges.metainfo.xml.in", "r", encoding="utf-8")
+          open_file = open("./data/io.github.zonaro.Jolven.metainfo.xml.in", "r", encoding="utf-8")
           string = open_file.read()
           open_file.close()
           string = re.findall("<release.*>\s*<description.*>\n([\s\S]*?)\s*</description>\s*<\/release>", string)[0]
@@ -45,8 +45,8 @@ jobs:
         uses: softprops/action-gh-release@v2.2.2
         with:
           files: |
-            Windows Installer/Cartridges Windows.exe
-            macOS Application/Cartridges macOS.zip
+            Windows Installer/Jolven Windows.exe
+            macOS Application/Jolven macOS.zip
           fail_on_unmatched_files: false
           tag_name: ${{ steps.get_tag_name.outputs.tag_name }}
           body_path: release_notes

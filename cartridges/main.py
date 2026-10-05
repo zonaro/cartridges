@@ -263,8 +263,9 @@ class CartridgesApplication(Adw.Application):
         mode_options = []
         for name, description in (
             ("game-mode", "Run with the console-oriented interface"),
+            ("jolven-session", "Alias for --game-mode"),
             ("session", "Run as the frontend of a dedicated graphical session"),
-            ("windowed", "Keep Game Mode windowed for development"),
+            ("windowed", "Keep console mode windowed for development"),
             ("nested", "Alias for --windowed"),
         ):
             option = GLib.OptionEntry()
@@ -321,7 +322,7 @@ class CartridgesApplication(Adw.Application):
             win.add_css_class("game-mode")
             profile = current_user_profile()
             win.sidebar_navigation_page.set_title(
-                _("Cartridges — {}").format(profile.display_name)
+                _("Jolven — {}").format(profile.display_name)
             )
             win.configure_user_profile(profile)
 
@@ -518,6 +519,7 @@ class CartridgesApplication(Adw.Application):
         )
         about.set_developers(
             (
+                "Jolven contributors https://github.com/zonaro/cartridges",
                 "redclaw https://redclaw.page",
                 "Geoffrey Coulaud https://geoffrey-coulaud.fr",
                 "Rilic https://rilic.red",
@@ -530,11 +532,13 @@ class CartridgesApplication(Adw.Application):
             )
         )
         about.set_designers(("redclaw https://redclaw.page",))
-        about.set_copyright("© 2022-2024 redclaw")
+        about.set_copyright("© 2022-2024 redclaw, © 2026 Jolven contributors")
         # Translators: Replace this with Your Name, Your Name <your.email@example.com>, or Your Name https://your-site.com for it to show up in the About dialog.
         about.set_translator_credits(_("translator-credits"))
         about.set_debug_info(debug_str)
-        about.set_debug_info_filename("cartridges.log")
+        about.set_debug_info_filename("jolven.log")
+        about.set_website("https://github.com/zonaro/cartridges")
+        about.set_issue_url("https://github.com/zonaro/cartridges/issues")
         about.add_legal_section(
             "Steam Branding",
             "© 2023 Valve Corporation",
@@ -684,11 +688,11 @@ class CartridgesApplication(Adw.Application):
         if not shared.runtime.is_game_mode:
             return
         dialog = Adw.AlertDialog.new(
-            _("Game Mode"),
+            _("Jolven Session"),
             _("Choose a session or power action."),
         )
         dialog.add_response("cancel", _("Cancel"))
-        dialog.add_response("logout", _("Exit Game Mode"))
+        dialog.add_response("logout", _("Exit Jolven Session"))
         dialog.add_response("library", _("Back to Library"))
         from cartridges.process_session import ProcessSession
 
@@ -764,7 +768,7 @@ class CartridgesApplication(Adw.Application):
                 Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
             )
         except GLib.Error as error:
-            logging.error("Could not start Gaming Mode setup: %s", error.message)
+            logging.error("Could not start Jolven Session setup: %s", error.message)
             shared.win.toast_queue.add(
                 Adw.Toast.new(_("Could not open the system authorization dialog"))
             )
@@ -774,9 +778,9 @@ class CartridgesApplication(Adw.Application):
         self.refresh_game_mode_setup_actions()
         shared.win.toast_queue.add(
             Adw.Toast.new(
-                _("Installing Gaming Mode…")
+                _("Installing Jolven Session…")
                 if operation == "install"
-                else _("Uninstalling Gaming Mode…")
+                else _("Uninstalling Jolven Session…")
             )
         )
         process.communicate_utf8_async(
@@ -795,14 +799,14 @@ class CartridgesApplication(Adw.Application):
         self.refresh_game_mode_setup_actions()
         if successful:
             message = (
-                _("Gaming Mode installed. It will appear at the next login.")
+                _("Jolven Session installed. It will appear at the next login.")
                 if operation == "install"
-                else _("Gaming Mode uninstalled")
+                else _("Jolven Session uninstalled")
             )
-            logging.info("Gaming Mode setup completed: %s", (stdout or "").strip())
+            logging.info("Jolven Session setup completed: %s", (stdout or "").strip())
         else:
-            message = _("Gaming Mode setup was not completed")
-            logging.error("Gaming Mode setup failed: %s", (stderr or "").strip())
+            message = _("Jolven Session setup was not completed")
+            logging.error("Jolven Session setup failed: %s", (stderr or "").strip())
         toast = Adw.Toast.new(message)
         toast.set_priority(Adw.ToastPriority.HIGH)
         shared.win.toast_queue.add(toast)
@@ -844,7 +848,7 @@ def main(_version: int) -> Any:
     # at all, let alone save over them. GApplication's own uniqueness check
     # runs over the D-Bus session bus, which may not exist on all platforms.
     if not acquire_single_instance():
-        logging.warning("Cartridges is already running")
+        logging.warning("Jolven is already running")
         present_running_instance()
         return 0
 

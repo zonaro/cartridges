@@ -43,6 +43,9 @@ def _detect_prefix() -> "Path | None":
     """
     try:
         for parent in Path(__file__).resolve().parents:
+            if (parent / "share" / "jolven" / "jolven.gresource").exists():
+                return parent
+            # Compat: instalacoes antigas (Cartridges) no mesmo prefix
             if (parent / "share" / "cartridges" / "cartridges.gresource").exists():
                 return parent
     except OSError:
@@ -67,12 +70,76 @@ LIBEXECDIR = (
     if _DETECTED_PREFIX is not None and (_DETECTED_PREFIX / "libexec").is_dir()
     else "@libexecdir@"
 )
-GAME_MODE_HELPER = Path(LIBEXECDIR) / "cartridges-game-mode-setup"
-GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "page.redclaw.Cartridges.GameMode.desktop"
+GAME_MODE_HELPER = Path(LIBEXECDIR) / "jolven-game-mode-setup"
+GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "io.github.zonaro.Jolven.GameMode.desktop"
+# Sessao legada (Cartridges) — mantida como fallback de leitura/deteccao.
+LEGACY_GAME_SESSION_FILE = Path("@game_session_datadir@") / "wayland-sessions" / "page.redclaw.Cartridges.GameMode.desktop"
 SPEC_VERSION = 1.5  # The version of the game_id.json spec
+
+
+def _migrate_legacy_dir(new: "Path", legacy: "Path") -> None:
+    """Copia dados legados do Cartridges para o diretorio do Jolven.
+
+    Copia apenas o que ainda nao existe no destino e NUNCA apaga a origem,
+    para que o usuario nao perca biblioteca, capas, configuracoes,
+    favoritos ou metadados. Operacao idempotente e silenciosa em caso de
+    erro (o app precisa abrir mesmo sem migracao).
+    """
+    try:
+        if not legacy.is_dir():
+            return
+        if new.is_dir() and any(new.iterdir()):
+            return
+        import shutil
+
+        new.parent.mkdir(parents=True, exist_ok=True)
+        if new.exists():
+            for item in legacy.iterdir():
+                target = new / item.name
+                if target.exists():
+                    continue
+                if item.is_dir():
+                    shutil.copytree(item, target, symlinks=True)
+                else:
+                    shutil.copy2(item, target)
+        else:
+            shutil.copytree(legacy, new, symlinks=True)
+    except OSError:
+        pass
+
+
+LEGACY_APP_IDS = ("page.redclaw.Cartridges", "page.redclaw.Cartridges.Devel")
+
+
+def _migrate_gsettings(settings: "Gio.Settings") -> None:
+    """Copia chaves do schema legado para o novo schema quando vazio.
+
+    So preenche chaves que ainda estao no valor padrao, preservando
+    qualquer personalizacao ja feita no Jolven.
+    """
+    try:
+        legacy_source = Gio.SettingsSchemaSource.get_default()
+        if legacy_source is None:
+            return
+        for legacy_id in LEGACY_APP_IDS:
+            legacy_schema = legacy_source.lookup(legacy_id, True)
+            if legacy_schema is None:
+                continue
+            legacy = Gio.Settings.new_full(legacy_schema, None, None)
+            for key in legacy_schema.list_keys():
+                try:
+                    if settings.get_value(key) != settings.get_default_value(key):
+                        continue
+                    settings.set_value(key, legacy.get_value(key))
+                except (TypeError, AttributeError):
+                    continue
+            break
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
 
 schema = Gio.Settings.new(APP_ID)
 state_schema = Gio.Settings.new(APP_ID + ".State")
+_migrate_gsettings(schema)
 runtime = RuntimeContext()
 
 home = Path.home()
@@ -88,14 +155,24 @@ host_cache_dir = Path(getenv("HOST_XDG_CACHE_HOME", Path.home() / ".cache"))
 
 flatpak_dir = home / ".var" / "app"
 
-app_dir = data_dir / "cartridges"
+# Diretorios do Jolven; dados do fork anterior (Cartridges) sao migrados
+# por copia na primeira execucao (origem preservada).
+_migrate_legacy_dir(data_dir / "jolven", data_dir / "cartridges")
+_migrate_legacy_dir(cache_dir / "jolven", cache_dir / "cartridges")
 
-games_dir = data_dir / "cartridges" / "games"
-covers_dir = data_dir / "cartridges" / "covers"
-logos_dir = data_dir / "cartridges" / "logos"
-wallpapers_dir = data_dir / "cartridges" / "wallpapers"
-fitas_dir = data_dir / "cartridges" / "fitas"
-fitas_arquivo = data_dir / "cartridges" / "fitas.json"
+app_dir = data_dir / "jolven"
+
+games_dir = data_dir / "jolven" / "games"
+covers_dir = data_dir / "jolven" / "covers"
+logos_dir = data_dir / "jolven" / "logos"
+wallpapers_dir = data_dir / "jolven" / "wallpapers"
+fitas_dir = data_dir / "jolven" / "fitas"
+fitas_arquivo = data_dir / "jolven" / "fitas.json"
+
+# Caminhos legados (leitura/compatibilidade apenas).
+legacy_app_dir = data_dir / "cartridges"
+legacy_games_dir = data_dir / "cartridges" / "games"
+legacy_covers_dir = data_dir / "cartridges" / "covers"
 
 appdata_dir = Path(getenv("appdata") or r"C:\Users\Default\AppData\Roaming")
 local_appdata_dir = Path(

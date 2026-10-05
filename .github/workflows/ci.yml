@@ -20,8 +20,8 @@ jobs:
       - name: Flatpak Builder
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6.5
         with:
-          bundle: page.redclaw.Cartridges.Devel.flatpak
-          manifest-path: build-aux/flatpak/page.redclaw.Cartridges.Devel.json
+          bundle: io.github.zonaro.Jolven.Devel.flatpak
+          manifest-path: build-aux/flatpak/io.github.zonaro.Jolven.Devel.json
 
   windows:
     name: Windows
@@ -48,16 +48,16 @@ jobs:
         shell: msys2 {0}
         run: |
           set +e
-          timeout 2 cartridges; [ "$?" -eq "124" ]
+          timeout 2 jolven; [ "$?" -eq "124" ]
 
       - name: Inno Setup
-        run: iscc ".\_build\build-aux\windows\Cartridges.iss"
+        run: iscc ".\_build\build-aux\windows\Jolven.iss"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Windows Installer
-          path: _build/build-aux/windows/Output/Cartridges Windows.exe
+          path: _build/build-aux/windows/Output/Jolven Windows.exe
 
   macos:
     name: macOS
@@ -85,15 +85,15 @@ jobs:
           PYTHONPATH: /opt/homebrew/opt/homebrew/lib/python3.12/site-packages
         run: |
           cd build-aux/macos
-          pyinstaller ./cartridges.spec
+          pyinstaller ./jolven.spec
 
       - name: Zip
         run: |
           cd build-aux/macos/dist
-          zip -yr Cartridges\ macOS.zip Cartridges.app
+          zip -yr Jolven\ macOS.zip Jolven.app
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          path: build-aux/macos/dist/Cartridges macOS.zip
+          path: build-aux/macos/dist/Jolven macOS.zip
           name: macOS Application

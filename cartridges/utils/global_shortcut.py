@@ -17,14 +17,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Registra o atalho global Super+G que abre o Cartridges de qualquer lugar.
+"""Registra o atalho global Super+G que abre o Jolven de qualquer lugar.
 
 Wayland não deixa um app GTK capturar teclas globais sozinho, então o
 registro é delegado ao compositor de cada ambiente:
 
 - GNOME (e derivados com o mesmo esquema): entrada personalizada em
   ``org.gnome.settings-daemon.plugins.media-keys`` via ``Gio.Settings``.
-- KDE Plasma 5/6: arquivo ``cartridges-global.desktop`` com
+- KDE Plasma 5/6: arquivo ``jolven-global.desktop`` com
   ``X-KDE-Shortcuts`` + entrada ``[services]`` no ``kglobalshortcutsrc``,
   ativado na sessão atual via D-Bus (``org.kde.KGlobalAccel``). Nunca se
   reinicia o daemon no Plasma 6 — ele roda dentro do KWin.
@@ -48,10 +48,13 @@ BINDING_KDE = "Meta+G"
 GNOME_MEDIA_KEYS_SCHEMA = "org.gnome.settings-daemon.plugins.media-keys"
 GNOME_CUSTOM_SCHEMA = GNOME_MEDIA_KEYS_SCHEMA + ".custom-keybinding"
 GNOME_SHORTCUT_PATH = (
+    "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/jolven/"
+)
+GNOME_LEGACY_SHORTCUT_PATH = (
     "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/cartridges/"
 )
 
-KDE_DESKTOP_FILE = "cartridges-global.desktop"
+KDE_DESKTOP_FILE = "jolven-global.desktop"
 KDE_SERVICE = "org.kde.kglobalaccel"
 KDE_OBJECT = "/kglobalaccel"
 KDE_IFACE = "org.kde.KGlobalAccel"
@@ -73,29 +76,32 @@ class ShortcutStatus:
 
 
 def resolve_command() -> str:
-    """Comando que abre o Cartridges instalado, na melhor forma encontrada."""
-    override = os.environ.get("CARTRIDGES_COMMAND", "").strip()
+    """Comando que abre o Jolven instalado, na melhor forma encontrada."""
+    override = os.environ.get("JOLVEN_COMMAND", "").strip() or os.environ.get(
+        "CARTRIDGES_COMMAND", ""
+    ).strip()
     if override:
         return override
-    local = Path.home() / ".local" / "bin" / "cartridges"
-    if local.is_file() and os.access(local, os.X_OK):
-        return str(local)
-    found = shutil.which("cartridges")
-    if found:
-        return found
+    for binary in ("jolven", "cartridges"):
+        local = Path.home() / ".local" / "bin" / binary
+        if local.is_file() and os.access(local, os.X_OK):
+            return str(local)
+        found = shutil.which(binary)
+        if found:
+            return found
     if shutil.which("flatpak"):
-        try:
-            subprocess.run(
-                ["flatpak", "info", "page.redclaw.Cartridges"],
-                capture_output=True,
-                check=True,
-                timeout=15,
-            )
-        except (subprocess.SubprocessError, OSError):
-            pass
-        else:
-            return "flatpak run page.redclaw.Cartridges"
-    return "cartridges"
+        for app_id in ("io.github.zonaro.Jolven", "page.redclaw.Cartridges"):
+            try:
+                subprocess.run(
+                    ["flatpak", "info", app_id],
+                    capture_output=True,
+                    check=True,
+                    timeout=15,
+                )
+            except (subprocess.SubprocessError, OSError):
+                continue
+            return f"flatpak run {app_id}"
+    return "jolven"
 
 
 def desktop_family_from_string(desktop: str) -> Optional[str]:
@@ -265,6 +271,7 @@ def _gnome_conflict() -> Optional[str]:
 def _gnome_register() -> None:
     media = _gnome_settings()
     entries = with_path(list(media.get_strv("custom-keybindings")), GNOME_SHORTCUT_PATH)
+    entries = without_path(entries, GNOME_LEGACY_SHORTCUT_PATH)
     media.set_strv("custom-keybindings", entries)
     for path in entries:
         if path == GNOME_SHORTCUT_PATH:
@@ -276,7 +283,7 @@ def _gnome_register() -> None:
         except Exception:  # pylint: disable=broad-exception-caught
             logging.debug("Ignorando entrada de atalho %s", path, exc_info=True)
     custom = _gnome_custom(GNOME_SHORTCUT_PATH)
-    custom.set_string("name", "Cartridges")
+    custom.set_string("name", "Jolven")
     custom.set_string("command", resolve_command())
     custom.set_string("binding", BINDING_GNOME)
     try:
@@ -289,12 +296,18 @@ def _gnome_register() -> None:
 
 def _gnome_unregister() -> None:
     media = _gnome_settings()
-    entries = without_path(list(media.get_strv("custom-keybindings")), GNOME_SHORTCUT_PATH)
+    entries = list(media.get_strv("custom-keybindings"))
+    entries = without_path(entries, GNOME_SHORTCUT_PATH)
+    entries = without_path(entries, GNOME_LEGACY_SHORTCUT_PATH)
     media.set_strv("custom-keybindings", entries)
+    for path in (GNOME_SHORTCUT_PATH, GNOME_LEGACY_SHORTCUT_PATH):
+        try:
+            custom = _gnome_custom(path)
+            for key in ("binding", "command", "name"):
+                custom.reset(key)
+        except Exception:  # pylint: disable=broad-exception-caught
+            continue
     try:
-        custom = _gnome_custom(GNOME_SHORTCUT_PATH)
-        for key in ("binding", "command", "name"):
-            custom.reset(key)
         from gi.repository import Gio  # noqa: PLC0415
 
         Gio.Settings.sync()
@@ -323,10 +336,10 @@ def kde_desktop_entry(command: str) -> str:
     return (
         "[Desktop Entry]\n"
         "Type=Application\n"
-        "Name=Cartridges\n"
-        "Comment=Abrir o Cartridges com Super+G\n"
+        "Name=Jolven\n"
+        "Comment=Abrir o Jolven com Super+G\n"
         f"Exec={command}\n"
-        "Icon=page.redclaw.Cartridges\n"
+        "Icon=io.github.zonaro.Jolven\n"
         "Terminal=false\n"
         "Categories=Game;\n"
         "NoDisplay=true\n"

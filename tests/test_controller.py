@@ -3,7 +3,9 @@ import unittest
 from cartridges.controller import (
     ControllerAction,
     action_for_button,
+    hat_direction,
     name_for_button,
+    stick_direction,
     trigger_for_button,
 )
 
@@ -32,6 +34,24 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(trigger_for_button(313), "RT")
         self.assertIsNone(action_for_button(312))
         self.assertIsNone(action_for_button(313))
+
+    def test_hat_directions(self):
+        self.assertIsNone(hat_direction(16, 0))
+        self.assertIsNone(hat_direction(17, 0))
+        self.assertEqual(hat_direction(16, -1), "left")
+        self.assertEqual(hat_direction(16, 1), "right")
+        self.assertEqual(hat_direction(17, -1), "up")
+        self.assertEqual(hat_direction(17, 1), "down")
+        self.assertIsNone(hat_direction(99, 1))
+
+    def test_stick_direction_threshold(self):
+        self.assertEqual(stick_direction(0.0), 0)
+        self.assertEqual(stick_direction(-0.54), 0)
+        self.assertEqual(stick_direction(0.54), 0)
+        self.assertEqual(stick_direction(-0.56), -1)
+        self.assertEqual(stick_direction(0.56), 1)
+        self.assertEqual(stick_direction(-1.0), -1)
+        self.assertEqual(stick_direction(1.0), 1)
 
 
 if __name__ == "__main__":

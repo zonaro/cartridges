@@ -41,13 +41,15 @@ class RuntimeContext:
     ) -> "RuntimeContext":
         env = process_environment if environment is None else environment
         args = set(argv[1:])
-        requested = bool({"--game-mode", "--session"} & args) or (
-            env.get("CARTRIDGES_GAME_SESSION", "").casefold() in _TRUE_VALUES
+        requested = bool({"--game-mode", "--jolven-session", "--session"} & args) or (
+            env.get("JOLVEN_GAME_SESSION", "").casefold() in _TRUE_VALUES
+            or env.get("CARTRIDGES_GAME_SESSION", "").casefold() in _TRUE_VALUES
         )
         if not requested:
             return cls()
         nested = bool({"--windowed", "--nested"} & args) or (
-            env.get("CARTRIDGES_GAME_MODE_NESTED", "").casefold() in _TRUE_VALUES
+            env.get("JOLVEN_GAME_MODE_NESTED", "").casefold() in _TRUE_VALUES
+            or env.get("CARTRIDGES_GAME_MODE_NESTED", "").casefold() in _TRUE_VALUES
         )
         return cls(
             RuntimeMode.NESTED_GAME_MODE if nested else RuntimeMode.GAME_SESSION

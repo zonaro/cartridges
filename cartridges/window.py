@@ -88,7 +88,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
     library: AnimatedFlowBox = Gtk.Template.Child()
     scrolledwindow: Gtk.ScrolledWindow = Gtk.Template.Child()
     library_overlay: Gtk.Overlay = Gtk.Template.Child()
-    library_background: Gtk.Picture = Gtk.Template.Child()
+    library_background_stack: Gtk.Stack = Gtk.Template.Child()
+    library_background_a: Gtk.Picture = Gtk.Template.Child()
+    library_background_b: Gtk.Picture = Gtk.Template.Child()
     notice_empty: Adw.StatusPage = Gtk.Template.Child()
     notice_no_results: Adw.StatusPage = Gtk.Template.Child()
     search_bar: Gtk.SearchBar = Gtk.Template.Child()
@@ -196,6 +198,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     _details_images_generation: int = 0
     _fundo_biblioteca_geracao: int = 0
     _fundo_biblioteca_jogo: Optional[str] = None
+    _fundo_biblioteca_lado: bool = False
     sort_state: str = "last_played"
     filter_state: str = "all"
     source_rows: dict = {}
@@ -985,7 +988,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
         if not urls:
             return
 
-        cache_dir = shared.cache_dir / "cartridges" / "thegamesdb" / game.game_id
+        cache_dir = shared.cache_dir / "jolven" / "thegamesdb" / game.game_id
 
         def worker() -> None:
             try:
@@ -1066,8 +1069,24 @@ class CartridgesWindow(Adw.ApplicationWindow):
             logging.info("Fundo da biblioteca inválido: %s", erro)
             Path(caminho).unlink(missing_ok=True)
             return GLib.SOURCE_REMOVE
-        self.library_background.set_paintable(textura)
+        self._mostrar_fundo_biblioteca(textura)
         return GLib.SOURCE_REMOVE
+
+    def _mostrar_fundo_biblioteca(self, textura: Optional[Gdk.Texture]) -> None:
+        """Aplica ``textura`` com fade, alternando as duas faces do Stack.
+
+        A face escondida recebe a imagem nova e vira a visível: o
+        ``transition-type: crossfade`` do Stack dissolve uma na outra. Com
+        ``None``, dissolve para o vazio.
+        """
+        self._fundo_biblioteca_lado = not self._fundo_biblioteca_lado
+        escondida = (
+            self.library_background_b
+            if self._fundo_biblioteca_lado
+            else self.library_background_a
+        )
+        escondida.set_paintable(textura)
+        self.library_background_stack.set_visible_child(escondida)
 
     def limpar_fundo_biblioteca(self, game: Optional[Game] = None) -> None:
         """Volta o fundo da grade ao vazio quando o foco sai do tile."""
@@ -1075,7 +1094,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
             return
         self._fundo_biblioteca_geracao += 1
         self._fundo_biblioteca_jogo = None
-        self.library_background.set_paintable(None)
+        self._mostrar_fundo_biblioteca(None)
 
     def set_details_view_opacity(self, *_args: Any) -> None:
         if self.navigation_view.get_visible_page() != self.details_page:

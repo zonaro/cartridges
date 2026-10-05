@@ -36,7 +36,7 @@ def setup_logging() -> None:
     app_log_level = os.environ.get("LOGLEVEL", profile_app_log_level).upper()
     lib_log_level = os.environ.get("LIBLOGLEVEL", profile_lib_log_level).upper()
 
-    log_filename = shared.cache_dir / "cartridges" / "logs" / "cartridges.log"
+    log_filename = shared.cache_dir / "jolven" / "logs" / "jolven.log"
 
     config = {
         "version": 1,

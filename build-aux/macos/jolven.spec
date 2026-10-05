@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ["../../_build/cartridges/cartridges"],
+    ["../../_build/cartridges/jolven"],
     pathex=[],
     binaries=[],
-    datas=[("../../_build/data/cartridges.gresource", "Resources")],
+    datas=[("../../_build/data/jolven.gresource", "Resources")],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={
@@ -27,7 +27,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="Cartridges",
+    name="Jolven",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -46,13 +46,13 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="Cartridges",
+    name="Jolven",
 )
 app = BUNDLE(
     coll,
-    name="Cartridges.app",
+    name="Jolven.app",
     icon="./icon.icns",
-    bundle_identifier="page.redclaw.Cartridges",
+    bundle_identifier="io.github.zonaro.Jolven",
     info_plist={
         "LSApplicationCategoryType": "public.app-category.games",
     },

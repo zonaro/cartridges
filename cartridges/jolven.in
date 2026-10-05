@@ -1,8 +1,9 @@
 #!@PYTHON@
 
-# cartridges.in
+# jolven.in — launcher do Jolven
 #
-# Copyright 2022-2024 redclaw
+# Copyright 2022-2024 redclaw (projeto original Cartridges)
+# Copyright 2026 Jolven contributors (fork independente Jolven)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +41,9 @@ def _detect_prefix() -> "str | None":
     try:
         script_dir = Path(__file__).resolve().parent  # $prefix/bin
         prefix = script_dir.parent
+        if (prefix / "share" / "jolven" / "jolven.gresource").exists():
+            return str(prefix)
+        # Compat: arvore legada do Cartridges no mesmo prefix
         if (prefix / "share" / "cartridges" / "cartridges.gresource").exists():
             return str(prefix)
     except OSError:
@@ -65,7 +69,13 @@ if _DETECTED_PREFIX is None:
     PYTHONDIR = "@pythondir@"
     LOCALEDIR = "@localedir@"
 else:
-    PKGDATADIR = os.path.join(_DETECTED_PREFIX, "share", "cartridges")
+    _candidate = os.path.join(_DETECTED_PREFIX, "share", "jolven")
+    _legacy = os.path.join(_DETECTED_PREFIX, "share", "cartridges")
+    PKGDATADIR = (
+        _candidate
+        if os.path.exists(os.path.join(_candidate, "jolven.gresource"))
+        else _legacy
+    )
     PYTHONDIR = _detect_python_dir(_DETECTED_PREFIX) or "@pythondir@"
     LOCALEDIR = os.path.join(_DETECTED_PREFIX, "share", "locale")
 
@@ -78,6 +88,8 @@ if os.name != "nt":
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if system() == "Linux":
+    # Dominio gettext historico: os catalogos em po/ ainda geram
+    # cartridges.mo; renomear o dominio esvaziaria as 30 traducoes.
     locale.bindtextdomain("cartridges", LOCALEDIR)
     locale.textdomain("cartridges")
     gettext.install("cartridges", LOCALEDIR, names=['ngettext'])
@@ -90,10 +102,16 @@ if __name__ == "__main__":
     try:
         # For a macOS application bundle
         resource = Gio.Resource.load(
-            str(Path(__file__).parent / "Resources" / "cartridges.gresource")
+            str(Path(__file__).parent / "Resources" / "jolven.gresource")
         )
     except GLib.GError:
-        resource = Gio.Resource.load(os.path.join(PKGDATADIR, "cartridges.gresource"))
+        try:
+            resource = Gio.Resource.load(os.path.join(PKGDATADIR, "jolven.gresource"))
+        except GLib.GError:
+            # Compat: bundle legado do Cartridges
+            resource = Gio.Resource.load(
+                os.path.join(PKGDATADIR, "cartridges.gresource")
+            )
     resource._register()  # pylint: disable=protected-access
 
     from cartridges import main

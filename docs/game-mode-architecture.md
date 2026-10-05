@@ -1,5 +1,9 @@
 # Game Mode architecture
 
+> In Jolven, the user-facing name of this experience is **Jolven Session**.
+> Internally the code still uses the `game-mode`/`game-session` terms for
+> flags, schemas and helpers (`jolven --game-mode`, `jolven-session`).
+
 ## Runtime and shared UI
 
 `runtime.py` is the only authority for desktop, dedicated-session, and nested
@@ -12,17 +16,17 @@ there is no second application or duplicated library implementation.
 
 ## Login session and installer
 
-Meson installs `cartridges-session`, a fixed-operation privileged helper and a
+Meson installs `jolven-session`, a fixed-operation privileged helper and a
 polkit policy. The helper generates the display-manager entry under
-`share/wayland-sessions` at installation time, using `NAME` from
-`/etc/os-release`; for example, its visible name is `Fedora Gaming Mode`.
-Only the small helper runs as root. Cartridges, Gamescope and games explicitly
+`share/wayland-sessions` at installation time; its visible name is
+`Jolven Session`.
+Only the small helper runs as root. Jolven, Gamescope and games explicitly
 refuse or avoid root execution.
 
-The GDM entry starts `cartridges-session`. That launcher validates its
+The GDM entry starts `jolven-session`. That launcher validates its
 privilege level and dependencies, selects optional monitor/VRR/FPS/audio
 settings, starts Gamescope in a separate process group, forwards termination
-signals, and waits for the compositor. Cartridges is Gamescope's primary
+signals, and waits for the compositor. Jolven is Gamescope's primary
 child, so closing or crashing it ends Gamescope and the login session.
 Optional Gamescope options get one safe-default retry when startup fails
 immediately. Audio defaults are restored during cleanup.

@@ -381,7 +381,7 @@ class Game(Gtk.Box):
         """
         try:
             win = shared.win
-            if win is None or getattr(win, "library_background", None) is None:
+            if win is None or getattr(win, "library_background_stack", None) is None:
                 return
             win.atualizar_fundo_biblioteca(self)
         except Exception:  # pylint: disable=broad-except
@@ -391,7 +391,7 @@ class Game(Gtk.Box):
         """O foco saiu do tile: o fundo da grade volta ao vazio."""
         try:
             win = shared.win
-            if win is None or getattr(win, "library_background", None) is None:
+            if win is None or getattr(win, "library_background_stack", None) is None:
                 return
             win.limpar_fundo_biblioteca(self)
         except Exception:  # pylint: disable=broad-except

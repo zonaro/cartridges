@@ -4,21 +4,21 @@ service_dir = join_paths(get_option('datadir'), 'dbus-1', 'services')
 serarch_provider_dir = join_paths(get_option('datadir'), 'gnome-shell', 'search-providers')
 
 configure_file(
-  input: 'cartridges-search-provider.in',
-  output: 'cartridges-search-provider',
+  input: 'jolven-search-provider.in',
+  output: 'jolven-search-provider',
   configuration: conf,
   install_dir: libexecdir,
 )
 
 configure_file(
-  input: 'page.redclaw.Cartridges.SearchProvider.service.in',
+  input: 'io.github.zonaro.Jolven.SearchProvider.service.in',
   output: app_id + '.SearchProvider.service',
   configuration: conf,
   install_dir: service_dir,
 )
 
 configure_file(
-  input: 'page.redclaw.Cartridges.SearchProvider.ini',
+  input: 'io.github.zonaro.Jolven.SearchProvider.ini',
   output: app_id + '.SearchProvider.ini',
   configuration: conf,
   install_dir: serarch_provider_dir,

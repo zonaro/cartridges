@@ -9,7 +9,7 @@ ROOT = Path(__file__).parents[1]
 
 class ConfigurationTests(unittest.TestCase):
     def test_entrypoint_prioritizes_its_matching_python_modules(self):
-        entrypoint = (ROOT / "cartridges" / "cartridges.in").read_text(
+        entrypoint = (ROOT / "cartridges" / "jolven.in").read_text(
             encoding="utf-8"
         )
         self.assertIn('PYTHONDIR = "@pythondir@"', entrypoint)
@@ -18,7 +18,7 @@ class ConfigurationTests(unittest.TestCase):
 
     def test_game_mode_schema_has_safe_defaults(self):
         schema = ET.parse(
-            ROOT / "data" / "page.redclaw.Cartridges.gschema.xml.in"
+            ROOT / "data" / "io.github.zonaro.Jolven.gschema.xml.in"
         ).getroot()
         defaults = {
             key.attrib["name"]: key.findtext("default")

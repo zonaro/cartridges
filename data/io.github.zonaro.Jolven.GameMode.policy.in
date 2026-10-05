@@ -2,16 +2,16 @@
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
   "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
 <policyconfig>
-  <!-- X-Cartridges-Managed=true -->
-  <vendor>Cartridges</vendor>
-  <action id="page.redclaw.Cartridges.configure-game-mode">
-    <description>Install or remove the Cartridges Gaming Mode login session</description>
-    <message>Authentication is required to configure Gaming Mode</message>
+  <!-- X-Jolven-Managed=true -->
+  <vendor>Jolven</vendor>
+  <action id="io.github.zonaro.Jolven.configure-game-mode">
+    <description>Install or remove the Jolven Session login session</description>
+    <message>Authentication is required to configure the Jolven Session</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">@libexecdir@/cartridges-game-mode-setup</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">@libexecdir@/jolven-game-mode-setup</annotate>
   </action>
 </policyconfig>

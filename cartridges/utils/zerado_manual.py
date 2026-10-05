@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Jogos Zerados adicionados à mão: jogos terminados que nunca passaram pelo
-Cartridges (console, outro PC, anos atrás).
+Jolven (console, outro PC, anos atrás).
 
 Viram uma tumba zerada: ``imported_N``, sem atalho, sem executável, sem
 tempo de jogo. Por isso backup, edição, Excluir e ordenação não precisam saber

@@ -1,7 +1,7 @@
-#define MyAppName "Cartridges"
+#define MyAppName "Jolven"
 #define MyAppVersion "@VERSION@"
-#define MyAppPublisher "redclaw"
-#define MyAppURL "https://apps.gnome.org/Cartridges/"
+#define MyAppPublisher "Jolven contributors"
+#define MyAppURL "https://github.com/zonaro/cartridges"
 #define MyAppExeName "pythonw.exe"
 
 [Setup]
@@ -11,13 +11,13 @@ AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
-AppSupportURL=https://git.redclaw.page/cartridges/issues
+AppSupportURL=https://github.com/zonaro/cartridges/issues
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf64}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\..\..\LICENSE
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=Cartridges Windows
+OutputBaseFilename=Jolven Windows
 SetupIconFile=..\..\..\build-aux\windows\icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -30,7 +30,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\a\_temp\msys64\ucrt64\bin\cartridges"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "D:\a\_temp\msys64\ucrt64\bin\jolven"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\bin\pythonw.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\bin\python.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\bin\gdbus.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
@@ -44,7 +44,7 @@ Source: "D:\a\_temp\msys64\ucrt64\lib\gdk-pixbuf-2.0\*"; DestDir: "{app}\lib\gdk
 Source: "D:\a\_temp\msys64\ucrt64\lib\girepository-1.0\*"; DestDir: "{app}\lib\girepository-1.0"; Flags: recursesubdirs ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\lib\python@PYTHON_VERSION@\*"; DestDir: "{app}\lib\python@PYTHON_VERSION@"; Excludes: "__pycache__"; Flags: recursesubdirs ignoreversion
 
-Source: "D:\a\_temp\msys64\ucrt64\share\cartridges\*"; DestDir: "{app}\share\cartridges"; Excludes: "__pycache__"; Flags: recursesubdirs ignoreversion
+Source: "D:\a\_temp\msys64\ucrt64\share\jolven\*"; DestDir: "{app}\share\jolven"; Excludes: "__pycache__"; Flags: recursesubdirs ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\share\icons\*"; DestDir: "{app}\share\icons"; Excludes: "*.png,cursors\*"; Flags: recursesubdirs ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\share\glib-2.0\*"; DestDir: "{app}\share\glib-2.0"; Flags: recursesubdirs ignoreversion
 Source: "D:\a\_temp\msys64\ucrt64\share\gtk-4.0\*"; DestDir: "{app}\share\gtk-4.0"; Flags: recursesubdirs ignoreversion
@@ -52,8 +52,8 @@ Source: "D:\a\_temp\msys64\ucrt64\share\gtk-4.0\*"; DestDir: "{app}\share\gtk-4.
 Source: "..\..\..\build-aux\windows\icon.ico"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Parameters: """{app}\bin\cartridges"""; IconFilename: "{app}\icon.ico"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Parameters: """{app}\bin\cartridges"""; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Parameters: """{app}\bin\jolven"""; IconFilename: "{app}\icon.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; Parameters: """{app}\bin\jolven"""; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\bin\{#MyAppExeName}"; Parameters: """{app}\bin\cartridges"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
+Filename: "{app}\bin\{#MyAppExeName}"; Parameters: """{app}\bin\jolven"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall

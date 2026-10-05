@@ -41,7 +41,14 @@ _APLICATIVOS = {
         "twintail-source-symbolic",
     ),
     "itch": ("io.itch.itch", "itch", "itch-source-symbolic"),
-    "cartridges": ("page.redclaw.Cartridges", "cartridges"),
+    "jolven": (
+        "io.github.zonaro.Jolven",
+        "io.github.zonaro.Jolven.Devel",
+        "jolven",
+        "page.redclaw.Cartridges",
+        "page.redclaw.Cartridges.Devel",
+        "cartridges",
+    ),
     "parsec": ("com.parsecgaming.parsec", "parsec"),
     "greenlight": ("io.github.unknownskl.greenlight", "greenlight"),
     "moonlight": ("com.moonlight_stream.Moonlight", "moonlight"),
@@ -60,6 +67,7 @@ _ALIASES = {
     "heroic games launcher": "heroic",
     "twintaillauncher": "twintail",
     "twintail launcher": "twintail",
+    "cartridges": "jolven",
 }
 
 _CONHECIDOS = frozenset(
@@ -129,11 +137,11 @@ def nomes_de_icone_da_fonte(source_id: str) -> tuple[str, ...]:
     return (f"{tipo}-source-symbolic", *(_APLICATIVOS.get(tipo, ())))
 
 
-# Tipos que nunca viram ícone no topo. O próprio Cartridges chega via
+# Tipos que nunca viram ícone no topo. O próprio Jolven chega via
 # Flatpak/Desktop como qualquer launcher, mas abrir o app dentro dele
 # mesmo não faz sentido: detectado como launcher ele já some da grade,
 # e fora do listar() some do topo também.
-_OCULTOS = frozenset({"cartridges"})
+_OCULTOS = frozenset({"jolven", "cartridges"})
 
 
 def listar() -> list:

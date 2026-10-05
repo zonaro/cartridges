@@ -1,8 +1,9 @@
 project(
-  'cartridges',
+  'jolven',
   # Versionamento por data da compilacao: YY.DDD.HHMM (ano 2 digitos,
   # dia do ano, hora+minuto 24h). Calculado por build-aux/get-version.py
-  # a cada `meson setup`; defina CARTRIDGES_VERSION para congelar uma versao.
+  # a cada `meson setup`; defina JOLVEN_VERSION (ou o legado
+  # CARTRIDGES_VERSION) para congelar uma versao.
   version: run_command(
     'python3',
     files('build-aux/get-version.py'),
@@ -36,11 +37,11 @@ moduledir = python_dir / 'cartridges'
 
 profile = get_option('profile')
 if profile == 'development'
-  app_id = 'page.redclaw.Cartridges.Devel'
-  prefix = '/page/redclaw/Cartridges/Devel'
+  app_id = 'io.github.zonaro.Jolven.Devel'
+  prefix = '/io/github/zonaro/Jolven/Devel'
 elif profile == 'release'
-  app_id = 'page.redclaw.Cartridges'
-  prefix = '/page/redclaw/Cartridges'
+  app_id = 'io.github.zonaro.Jolven'
+  prefix = '/io/github/zonaro/Jolven'
 endif
 
 conf = configuration_data()

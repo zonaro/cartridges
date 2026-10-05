@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Imprime a versao do Cartridges no formato YY.DDD.HHMM.
+"""Imprime a versao do Jolven no formato YY.DDD.HHMM.
 
 DDD e o dia do ano (1-366) e HHMM sao hora e minuto (24h) do momento
-da compilacao. Quando a variavel de ambiente CARTRIDGES_VERSION esta
-definida, ela e usada como-is (ap apos validacao) para que o script de
-publicacao congele uma unica versao para build, tag e release.
+da compilacao. Quando a variavel de ambiente JOLVEN_VERSION (ou a legada
+CARTRIDGES_VERSION) esta definida, ela e usada como-is (apos validacao)
+para que o script de publicacao congele uma unica versao para build,
+tag e release.
 """
 
 import os
@@ -16,7 +17,9 @@ VERSION_RE = re.compile(r"^\d{2}\.\d{3}\.\d{4}$")
 
 
 def build_version() -> str:
-    override = os.environ.get("CARTRIDGES_VERSION", "").strip()
+    override = os.environ.get("JOLVEN_VERSION", "").strip() or os.environ.get(
+        "CARTRIDGES_VERSION", ""
+    ).strip()
     if override:
         version = override
     else:

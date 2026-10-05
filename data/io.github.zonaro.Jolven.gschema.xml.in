@@ -137,6 +137,12 @@
     <key name="thegamesdb" type="b">
       <default>false</default>
     </key>
+    <key name="igdb-client-id" type="s">
+      <default>""</default>
+    </key>
+    <key name="igdb-client-secret" type="s">
+      <default>""</default>
+    </key>
     <key name="wallhaven-key" type="s">
       <default>""</default>
     </key>

@@ -38,7 +38,7 @@ _webkit_tried = False
 def _cache_file() -> Path:
     from cartridges import shared
 
-    return shared.cache_dir / "cartridges" / "better-xcloud.user.js"
+    return shared.cache_dir / "jolven" / "better-xcloud.user.js"
 
 
 def webkit_available() -> bool:

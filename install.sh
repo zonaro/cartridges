@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Instala o Cartridges no usuario atual sem manter uma copia do repositorio.
+# Instala o Jolven no usuario atual sem manter uma copia do repositorio.
 #
 # Modo padrao (binario): baixa o tarball da ultima GitHub Release e extrai
 # em $PREFIX (sem compilar nada localmente).
@@ -54,9 +54,9 @@ configure_shortcut() {
         return 0
     fi
     local shortcut_url="https://raw.githubusercontent.com/zonaro/cartridges/main/scripts/install-gnome-shortcut.sh"
-    if CARTRIDGES_COMMAND="$INSTALL_PREFIX/bin/cartridges" \
+    if CARTRIDGES_COMMAND="$INSTALL_PREFIX/bin/jolven" \
         bash <(curl -fsSL "$shortcut_url"); then
-        printf 'Atalho global configurado: Super+G abre o Cartridges.\n'
+        printf 'Atalho global configurado: Super+G abre o Jolven.\n'
     else
         printf 'Nao foi possivel configurar o atalho Super+G automaticamente.\n' >&2
     fi
@@ -64,7 +64,7 @@ configure_shortcut() {
 
 print_path_hint() {
     if [[ ":$PATH:" != *":$INSTALL_PREFIX/bin:"* ]]; then
-        printf 'Se necessario, adicione %s/bin ao PATH para usar o comando cartridges.\n' \
+        printf 'Se necessario, adicione %s/bin ao PATH para usar o comando jolven.\n' \
             "$INSTALL_PREFIX"
     fi
 }
@@ -105,14 +105,14 @@ install_binary() {
     local arch
     arch="$(uname -m)"
     local base_url="https://github.com/$GITHUB_REPOSITORY/releases/latest/download"
-    local tarball="cartridges-linux-$arch.tar.gz"
+    local tarball="jolven-linux-$arch.tar.gz"
 
     local work_dir
-    work_dir="$(mktemp -d -t cartridges-install.XXXXXX)"
+    work_dir="$(mktemp -d -t jolven-install.XXXXXX)"
     # shellcheck disable=SC2064
     trap "rm -rf -- '$work_dir'" EXIT
 
-    printf 'Baixando o Cartridges (binario)...\n'
+    printf 'Baixando o Jolven (binario)...\n'
     curl -fsSL -o "$work_dir/$tarball" "$base_url/$tarball"
     curl -fsSL -o "$work_dir/$tarball.sha256" "$base_url/$tarball.sha256"
     curl -fsSL -o "$work_dir/VERSION" "$base_url/VERSION"
@@ -138,9 +138,9 @@ install_binary() {
             break
         fi
     done
-    local service_file="$INSTALL_PREFIX/share/dbus-1/services/page.redclaw.Cartridges.SearchProvider.service"
+    local service_file="$INSTALL_PREFIX/share/dbus-1/services/io.github.zonaro.Jolven.SearchProvider.service"
     if [[ -n $site_dir && -f $service_file ]]; then
-        printf 'Exec=env PYTHONPATH=%s %s/libexec/cartridges-search-provider\n' \
+        printf 'Exec=env PYTHONPATH=%s %s/libexec/jolven-search-provider\n' \
             "$site_dir" "$INSTALL_PREFIX" >"$service_file"
     fi
 
@@ -154,7 +154,7 @@ install_binary() {
         gtk-update-icon-cache -f -t "$INSTALL_PREFIX/share/icons/hicolor" 2>/dev/null || true
     fi
 
-    printf '\nCartridges instalado com sucesso. Abra-o pelo menu de aplicativos.\n'
+    printf '\nJolven instalado com sucesso. Abra-o pelo menu de aplicativos.\n'
     print_path_hint
     configure_shortcut
 }
@@ -185,32 +185,32 @@ install_source() {
     install_runtime_packages "${REQUIRED_PACKAGES[@]}"
 
     local work_dir
-    work_dir="$(mktemp -d -t cartridges-install.XXXXXX)"
+    work_dir="$(mktemp -d -t jolven-install.XXXXXX)"
     # shellcheck disable=SC2064
     trap "rm -rf -- '$work_dir'" EXIT
 
-    printf 'Baixando o Cartridges...\n'
+    printf 'Baixando o Jolven...\n'
     git clone --depth 1 --branch "$REPOSITORY_REF" --single-branch \
-        "$REPOSITORY_URL" "$work_dir/cartridges"
+        "$REPOSITORY_URL" "$work_dir/jolven"
 
     printf 'Compilando...\n'
-    meson setup "$work_dir/cartridges/build" "$work_dir/cartridges" \
+    meson setup "$work_dir/jolven/build" "$work_dir/jolven" \
         --prefix="$INSTALL_PREFIX" \
         --buildtype=release \
         -Dprofile=release
-    meson compile -C "$work_dir/cartridges/build"
+    meson compile -C "$work_dir/jolven/build"
 
     printf 'Instalando em %s...\n' "$INSTALL_PREFIX"
-    meson install -C "$work_dir/cartridges/build"
+    meson install -C "$work_dir/jolven/build"
 
-    printf '\nCartridges instalado com sucesso. Abra-o pelo menu de aplicativos.\n'
+    printf '\nJolven instalado com sucesso. Abra-o pelo menu de aplicativos.\n'
     print_path_hint
 
     # Atalho global Super+G no GNOME (nao falha a instalacao se indisponivel).
     if command -v gsettings >/dev/null 2>&1; then
-        if CARTRIDGES_COMMAND="$INSTALL_PREFIX/bin/cartridges" \
-            bash "$work_dir/cartridges/scripts/install-gnome-shortcut.sh"; then
-            printf 'Atalho global configurado: Super+G abre o Cartridges.\n'
+        if CARTRIDGES_COMMAND="$INSTALL_PREFIX/bin/jolven" \
+            bash "$work_dir/jolven/scripts/install-gnome-shortcut.sh"; then
+            printf 'Atalho global configurado: Super+G abre o Jolven.\n'
         else
             printf 'Nao foi possivel configurar o atalho Super+G automaticamente.\n' >&2
             printf 'Execute depois: ./scripts/install-gnome-shortcut.sh\n' >&2

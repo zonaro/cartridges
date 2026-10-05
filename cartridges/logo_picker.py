@@ -96,7 +96,7 @@ class LogoPicker(Adw.Dialog):
         # Última consulta disparada, para o debounce não repetir a busca que o
         # set_text programático do __init__ emite com atraso.
         self._last_query: Optional[str] = None
-        self._temp_dir = Path(tempfile.mkdtemp(prefix="cartridges_logo_"))
+        self._temp_dir = Path(tempfile.mkdtemp(prefix="jolven_logo_"))
 
         self.search_entry.set_text(clean_game_name(name))
 
@@ -344,7 +344,7 @@ class LogoPicker(Adw.Dialog):
         # Handed over outside this dialog's temp dir, which is deleted on close:
         # the caller holds the file until the edit is applied (or discarded).
         try:
-            template = f"cartridges_logo_XXXXXX{suffix}"
+            template = f"jolven_logo_XXXXXX{suffix}"
             arquivo, fluxo = Gio.File.new_tmp(template)
             # Fechado antes da escrita: aberto, o fluxo que `new_tmp` devolve
             # segura o arquivo até o coletor de lixo passar.

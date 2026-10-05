@@ -28,7 +28,7 @@ running. GLib tries to start one by spawning ``gdbus.exe``; when that fails
 
 and GApplication quietly falls back to behaving like a non-unique app. Nothing
 crashes, so the failure is easy to read as cosmetic — but the uniqueness check
-is gone with it, and two Cartridges windows both loading and writing the same
+is gone with it, and two Jolven windows both loading and writing the same
 game files means one of them saving over the other's playtime.
 
 A named mutex is the platform's own answer to this question and needs nothing
@@ -132,7 +132,7 @@ def release() -> None:
 # Título da janela principal (window.blp). Não passa por tradução — a
 # interface é hardcoded — então dá para casar contra ele daqui, onde o gettext
 # do launcher pode nem ter sido instalado ainda.
-_MAIN_WINDOW_TITLE = "Cartridges"
+_MAIN_WINDOW_TITLE = "Jolven"
 
 
 # Evento nomeado que a segunda cópia acende para a primeira: a janela principal
@@ -222,7 +222,7 @@ def present_running_instance() -> None:
     try:
         _wake_running_instance()
     except Exception as error:  # pylint: disable=broad-exception-caught
-        logging.warning("Could not wake the running Cartridges instance: %s", error)
+        logging.warning("Could not wake the running Jolven instance: %s", error)
 
     try:
         import ctypes  # pylint: disable=import-outside-toplevel
@@ -254,7 +254,7 @@ def present_running_instance() -> None:
             user32.GetClassNameW(hwnd, class_name, 64)
             # O par título + classe "gdk*" (as janelas GTK no Windows registram
             # classes gdkSurface*) evita realçar uma pasta do Explorer que por
-            # acaso se chame Cartridges.
+            # acaso se chame Jolven.
             if title.value == _MAIN_WINDOW_TITLE and class_name.value.lower().startswith(
                 "gdk"
             ):
@@ -278,4 +278,4 @@ def present_running_instance() -> None:
         # ainda carrega o direito de foreground dessa interação.
         user32.SetForegroundWindow(hwnd)
     except Exception as error:  # pylint: disable=broad-exception-caught
-        logging.warning("Could not present the running Cartridges window: %s", error)
+        logging.warning("Could not present the running Jolven window: %s", error)

@@ -47,6 +47,8 @@ class FlatpakSourceIterable(SourceIterable):
 
         blacklist = (
             {
+                "io.github.zonaro.Jolven",
+                "io.github.zonaro.Jolven.Devel",
                 "hu.redclaw.Cartridges",
                 "hu.redclaw.Cartridges.Devel",
                 "page.redclaw.Cartridges",
@@ -54,6 +56,8 @@ class FlatpakSourceIterable(SourceIterable):
             }
             if shared.schema.get_boolean("flatpak-import-launchers")
             else {
+                "io.github.zonaro.Jolven",
+                "io.github.zonaro.Jolven.Devel",
                 "hu.redclaw.Cartridges",
                 "hu.redclaw.Cartridges.Devel",
                 "page.redclaw.Cartridges",

@@ -1,42 +1,35 @@
-[circle-url]: https://circle.gnome.org
-[circle-image]: https://circle.gnome.org/assets/button/badge.svg
-[donttheme-url]: https://stopthemingmy.app
-[donttheme-image]: https://stopthemingmy.app/badge.svg
-[weblate-url]: https://hosted.weblate.org/engage/cartridges/
-[weblate-image]: https://hosted.weblate.org/widgets/cartridges/-/cartridges/svg-badge.svg
-[discord-url]: https://discord.gg/yrJfddyt56
-[discord-image]: https://img.shields.io/discord/1088155799299313754?color=%235865F2&label=discord&logo=discord&logoColor=%23FFFFFF&style=for-the-badge
-[flathub-url]: https://flathub.org/apps/page.redclaw.Cartridges
-[flathub-image]: https://img.shields.io/flathub/v/page.redclaw.Cartridges?logo=flathub&style=for-the-badge
-[installs-image]: https://img.shields.io/flathub/downloads/page.redclaw.Cartridges?style=for-the-badge
-
-> [!IMPORTANT]
-> This project is no longer actively maintained.
-> The `rewrite` branch has the most up-to-date code in case someone wants to keep it alive through a fork, but be aware that not everything there is functional. Still, please don't use code from the `main` branch as it's of poor quality.
-
 <div align="center">
-  <img src="data/icons/hicolor/scalable/apps/page.redclaw.Cartridges.svg" width="128" height="128">
+  <img src="data/icons/hicolor/scalable/apps/io.github.zonaro.Jolven.svg" width="128" height="128">
 
-  # Cartridges
+  # Jolven
 
-  A GTK4 + Libadwaita game launcher
+  **Turn any Linux PC into a console.**
 
-  [![GNOME Circle][circle-image]][circle-url]
-  [![Please do not theme this app][donttheme-image]][donttheme-url] 
-  [![Translation Status][weblate-image]][weblate-url]
+  A gamepad-first gaming interface for Linux. Launch your entire library from one place — use Jolven from your desktop or start directly into a dedicated gaming session.
 
-  [![Flathub][flathub-image]][flathub-url]
-  [![Discord][discord-image]][discord-url]
-  [![Installs][installs-image]][flathub-url]
+  [![Please do not theme this app](https://stopthemingmy.app/badge.svg)](https://stopthemingmy.app)
 
   <img src="data/screenshots/1.png">
 </div>
 
 Explore the multilingual product page in [landing/](landing/index.html).
 
+> Jolven is an independent fork originally based on [Cartridges](https://github.com/zonaro/cartridges) (GPL-3.0-or-later, © 2022-2024 redclaw). The origin is preserved in copyright headers, credits and the in-app About dialog.
+
 # The Project
 
-Cartridges is an easy-to-use, elegant game launcher written in Python using GTK4 and Libadwaita.
+Jolven gathers your games from Steam, Heroic, Lutris, Bottles, emulators, native Linux games and manually added titles into one console-style library. It runs two ways:
+
+- **Desktop mode** — Jolven as a regular app inside GNOME, KDE or another graphical environment.
+- **Jolven Session** — a dedicated graphical session started straight from the display manager, fullscreen and gamepad-driven, before GNOME or KDE even load. Leaving the session returns you to the login screen.
+
+Jolven is **not** a Linux distribution, **not** an operating system and **not** a desktop environment. It runs on top of the Linux you already have:
+
+> Install Jolven on your existing Linux distribution and turn your PC into a console whenever you want.
+
+## Why Jolven?
+
+> Linux already has excellent gaming infrastructure. Jolven focuses on the missing piece: a unified, controller-first experience that can make a regular Linux PC feel like a console without replacing the operating system.
 
 ## Features
 
@@ -49,8 +42,12 @@ Cartridges is an easy-to-use, elegant game launcher written in Python using GTK4
   - itch
   - Legendary
   - RetroArch
+  - Dolphin
+  - Yuzu
+  - TwinTail
   - Flatpak
   - Desktop Entries
+- Xbox Cloud Gaming (experimental)
 - Filtering games by source
 - Searching and sorting by title, date added and last played
 - Hiding games
@@ -58,14 +55,10 @@ Cartridges is an easy-to-use, elegant game launcher written in Python using GTK4
 - Game details, screenshots, and fallback artwork from [TheGamesDB](https://thegamesdb.net/)
 - Searching for games on various databases
 - Animated covers
+- Playtime and session tracking, per-game launch profiles
 - A search provider for GNOME
 
-For updates and questions, join our [Discord server][discord-url]!
-
-## Donations
-I accept donations through [GitHub Sponsors](https://github.com/sponsors/redclaw) and [Liberapay](https://liberapay.com/redclaw).
-
-Thank you for your generosity! 💜
+Your existing data is safe: on first launch, Jolven copies the library, covers, settings, favorites and metadata from the previous `cartridges` folders into its own folders. The originals are never deleted. GSettings keys are migrated the same way (new keys win when already customized).
 
 # Installation
 
@@ -78,48 +71,38 @@ curl -fsSL https://raw.githubusercontent.com/zonaro/cartridges/main/install.sh |
 ```
 
 The installer downloads the prebuilt binary from the latest GitHub Release,
-installs any missing runtime dependencies and extracts Cartridges under
+installs any missing runtime dependencies and extracts Jolven under
 `~/.local`. To compile from source instead, pipe into `bash -s -- --source`.
 Each build is versioned `YY.DDD.HHMM` (2-digit year, day of year, 24h
 hour+minute of the compilation) — see `scripts/publish-release.sh`.
-
-The original app is also available on Flathub.
-
-<a href=https://flathub.org/apps/page.redclaw.Cartridges><img alt='Download on Flathub' src='https://flathub.org/api/badge?svg&locale=en'/></a>
 
 ## Windows
 
 ### From Releases
 
-1. Download the latest release from [GitHub Releases](https://github.com/redclaw/cartridges/releases).
+1. Download the latest release from [GitHub Releases](https://github.com/zonaro/cartridges/releases).
 2. Run the downloaded installer.
 
 Note: Windows might present you with a warning when trying to install the app. This is expected, just ignore the warning.
 
-### Winget
-
-Install the latest release with the command: `winget install cartridges`.
-
 ## macOS
 
-1. Download the latest release from [GitHub Releases](https://github.com/redclaw/cartridges/releases).
+1. Download the latest release from [GitHub Releases](https://github.com/zonaro/cartridges/releases).
 2. Move the app into your Applications folder.
-
-Note: macOS might tell you that the application could not be checked for malicious software or something similar. In this case, open System Settings > Privacy & Security, scroll down, find the warning about Cartridges and click "Open Anyway". More information can be found [here](https://support.apple.com/en-us/102445).
 
 ## Building manually
 
-See [Building](https://codeberg.org/redclaw/cartridges/src/branch/main/CONTRIBUTING.md#building).
+See [CONTRIBUTING.md](CONTRIBUTING.md#building).
 
-## Game Mode
+## Jolven Session
 
-Cartridges can also be the frontend of a standalone Gamescope session. This
+Jolven can also be the frontend of a standalone Gamescope session. This
 does not start GNOME Shell and does not change normal desktop launches. The
 same application and library are used in both modes.
 
 ### Requirements and installation (Fedora)
 
-Build and install Cartridges normally, then run:
+Build and install Jolven normally, then run:
 
 ```sh
 ./scripts/install-game-session.sh
@@ -131,15 +114,13 @@ desktop file, and installs the session launcher under `/usr`. It never
 removes dependencies or changes GPU, SELinux, PAM, or GDM settings. MangoHud
 is optional.
 
-The application menu also exposes **Instalar Gaming Mode** or **Desinstalar
-Gaming Mode**, according to the current state. It uses the normal polkit
-authorization dialog. The login-manager entry uses the distribution name
-from `/etc/os-release`, for example **Fedora Gaming Mode**.
+The application menu also exposes **Install Jolven Session** or **Uninstall
+Jolven Session**, according to the current state. It uses the normal polkit
+authorization dialog.
 
-Log out, select **<Distribution> Gaming Mode** (for example, **Fedora Gaming
-Mode**) from the display manager's session chooser, and sign in. Closing
-Cartridges ends Gamescope and returns to the login screen. To remove only the
-session integration:
+Log out, select **Jolven Session** from the display manager's session
+chooser, and sign in. Closing Jolven ends Gamescope and returns to the login
+screen. To remove only the session integration:
 
 ```sh
 ./scripts/uninstall-game-session.sh
@@ -150,12 +131,10 @@ session integration:
 Test the console UI without logging out:
 
 ```sh
-cartridges --game-mode --windowed
+jolven --game-mode --windowed
 ```
 
-Game Mode starts on a console-style landing page showing the current Linux
-account name and AccountsService (or `~/.face`) avatar, with Continue,
-Library, Settings and Power actions. **Start in Library** can bypass that page.
+(`--jolven-session` works as an alias for `--game-mode`.)
 
 The Session preferences page controls GameMode, optional MangoHud, Gamescope
 VRR/FPS limiting, cursor hiding, and the preferred display, audio output and
@@ -169,20 +148,20 @@ Gamepad navigation uses libmanette and supports hotplug; D-pad/left stick
 navigate, the south face button confirms, the east face button goes back,
 Start opens the page menu, and Guide/Home opens the global menu. That menu can
 return to the library, close the current tracked game, suspend, restart, shut
-down or leave Game Mode. Power actions use systemd-logind over D-Bus and do
-not call sudo.
+down or leave the Jolven Session. Power actions use systemd-logind over D-Bus
+and do not call sudo.
 
 ### Troubleshooting
 
 Session launcher messages are available with:
 
 ```sh
-journalctl -t cartridges-session -b
-journalctl --user -b | grep -i cartridges
+journalctl -t jolven-session -b
+journalctl --user -b | grep -i jolven
 ```
 
 Check `gamescope --version`, `gamemoded -t`, and the app log under
-`~/.cache/cartridges/logs/` when a component fails. The session retries once
+`~/.cache/jolven/logs/` when a component fails. The session retries once
 with safe Gamescope defaults if monitor, VRR, or limiter options fail during
 startup.
 
@@ -197,14 +176,9 @@ The implementation and responsibility boundaries are documented in
 
 # Contributing
 
-See [CONTRIBUTING.md](https://codeberg.org/redclaw/cartridges/src/branch/main/CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Thanks to [Weblate](https://weblate.org/) for hosting our translations!
+# Credits
 
-# Code of Conduct
-
-The project follows the [GNOME Code of Conduct](https://conduct.gnome.org/). 
-
-Cartridges' contributors stand with Palestine, Ukraine and all other victims of imperialism and war, and believe trans rights are human rights. If this bothers you, this is probably not the best project for you to contribute to.
-
-See [CODE_OF_CONDUCT.md](https://codeberg.org/redclaw/cartridges/src/branch/main/CODE_OF_CONDUCT.md).
+- Original project: [Cartridges](https://github.com/zonaro/cartridges) by redclaw and contributors (GPL-3.0-or-later).
+- This fork: Jolven contributors — rebranded as an independent, console-focused gaming interface with a dedicated session, automatic data migration and a new identity.

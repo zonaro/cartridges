@@ -59,8 +59,8 @@ Adw.StatusPage zerados_notice_empty {
   valign: center;
 }
 
-template $CartridgesWindow: Adw.ApplicationWindow {
-  title: _("Cartridges");
+  template $CartridgesWindow: Adw.ApplicationWindow {
+    title: _("Jolven");
   width-request: 360;
   height-request: 100;
 
@@ -90,7 +90,7 @@ template $CartridgesWindow: Adw.ApplicationWindow {
     Overlay session_overlay {
       Adw.NavigationView navigation_view {
       Adw.NavigationPage game_mode_home_page {
-        title: _("Gaming Mode");
+        title: _("Jolven Session");
 
         Adw.ToolbarView {
           [top]
@@ -196,7 +196,7 @@ template $CartridgesWindow: Adw.ApplicationWindow {
 
           [sidebar]
           Adw.NavigationPage sidebar_navigation_page {
-            title: _("Cartridges");
+            title: _("Jolven");
 
             Adw.ToolbarView {
               [top]
@@ -430,6 +430,7 @@ template $CartridgesWindow: Adw.ApplicationWindow {
             }
 
             Overlay library_overlay {
+              [overlay]
               ScrolledWindow scrolledwindow {
                 $AnimatedFlowBox library {
                   homogeneous: true;
@@ -446,6 +447,38 @@ template $CartridgesWindow: Adw.ApplicationWindow {
                   styles [
                     "no-hover",
                   ]
+                }
+              }
+
+              Stack library_background_stack {
+                can-target: false;
+                halign: fill;
+                valign: fill;
+                hexpand: true;
+                vexpand: true;
+                transition-type: crossfade;
+                transition-duration: 400;
+
+                Picture library_background_a {
+                  can-target: false;
+                  halign: fill;
+                  valign: fill;
+                  hexpand: true;
+                  vexpand: true;
+                  content-fit: cover;
+                  keep-aspect-ratio: false;
+                  opacity: 0.25;
+                }
+
+                Picture library_background_b {
+                  can-target: false;
+                  halign: fill;
+                  valign: fill;
+                  hexpand: true;
+                  vexpand: true;
+                  content-fit: cover;
+                  keep-aspect-ratio: false;
+                  opacity: 0.25;
                 }
               }
             }
@@ -919,7 +952,7 @@ Adw.NavigationPage xcloud_page {
         visible: false;
         icon-name: "network-error-symbolic";
         title: _("Xbox Cloud Gaming indisponível");
-        description: _("Instale o WebKitGTK para navegar no xCloud dentro do Cartridges.");
+        description: _("Instale o WebKitGTK para navegar no xCloud dentro do Jolven.");
         vexpand: true;
         valign: center;
       }
@@ -1352,26 +1385,26 @@ menu primary_menu {
 
   section {
     item {
-      label: _("Instalar Gaming Mode");
+        label: _("Install Jolven Session");
       action: "app.install_game_mode";
       hidden-when: "action-disabled";
     }
 
     item {
-      label: _("Desinstalar Gaming Mode");
+        label: _("Uninstall Jolven Session");
       action: "app.uninstall_game_mode";
       hidden-when: "action-disabled";
     }
 
     item {
-      label: _("Game Mode Menu");
+      label: _("Session Menu");
       action: "app.power_menu";
       hidden-when: "action-disabled";
     }
 
     item (_("Preferences"), "app.preferences")
     item (_("Keyboard Shortcuts"), "app.shortcuts")
-    item (_("About Cartridges"), "app.about")
+        item (_("About Jolven"), "app.about")
   }
 }
 

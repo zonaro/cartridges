@@ -1,6 +1,6 @@
-data/page.redclaw.Cartridges.desktop.in
-data/page.redclaw.Cartridges.gschema.xml.in
-data/page.redclaw.Cartridges.metainfo.xml.in
+data/io.github.zonaro.Jolven.desktop.in
+data/io.github.zonaro.Jolven.gschema.xml.in
+data/io.github.zonaro.Jolven.metainfo.xml.in
 
 data/gtk/details-dialog.blp
 data/gtk/game.blp

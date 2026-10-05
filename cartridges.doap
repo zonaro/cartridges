@@ -5,15 +5,15 @@
          xmlns:gnome="http://api.gnome.org/doap-extensions#"
          xmlns="http://usefulinc.com/ns/doap#">
 
-  <name>Cartridges</name>
-  <shortdesc xml:lang="en">Launch all your games</shortdesc>
+  <name>Jolven</name>
+  <shortdesc xml:lang="en">Turn any Linux PC into a console</shortdesc>
   <description xml:lang="en">
-Cartridges is a simple game launcher for all of your games. It has support for importing games from Steam, Lutris, Heroic and more with no login necessary. You can sort and hide games or download cover art from SteamGridDB.
+Jolven is a gamepad-first gaming interface for Linux. It gathers games from Steam, Lutris, Heroic and more into one console-style library, as a desktop app or a dedicated session. Jolven is an independent fork originally based on Cartridges.
   </description>
 
-  <homepage rdf:resource="https://git.redclaw.page/cartridges" />
-  <download-page rdf:resource="https://git.redclaw.page/cartridges" />
-  <bug-database rdf:resource="https://git.redclaw.page/cartridges/issues" />
+  <homepage rdf:resource="https://github.com/zonaro/cartridges" />
+  <download-page rdf:resource="https://github.com/zonaro/cartridges" />
+  <bug-database rdf:resource="https://github.com/zonaro/cartridges/issues" />
 
   <programming-language>Python</programming-language>
   <platform>GTK 4</platform>

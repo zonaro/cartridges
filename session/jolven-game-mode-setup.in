@@ -1,18 +1,21 @@
 #!/usr/bin/bash
-# X-Cartridges-Managed=true
+# X-Jolven-Managed=true
 # Privileged helper invoked by pkexec. It accepts only the fixed operations below.
 set -euo pipefail
 
 readonly action="${1:-}"
-readonly session_file="@game_session_datadir@/wayland-sessions/page.redclaw.Cartridges.GameMode.desktop"
+readonly session_file="@game_session_datadir@/wayland-sessions/io.github.zonaro.Jolven.GameMode.desktop"
 # Deduza o launcher a partir deste helper (libexec/../bin) para que o
 # tarball binario da release funcione em qualquer $PREFIX
 # (fallback: caminho da compilacao).
 readonly _SETUP_BINDIR="$(dirname -- "$(readlink -f -- "$0")")/../bin"
-if [[ -x "$_SETUP_BINDIR/cartridges-session" ]]; then
+if [[ -x "$_SETUP_BINDIR/jolven-session" ]]; then
+    readonly session_launcher="$_SETUP_BINDIR/jolven-session"
+elif [[ -x "$_SETUP_BINDIR/cartridges-session" ]]; then
+    # Compat: launcher legado do Cartridges
     readonly session_launcher="$_SETUP_BINDIR/cartridges-session"
 else
-    readonly session_launcher="@bindir@/cartridges-session"
+    readonly session_launcher="@bindir@/jolven-session"
 fi
 
 . /etc/os-release
@@ -21,7 +24,7 @@ distro_name="${distro_name% Linux}"
 distro_name="${distro_name//$'\n'/ }"
 
 if [[ "$action" == name ]]; then
-    printf '%s Gaming Mode\n' "$distro_name"
+    printf 'Jolven Session\n'
     exit 0
 fi
 
@@ -30,23 +33,24 @@ if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
     exit 77
 fi
 if [[ "$action" != install && "$action" != uninstall ]]; then
-    printf 'Usage: cartridges-game-mode-setup install|uninstall|name\n' >&2
+    printf 'Usage: jolven-game-mode-setup install|uninstall|name\n' >&2
     exit 64
 fi
 
 is_managed() {
-    [[ -f "$session_file" ]] && grep -Eq '^X-Cartridges-Managed=true$' "$session_file"
+    # Aceita tanto o marcador atual quanto o legado (Cartridges).
+    [[ -f "$session_file" ]] && grep -Eq '^X-(Jolven|Cartridges)-Managed=true$' "$session_file"
 }
 
 if [[ "$action" == uninstall ]]; then
     if is_managed; then
         rm -- "$session_file"
-        printf 'Gaming Mode session removed.\n'
+        printf 'Jolven Session removed.\n'
     elif [[ -e "$session_file" ]]; then
         printf 'Refusing to remove an unmanaged session file: %s\n' "$session_file" >&2
         exit 73
     else
-        printf 'Gaming Mode is not installed.\n'
+        printf 'Jolven Session is not installed.\n'
     fi
     exit 0
 fi
@@ -80,13 +84,13 @@ temporary="$(mktemp "${session_file}.tmp.XXXXXX.desktop")"
 trap 'rm -f -- "$temporary"' EXIT
 printf '%s\n' \
     '[Desktop Entry]' \
-    "Name=$distro_name Gaming Mode" \
-    "Comment=Gaming session powered by Gamescope and Cartridges" \
+    'Name=Jolven Session' \
+    'Comment=Console-style gaming session powered by Jolven' \
     "Exec=$session_launcher" \
     "TryExec=$session_launcher" \
     'Type=Application' \
     'X-GDM-SessionRegisters=true' \
-    'X-Cartridges-Managed=true' > "$temporary"
+    'X-Jolven-Managed=true' > "$temporary"
 if command -v desktop-file-validate >/dev/null 2>&1; then
     desktop-file-validate "$temporary"
 fi
@@ -98,4 +102,4 @@ if command -v systemctl >/dev/null 2>&1 \
     systemctl reload polkit.service || \
         printf 'Warning: polkit will load the new action after its next restart.\n' >&2
 fi
-printf '%s Gaming Mode installed.\n' "$distro_name"
+printf 'Jolven Session installed.\n'

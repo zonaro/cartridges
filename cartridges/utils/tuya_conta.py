@@ -26,12 +26,18 @@ from typing import NamedTuple, Optional
 from gi.repository import Secret
 
 _SCHEMA = Secret.Schema.new(
+    "io.github.zonaro.Jolven.tuya",
+    Secret.SchemaFlags.NONE,
+    {"app": Secret.SchemaAttributeType.STRING},
+)
+_LEGACY_SCHEMA = Secret.Schema.new(
     "page.redclaw.Cartridges.tuya",
     Secret.SchemaFlags.NONE,
     {"app": Secret.SchemaAttributeType.STRING},
 )
-_ATRIBUTOS = {"app": "cartridges"}
-_ROTULO = "Cartridges: conta da Tuya"
+_ATRIBUTOS = {"app": "jolven"}
+_LEGACY_ATRIBUTOS = {"app": "cartridges"}
+_ROTULO = "Jolven: conta da Tuya"
 
 
 class Conta(NamedTuple):
@@ -66,6 +72,10 @@ def carregar() -> Optional[Conta]:
     """
     try:
         segredo = Secret.password_lookup_sync(_SCHEMA, _ATRIBUTOS, None)
+        if not segredo:
+            segredo = Secret.password_lookup_sync(
+                _LEGACY_SCHEMA, _LEGACY_ATRIBUTOS, None
+            )
     except Exception as erro:
         logging.warning("Cofre da Tuya ilegível: %s", erro)
         return None

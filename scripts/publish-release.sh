@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Publica uma release do Cartridges no GitHub Releases com binario Linux.
+# Publica uma release do Jolven no GitHub Releases com binario Linux.
 #
 # Versao no formato YY.DDD.HHMM (ano 2 digitos, dia do ano, hora+minuto 24h
-# do momento da publicacao). A mesma versao e congelada via CARTRIDGES_VERSION
+# do momento da publicacao). A mesma versao e congelada via JOLVEN_VERSION
 # para o entry do metainfo, o build meson, a tag e a release.
 #
 # Uso:
@@ -122,11 +122,11 @@ elif [[ -z $NOTES ]]; then
         NOTES="$(git log --format='- %s' "$LAST_TAG..HEAD" -- . ':!po')"
     fi
     if [[ -z ${NOTES:-} ]]; then
-        NOTES="- Atualizacao do Cartridges $VERSION."
+        NOTES="- Atualizacao do Jolven $VERSION."
     fi
 fi
 
-METAINFO="data/page.redclaw.Cartridges.metainfo.xml.in"
+METAINFO="data/io.github.zonaro.Jolven.metainfo.xml.in"
 if ! grep -q '<releases>' "$METAINFO"; then
     printf 'Bloco <releases> nao encontrado em %s\n' "$METAINFO" >&2
     exit 69
@@ -156,7 +156,7 @@ run() {
     fi
 }
 
-export CARTRIDGES_VERSION="$VERSION"
+export JOLVEN_VERSION="$VERSION"
 CHECK_VERSION="$(build-aux/get-version.py)"
 if [[ $CHECK_VERSION != "$VERSION" ]]; then
     printf 'get-version.py devolveu %s, esperado %s\n' "$CHECK_VERSION" "$VERSION" >&2
@@ -180,7 +180,7 @@ metainfo, version, release_date, notes = (
 lines = [line.strip().lstrip("- ").strip() for line in notes.splitlines()]
 lines = [sax.escape(line) for line in lines if line]
 if not lines:
-    lines = [f"Atualizacao do Cartridges {sax.escape(version)}."]
+    lines = [f"Atualizacao do Jolven {sax.escape(version)}."]
 items = "\n".join(f"            <li>{line}</li>" for line in lines)
 entry = (
     f"    <release version=\"{sax.escape(version)}\" date=\"{sax.escape(release_date)}\">\n"
@@ -210,16 +210,16 @@ fi
 
 run git add -- "$METAINFO"
 run git commit -m "Versão $VERSION"
-run git tag -a "$TAG" -m "Cartridges $VERSION"
+run git tag -a "$TAG" -m "Jolven $VERSION"
 
 # 2. Compila com a versao congelada e empacota a arvore instalada.
 DIST_DIR="$REPO_ROOT/dist"
-TARBALL="cartridges-linux-$ARCH.tar.gz"
+TARBALL="jolven-linux-$ARCH.tar.gz"
 if ((SKIP_BUILD)); then
     printf 'Pulando build (--skip-build).\n'
 else
-    BUILD_DIR="$(mktemp -d -t cartridges-release-build.XXXXXX)"
-    STAGE_DIR="$(mktemp -d -t cartridges-release-stage.XXXXXX)"
+    BUILD_DIR="$(mktemp -d -t jolven-release-build.XXXXXX)"
+    STAGE_DIR="$(mktemp -d -t jolven-release-stage.XXXXXX)"
     cleanup_build() {
         rm -rf -- "$BUILD_DIR" "$STAGE_DIR"
     }
@@ -253,10 +253,10 @@ else
     git push origin "$TAG"
     if ((SKIP_BUILD)); then
         gh release create "$TAG" --repo "$REPOSITORY" \
-            --title "Cartridges $VERSION" --notes "$NOTES"
+            --title "Jolven $VERSION" --notes "$NOTES"
     else
         gh release create "$TAG" --repo "$REPOSITORY" \
-            --title "Cartridges $VERSION" --notes "$NOTES" \
+            --title "Jolven $VERSION" --notes "$NOTES" \
             "$DIST_DIR/$TARBALL" "$DIST_DIR/$TARBALL.sha256" "$DIST_DIR/VERSION"
     fi
 fi

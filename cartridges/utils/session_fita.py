@@ -1178,7 +1178,7 @@ def devolver_removidas(removidas: list[Fita]) -> None:
 
     Sem isto, a fita desmarcada no assistente some do arquivo e, com ela, a
     única referência que o fechamento do app tinha para devolvê-la: ela ficaria
-    na cor do Cartridges para sempre. É rede — chamar de fora da thread de UI.
+    na cor do Jolven para sempre. É rede — chamar de fora da thread de UI.
 
     Com a ``_TRAVA_ARRANQUE``: o assistente fecha logo depois de chamar isto, e
     o reacender que o fechamento dele dispara também lê e grava a chave. Sem a

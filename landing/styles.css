@@ -1,13 +1,13 @@
 :root {
   color-scheme: dark;
-  --bg: #130d16;
-  --surface: #201624;
-  --surface-strong: #2b1b31;
-  --text: #fff8ff;
-  --muted: #c9bacd;
-  --purple: #d9a7ef;
-  --purple-strong: #b975d7;
-  --green: #9de6c2;
+  --bg: #12101a;
+  --surface: #1c1826;
+  --surface-strong: #262033;
+  --text: #f6f2ff;
+  --muted: #c3b8d4;
+  --purple: #8b7cff;
+  --purple-strong: #6f5df6;
+  --green: #5be3b8;
   --line: rgba(255, 255, 255, .11);
   --shadow: 0 30px 90px rgba(0, 0, 0, .42);
   --radius: 26px;
@@ -156,4 +156,29 @@ footer .brand img { width: 28px; height: 28px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; }
+}
+
+/* Jolven additions */
+.wordmark { font-weight: 800; letter-spacing: -.02em; font-size: 1.35rem; }
+.tv { position: relative; z-index: 1; padding: 14px 14px 0; border: 1px solid rgba(255,255,255,.2); border-radius: 22px; background: #0b0912; box-shadow: var(--shadow); transform: rotateY(-5deg) rotateX(2deg); }
+.tv .app-shot { border: 0; border-radius: 12px; box-shadow: none; transform: none; }
+.tv-stand { width: 34%; height: 10px; margin: 12px auto 0; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #3a3350, #211c30); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 44px; padding: 0; list-style: none; }
+.chip-row li { padding: 9px 16px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.05); font-size: .9rem; font-weight: 650; }
+.chip-row li small { color: var(--purple); font-weight: 800; }
+.mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 30px 0 6px; }
+.mode-card { padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(145deg, rgba(139,124,255,.12), rgba(255,255,255,.02)); }
+.mode-card h3 { margin: 0 0 10px; }
+.mode-card p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 1rem; }
+.oss-band { display: flex; align-items: center; gap: 40px; justify-content: space-between; padding: 60px; border: 1px solid rgba(91,227,184,.22); border-radius: 36px; background: linear-gradient(135deg, #17251f, #151322); box-shadow: var(--shadow); }
+.oss-band p { color: var(--muted); line-height: 1.65; font-size: clamp(1.02rem, 1.4vw, 1.2rem); }
+.oss-band .button { flex: 0 0 auto; }
+
+@media (max-width: 900px) {
+  .mode-cards { grid-template-columns: 1fr; }
+  .oss-band { flex-direction: column; align-items: flex-start; padding: 40px; }
+}
+@media (max-width: 600px) {
+  .tv { transform: none; padding: 8px 8px 0; }
+  .oss-band { padding: 28px 20px; border-radius: 24px; }
 }

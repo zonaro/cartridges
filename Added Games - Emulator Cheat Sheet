@@ -1,7 +1,7 @@
 --------------------------------
 General Explanation & Tips
 --------------------------------
-* Content added to Cartridges manually will be in the "Added" Category.
+* Content added to Jolven manually will be in the "Added" Category.
 * First load the Application ID and then apply an Argument (Args) for a specific game.
 * Be mindful of what extensions your emulator supports, and be sure to replace the placeholder material with your directories.
 * On Linux if your folder name has spaces you may need to add "" in those sections.
