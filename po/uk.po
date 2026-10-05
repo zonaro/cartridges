@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the cartridges package.
-# kramo <contact@kramo.hu>, 2023.
+# redclaw <contact@redclaw.hu>, 2023.
 # Dan <denqwerta@gmail.com>, 2023.
 # Вова Смірнов <vovasmirnon5895@gmail.com>, 2023.
 # Dan <jonweblin2205@protonmail.com>, 2023, 2024.
@@ -24,29 +24,29 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.8.2\n"
 
-#: data/page.kramo.Cartridges.desktop.in:3
-#: data/page.kramo.Cartridges.metainfo.xml.in:9
-#: data/page.kramo.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
+#: data/page.redclaw.Cartridges.desktop.in:3
+#: data/page.redclaw.Cartridges.metainfo.xml.in:9
+#: data/page.redclaw.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
 #: data/gtk/window.blp:83
 msgid "Cartridges"
 msgstr "Картриджі"
 
-#: data/page.kramo.Cartridges.desktop.in:4
+#: data/page.redclaw.Cartridges.desktop.in:4
 msgid "Game Launcher"
 msgstr "Ігровий лаунчер"
 
-#: data/page.kramo.Cartridges.desktop.in:5
-#: data/page.kramo.Cartridges.metainfo.xml.in:10
+#: data/page.redclaw.Cartridges.desktop.in:5
+#: data/page.redclaw.Cartridges.metainfo.xml.in:10
 msgid "Launch all your games"
 msgstr "Запустіть усі свої ігри"
 
-#: data/page.kramo.Cartridges.desktop.in:11
+#: data/page.redclaw.Cartridges.desktop.in:11
 msgid ""
 "gaming;launcher;steam;lutris;heroic;bottles;itch;flatpak;legendary;retroarch;"
 msgstr ""
 "ігри;лаунчер;steam;lutris;heroic;bottles;itch;flatpak;legendary; retroarch;"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:12
+#: data/page.redclaw.Cartridges.metainfo.xml.in:12
 msgid ""
 "Cartridges is a simple game launcher for all of your games. It has support "
 "for importing games from Steam, Lutris, Heroic and more with no login "
@@ -58,16 +58,16 @@ msgstr ""
 "можете сортувати та приховувати ігри або завантажувати обкладинки з "
 "SteamGridDB."
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
+#: data/page.redclaw.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
 #: cartridges/details_dialog.py:77
 msgid "Game Details"
 msgstr "Подробиці гри"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:48
+#: data/page.redclaw.Cartridges.metainfo.xml.in:48
 msgid "Edit Game Details"
 msgstr "Редагувати інформацію про гру"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
+#: data/page.redclaw.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
 #: data/gtk/window.blp:543 cartridges/details_dialog.py:279
 #: cartridges/importer/importer.py:319 cartridges/importer/importer.py:369
 msgid "Preferences"

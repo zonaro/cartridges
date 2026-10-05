@@ -1,5 +1,5 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR kramo
+# Copyright (C) YEAR redclaw
 # This file is distributed under the same license as the Cartridges package.
 # Loc Huynh <huynhloc.contact@gmail.com>, 2026.
 msgid ""
@@ -18,29 +18,29 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
-#: data/page.kramo.Cartridges.desktop.in:3
-#: data/page.kramo.Cartridges.metainfo.xml.in:9
-#: data/page.kramo.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
+#: data/page.redclaw.Cartridges.desktop.in:3
+#: data/page.redclaw.Cartridges.metainfo.xml.in:9
+#: data/page.redclaw.Cartridges.metainfo.xml.in:40 data/gtk/window.blp:47
 #: data/gtk/window.blp:83
 msgid "Cartridges"
 msgstr "Cartridges"
 
-#: data/page.kramo.Cartridges.desktop.in:4
+#: data/page.redclaw.Cartridges.desktop.in:4
 msgid "Game Launcher"
 msgstr "Game Launcher"
 
-#: data/page.kramo.Cartridges.desktop.in:5
-#: data/page.kramo.Cartridges.metainfo.xml.in:10
+#: data/page.redclaw.Cartridges.desktop.in:5
+#: data/page.redclaw.Cartridges.metainfo.xml.in:10
 msgid "Launch all your games"
 msgstr "Khởi chạy tất cả các game của bạn"
 
-#: data/page.kramo.Cartridges.desktop.in:11
+#: data/page.redclaw.Cartridges.desktop.in:11
 msgid ""
 "gaming;launcher;steam;lutris;heroic;bottles;itch;flatpak;legendary;retroarch;"
 msgstr ""
 "gaming;launcher;steam;lutris;heroic;bottles;itch;flatpak;legendary;retroarch;"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:12
+#: data/page.redclaw.Cartridges.metainfo.xml.in:12
 msgid ""
 "Cartridges is a simple game launcher for all of your games. It has support "
 "for importing games from Steam, Lutris, Heroic and more with no login "
@@ -52,16 +52,16 @@ msgstr ""
 "đăng nhập. Bạn có thể sắp xếp và ẩn game hoặc tải xuống ảnh bìa từ "
 "SteamGridDB."
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
+#: data/page.redclaw.Cartridges.metainfo.xml.in:44 data/gtk/window.blp:320
 #: cartridges/details_dialog.py:77
 msgid "Game Details"
 msgstr "Chi tiết game"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:48
+#: data/page.redclaw.Cartridges.metainfo.xml.in:48
 msgid "Edit Game Details"
 msgstr "Chỉnh sửa chi tiết game"
 
-#: data/page.kramo.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
+#: data/page.redclaw.Cartridges.metainfo.xml.in:52 data/gtk/help-overlay.blp:19
 #: data/gtk/window.blp:543 cartridges/details_dialog.py:279
 #: cartridges/importer/importer.py:319 cartridges/importer/importer.py:369
 msgid "Preferences"
