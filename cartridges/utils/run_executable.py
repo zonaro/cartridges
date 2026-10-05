@@ -123,5 +123,4 @@ def run_executable(
         env={**os.environ, **clean_environment},
         shell=True,
         start_new_session=True,
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,  # type: ignore
     )

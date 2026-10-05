@@ -23,20 +23,12 @@ The project can be translated on [Weblate](https://hosted.weblate.org/engage/car
 
 # Building
 
+Jolven é suportado apenas em Linux.
+
 ## GNOME Builder
 1. Install [GNOME Builder](https://flathub.org/apps/org.gnome.Builder).
 2. Click "Clone Repository" with `https://github.com/zonaro/jolven.git` as the URL.
 3. Click on the build button (hammer) at the top.
-
-## For Windows
-1. Install [MSYS2](https://www.msys2.org/).
-2. From the MSYS2 shell, install the required dependencies listed [here](https://github.com/zonaro/jolven/blob/main/.github/workflows/ci.yml).
-3. Build it via Meson.
-
-## For macOS
-1. Install [Homebrew](https://brew.sh/).
-2. Using `brew` and `pip3`, install the required dependencies listed [here](https://github.com/zonaro/jolven/blob/main/.github/workflows/ci.yml).
-3. Build it via Meson.
 
 ## Meson
 ```bash

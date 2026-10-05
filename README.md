@@ -14,7 +14,7 @@
 
 Explore the multilingual product page in [landing/](landing/index.html).
 
-> Jolven is an independent fork originally based on [Cartridges](https://github.com/zonaro/jolven) (GPL-3.0-or-later, © 2022-2024 redclaw). The origin is preserved in copyright headers, credits and the in-app About dialog.
+> Jolven is an independent fork originally based on [Cartridges](https://github.com/kra-mo/cartridges) (GPL-3.0-or-later, © 2022-2024 kramo). The origin is preserved in copyright headers, credits and the in-app About dialog.
 
 # The Project
 
@@ -62,7 +62,9 @@ Your existing data is safe: on first launch, Jolven copies the library, covers, 
 
 # Installation
 
-## Linux
+Jolven roda apenas em Linux. Baixe o binário da última
+[GitHub Release](https://github.com/zonaro/jolven/releases) ou compile do
+código-fonte (veja [CONTRIBUTING.md](CONTRIBUTING.md#building)).
 
 On Fedora, install the latest binary release for your user with:
 
@@ -75,20 +77,6 @@ installs any missing runtime dependencies and extracts Jolven under
 `~/.local`. To compile from source instead, pipe into `bash -s -- --source`.
 Each build is versioned `YY.DDD.HHMM` (2-digit year, day of year, 24h
 hour+minute of the compilation) — see `scripts/publish-release.sh`.
-
-## Windows
-
-### From Releases
-
-1. Download the latest release from [GitHub Releases](https://github.com/zonaro/jolven/releases).
-2. Run the downloaded installer.
-
-Note: Windows might present you with a warning when trying to install the app. This is expected, just ignore the warning.
-
-## macOS
-
-1. Download the latest release from [GitHub Releases](https://github.com/zonaro/jolven/releases).
-2. Move the app into your Applications folder.
 
 ## Building manually
 
@@ -180,5 +168,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 # Credits
 
-- Original project: [Cartridges](https://github.com/zonaro/jolven) by redclaw and contributors (GPL-3.0-or-later).
+- Original project: [Cartridges](https://github.com/kra-mo/cartridges) by kramo and contributors (GPL-3.0-or-later).
 - This fork: Jolven contributors — rebranded as an independent, console-focused gaming interface with a dedicated session, automatic data migration and a new identity.

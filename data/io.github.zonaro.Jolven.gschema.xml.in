@@ -233,6 +233,13 @@
     <key name="better-xcloud" type="b">
       <default>true</default>
     </key>
+    <key name="app-icon" type="s">
+      <choices>
+        <choice value="jolven-dpad" />
+        <choice value="jolven-portal" />
+      </choices>
+      <default>"jolven-dpad"</default>
+    </key>
   </schema>
 
   <schema id="@APP_ID@.State" path="@PREFIX@/State/">

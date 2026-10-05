@@ -23,7 +23,6 @@ import hashlib
 import logging
 import threading
 from pathlib import Path
-from sys import platform
 from typing import Any, Optional
 from urllib.parse import urlparse
 
@@ -348,9 +347,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.navigation_view.replace([self.library_page])
         elif shared.schema.get_boolean("game-mode-start-library"):
             self.navigation_view.push(self.library_page)
-
-        if platform == "darwin":
-            self.sidebar_navigation_page.set_title("")
 
         self.details_view.set_measure_overlay(self.details_view_toolbar_view, True)
         self.details_view.set_clip_overlay(self.details_view_toolbar_view, False)

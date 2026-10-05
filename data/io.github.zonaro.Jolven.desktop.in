@@ -10,4 +10,3 @@ Categories=GNOME;GTK;Game;
 # Translators: Leave "jolven" untranslated here.
 Keywords=gaming;games;play;jolven;console;gamepad;launch;launcher;steam;lutris;heroic;epic;bottles;itch;legendary;retroarch;
 StartupNotify=true
-DBusActivatable=true

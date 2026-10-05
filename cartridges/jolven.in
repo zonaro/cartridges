@@ -26,7 +26,6 @@ import os
 import signal
 import sys
 from pathlib import Path
-from platform import system
 
 VERSION = "@VERSION@"
 
@@ -83,35 +82,25 @@ else:
 # installation.  Python normally puts the per-user site-packages directory
 # ahead of /usr or /usr/local, which can otherwise combine newer Python code
 # with an older Gtk resource bundle and make the window template fail to load.
-if os.name != "nt":
-    sys.path.insert(0, PYTHONDIR)
+sys.path.insert(0, PYTHONDIR)
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-if system() == "Linux":
-    # Dominio gettext historico: os catalogos em po/ ainda geram
-    # cartridges.mo; renomear o dominio esvaziaria as 30 traducoes.
-    locale.bindtextdomain("cartridges", LOCALEDIR)
-    locale.textdomain("cartridges")
-    gettext.install("cartridges", LOCALEDIR, names=['ngettext'])
-else:
-    gettext.install("cartridges", names=['ngettext'])
+# Dominio gettext historico: os catalogos em po/ ainda geram
+# cartridges.mo; renomear o dominio esvaziaria as 30 traducoes.
+locale.bindtextdomain("cartridges", LOCALEDIR)
+locale.textdomain("cartridges")
+gettext.install("cartridges", LOCALEDIR, names=['ngettext'])
 
 if __name__ == "__main__":
     from gi.repository import Gio, GLib
 
     try:
-        # For a macOS application bundle
-        resource = Gio.Resource.load(
-            str(Path(__file__).parent / "Resources" / "jolven.gresource")
-        )
+        resource = Gio.Resource.load(os.path.join(PKGDATADIR, "jolven.gresource"))
     except GLib.GError:
-        try:
-            resource = Gio.Resource.load(os.path.join(PKGDATADIR, "jolven.gresource"))
-        except GLib.GError:
-            # Compat: bundle legado do Cartridges
-            resource = Gio.Resource.load(
-                os.path.join(PKGDATADIR, "cartridges.gresource")
-            )
+        # Compat: bundle legado do Cartridges
+        resource = Gio.Resource.load(
+            os.path.join(PKGDATADIR, "cartridges.gresource")
+        )
     resource._register()  # pylint: disable=protected-access
 
     from cartridges import main

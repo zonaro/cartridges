@@ -61,6 +61,15 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       }
     }
 
+    Adw.PreferencesGroup appearance_group {
+      title: _("Aparência");
+
+      Adw.ComboRow app_icon_row {
+        title: _("Ícone do aplicativo");
+        subtitle: _("Troca o ícone no menu e na grade. Pode ser preciso sair e entrar de novo para ver a mudança.");
+      }
+    }
+
     Adw.PreferencesGroup cloud_gaming_group {
       title: _("Cloud Gaming");
 

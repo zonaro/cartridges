@@ -39,14 +39,11 @@ jobs:
 
       - name: Publish release
         # A release ja existe (criada por scripts/publish-release.sh com o
-        # tarball Linux); aqui apenas anexamos os artefatos Windows/macOS do
-        # CI e o corpo das notas. fail_on_unmatched_files=false permite
-        # releases so-Linux quando o CI de outra plataforma nao rodou.
+        # tarball Linux); aqui apenas anexamos o corpo das notas.
+        # fail_on_unmatched_files=false permite releases so-Linux quando
+        # algum artefato opcional nao existir.
         uses: softprops/action-gh-release@v2.2.2
         with:
-          files: |
-            Windows Installer/Jolven Windows.exe
-            macOS Application/Jolven macOS.zip
           fail_on_unmatched_files: false
           tag_name: ${{ steps.get_tag_name.outputs.tag_name }}
           body_path: release_notes

@@ -243,8 +243,7 @@ else
     fi
 fi
 
-# 3. Publica tag + release (o workflow publish-release.yml anexa os
-#    instaladores Windows/macOS do CI a mesma release).
+# 3. Publica tag + release (apenas o tarball Linux).
 if ((NO_PUSH || DRY_RUN)); then
     printf 'Pulado: push da tag e criacao da release (%s).\n' \
         "$([[ $DRY_RUN == 1 ]] && printf %s dry-run || printf %s --no-push)"

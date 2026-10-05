@@ -113,7 +113,7 @@ class SteamLocations(NamedTuple):
 class SteamSource(URLExecutableSource):
     source_id = "steam"
     name = _("Steam")
-    available_on = {"linux", "win32", "darwin"}
+    available_on = {"linux"}
     iterable_class = SteamSourceIterable
     url_format = "steam://rungameid/{game_id}"
 

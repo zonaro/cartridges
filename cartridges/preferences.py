@@ -27,7 +27,6 @@ from shutil import which
 from datetime import date
 from pathlib import Path
 from shutil import rmtree
-from sys import platform
 from typing import Any, Callable, Optional
 
 from gi.repository import Adw, Gio, GLib, Gtk
@@ -74,6 +73,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     cover_launches_game_switch: Adw.SwitchRow = Gtk.Template.Child()
     agrupar_duplicados_switch: Adw.SwitchRow = Gtk.Template.Child()
     high_quality_images_switch: Adw.SwitchRow = Gtk.Template.Child()
+    app_icon_row: Adw.ComboRow = Gtk.Template.Child()
     xbox_cloud_gaming_switch: Adw.SwitchRow = Gtk.Template.Child()
     better_xcloud_switch: Adw.SwitchRow = Gtk.Template.Child()
     better_xcloud_update_row: Adw.ActionRow = Gtk.Template.Child()
@@ -223,6 +223,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.remove_all_games_button_row.connect("activated", self.remove_all_games)
         self.export_backup_button_row.connect("activated", self.export_backup)
         self.import_backup_button_row.connect("activated", self.import_backup)
+        self.setup_app_icon_row()
 
         # Debug
         if shared.PROFILE == "development":
@@ -853,6 +854,33 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
         row.connect("notify::selected", selected_changed)
 
+    def setup_app_icon_row(self) -> None:
+        """Seletor do ícone do aplicativo (oficial + alternativas)."""
+        from cartridges.utils import app_icon  # noqa: PLC0415
+
+        labels = {
+            "jolven-dpad": _("Jolven D-pad (padrão)"),
+            "jolven-portal": _("Jolven Portal"),
+        }
+        self.app_icon_row.set_model(Gtk.StringList.new(list(labels.values())))
+        saved = shared.schema.get_string("app-icon")
+        if saved not in app_icon.CHOICES:
+            shared.schema.set_string("app-icon", app_icon.DEFAULT)
+            saved = app_icon.DEFAULT
+        self.app_icon_row.set_selected(app_icon.CHOICES.index(saved))
+
+        def selected_changed(widget: Adw.ComboRow, *_args: Any) -> None:
+            choice = app_icon.CHOICES[widget.get_selected()]
+            shared.schema.set_string("app-icon", choice)
+            app_icon.apply(choice)
+            self.add_toast(
+                Adw.Toast.new(
+                    _("Ícone atualizado. Saia e entre de novo se o menu não mudar.")
+                )
+            )
+
+        self.app_icon_row.connect("notify::selected", selected_changed)
+
     def choose_folder(
         self, _widget: Any, callback: Callable, callback_data: Optional[str] = None
     ) -> None:
@@ -1039,12 +1067,11 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
             subtitle = str(Path(shared.schema.get_string(location.schema_key)))
 
-            if platform == "linux":
-                # Remove the path prefix if picked via Flatpak portal
-                subtitle = re.sub("/run/user/\\d*/doc/.*/", "", subtitle)
+            # Remove the path prefix if picked via Flatpak portal
+            subtitle = re.sub("/run/user/\\d*/doc/.*/", "", subtitle)
 
-                # Replace the home directory with "~"
-                subtitle = re.sub(f"^{str(shared.home)}", "~", subtitle)
+            # Replace the home directory with "~"
+            subtitle = re.sub(f"^{str(shared.home)}", "~", subtitle)
 
             action_row.set_subtitle(subtitle)
 

@@ -81,7 +81,7 @@ class ItchSource(URLExecutableSource):
     name = _("itch")
     iterable_class = ItchSourceIterable
     url_format = "itch://caves/{cave_id}/launch"
-    available_on = {"linux", "win32", "darwin"}
+    available_on = {"linux"}
 
     locations: ItchLocations
 

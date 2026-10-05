@@ -19,57 +19,35 @@ foreach name : [
   )
 endforeach
 
-if host_machine.system() == 'windows'
-  desktop_file = configure_file(
+desktop_file = i18n.merge_file(
+  input: configure_file(
     input: 'io.github.zonaro.Jolven.desktop.in',
     output: app_id + '.desktop.in',
     configuration: conf,
-    install: true,
-    install_dir: join_paths(get_option('datadir'), 'applications'),
-  )
-else
-  desktop_file = i18n.merge_file(
-    input: configure_file(
-      input: 'io.github.zonaro.Jolven.desktop.in',
-      output: app_id + '.desktop.in',
-      configuration: conf,
-    ),
-    output: app_id + '.desktop',
-    type: 'desktop',
-    po_dir: '../po',
-    install: true,
-    install_dir: join_paths(get_option('datadir'), 'applications'),
-  )
+  ),
+  output: app_id + '.desktop',
+  type: 'desktop',
+  po_dir: '../po',
+  install: true,
+  install_dir: join_paths(get_option('datadir'), 'applications'),
+)
+
+desktop_utils = find_program('desktop-file-validate', required: false)
+if desktop_utils.found()
+  test('Validate desktop file', desktop_utils, args: [desktop_file])
 endif
 
-if host_machine.system() != 'windows'
-  desktop_utils = find_program('desktop-file-validate', required: false)
-  if desktop_utils.found()
-    test('Validate desktop file', desktop_utils, args: [desktop_file])
-  endif
-endif
-
-if host_machine.system() == 'windows'
-  appstream_file = configure_file(
+appstream_file = i18n.merge_file(
+  input: configure_file(
     input: 'io.github.zonaro.Jolven.metainfo.xml.in',
-    output: app_id + '.metainfo.xml',
+    output: app_id + '.metainfo.xml.in',
     configuration: conf,
-    install: true,
-    install_dir: join_paths(get_option('datadir'), 'metainfo'),
-  )
-else
-  appstream_file = i18n.merge_file(
-    input: configure_file(
-      input: 'io.github.zonaro.Jolven.metainfo.xml.in',
-      output: app_id + '.metainfo.xml.in',
-      configuration: conf,
-    ),
-    output: app_id + '.metainfo.xml',
-    po_dir: '../po',
-    install: true,
-    install_dir: join_paths(get_option('datadir'), 'metainfo'),
-  )
-endif
+  ),
+  output: app_id + '.metainfo.xml',
+  po_dir: '../po',
+  install: true,
+  install_dir: join_paths(get_option('datadir'), 'metainfo'),
+)
 
 gnome.compile_resources(
   'jolven',
@@ -84,16 +62,14 @@ gnome.compile_resources(
   dependencies: [blueprints, appstream_file],
 )
 
-if host_machine.system() != 'windows'
-  appstreamcli = find_program('appstreamcli', required: false)
-  if appstreamcli.found()
-    test(
-      'Validate appstream file',
-      appstreamcli,
-      args: ['validate', '--no-net', '--explain', appstream_file],
-      workdir: meson.current_build_dir(),
-    )
-  endif
+appstreamcli = find_program('appstreamcli', required: false)
+if appstreamcli.found()
+  test(
+    'Validate appstream file',
+    appstreamcli,
+    args: ['validate', '--no-net', '--explain', appstream_file],
+    workdir: meson.current_build_dir(),
+  )
 endif
 
 schema_file = configure_file(
@@ -118,7 +94,7 @@ endif
 
 subdir('icons')
 
-if host_machine.system() == 'linux' and get_option('prefix') in ['/usr', '/usr/local']
+if get_option('prefix') in ['/usr', '/usr/local']
   configure_file(
     input: 'io.github.zonaro.Jolven.GameMode.policy.in',
     output: app_id + '.GameMode.policy',

@@ -1,6 +1,111 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect x="16" y="16" width="480" height="480" rx="112" fill="#171321"/>
-  <rect x="34" y="34" width="444" height="444" rx="96" fill="none" stroke="#2E2645" stroke-width="10"/>
-  <path d="M226 122 v168 c0 78 52 112 124 112 h18" fill="none" stroke="#8B7CFF" stroke-width="78" stroke-linecap="round"/>
-  <path d="M348 360 L430 402 L348 444 Z" fill="#5BE3B8" stroke-linejoin="round"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 512 512"
+   role="img"
+   aria-labelledby="title desc"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="jolven-dpad.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="1.1020922"
+     inkscape:cx="111.60591"
+     inkscape:cy="323.02197"
+     inkscape:window-width="2560"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8" />
+  <title
+     id="title">Jolven — J + D-pad</title>
+  <desc
+     id="desc">Three directional arrows with the down direction transformed into a J.</desc>
+  <defs
+     id="defs5">
+    <linearGradient
+       id="bg"
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#252D39"
+         id="stop1" />
+      <stop
+         offset="1"
+         stop-color="#111720"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       id="purple"
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#C4B5FD"
+         id="stop3" />
+      <stop
+         offset=".45"
+         stop-color="#A78BFA"
+         id="stop4" />
+      <stop
+         offset="1"
+         stop-color="#7C3AED"
+         id="stop5" />
+    </linearGradient>
+  </defs>
+  <rect
+     x="24"
+     y="24"
+     width="464"
+     height="464"
+     rx="112"
+     fill="url(#bg)"
+     id="rect5" />
+  <!-- three clean directional wedges, matching the reference proportions -->
+  <path
+     d="M256 83 C263 83 269 87 274 94 L318 151 C329 166 319 187 300 187 H212 C193 187 183 166 194 151 L238 94 C243 87 249 83 256 83Z"
+     fill="url(#purple)"
+     id="path5" />
+  <path
+     d="M83 246 C83 239 87 233 94 228 L151 184 C166 173 187 183 187 202 V290 C187 309 166 319 151 308 L94 264 C87 259 83 253 83 246Z"
+     fill="url(#purple)"
+     id="path6" />
+  <path
+     d="M429 246 C429 239 425 233 418 228 L361 184 C346 173 325 183 325 202 V290 C325 309 346 319 361 308 L418 264 C425 259 429 253 429 246Z"
+     fill="url(#purple)"
+     id="path7" />
+  <!-- fourth/down direction bends into a J -->
+  <path
+     d="m 128.47162,357.44739 c -19.89767,0.56147 -29.747568,13.61337 -29.747568,30.93949 v 12.65207 c 0,17.32611 13.088928,30.93949 29.747568,30.93949 h 76.15378 c 54.73553,0 87.40274,-29.27858 87.40274,-89.91998 v -73.0172 c 0,-29.70191 -6.51194,-47.25732 -32.6898,-47.25732 h -6.77757 c -16.65864,0 -29.74757,7.42554 -29.74757,30.93948 v 60.61793 c 0,32.31177 -11.61138,46.00868 -94.34158,44.10604 z"
+     fill="#f4f1ff"
+     id="path8"
+     sodipodi:nodetypes="cssssssssssc"
+     style="stroke-width:1.21351" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:85.3333px;font-family:'Arial Black';-inkscape-font-specification:'Arial Black, ';writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:0;stroke-width:2.05968"
+     x="-207.8797"
+     y="90.466164"
+     id="text8"><tspan
+       sodipodi:role="line"
+       id="tspan8"
+       x="-207.8797"
+       y="90.466164" /></text>
 </svg>

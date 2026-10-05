@@ -278,10 +278,6 @@ class CartridgesApplication(Adw.Application):
 
         self.add_main_option_entries((search, launch, *mode_options))
 
-        if sys.platform.startswith("darwin"):
-            if settings := Gtk.Settings.get_default():
-                settings.props.gtk_decoration_layout = "close,minimize,maximize:"
-
     def do_activate(self) -> None:  # pylint: disable=arguments-differ
         """Called on app creation"""
 
@@ -295,6 +291,9 @@ class CartridgesApplication(Adw.Application):
         self.restauracao_falhou = backup.aplicar_pendente() is False
         session_wallpaper.restaurar_orfaos()
         session_fita.abrir()
+        from cartridges.utils import app_icon
+
+        app_icon.ensure()
 
         # Setup gamepads
         if Manette is not None:
@@ -739,8 +738,7 @@ class CartridgesApplication(Adw.Application):
     def refresh_game_mode_setup_actions(self) -> None:
         """Show only the install or uninstall action that currently applies."""
         available = (
-            sys.platform.startswith("linux")
-            and not os.getenv("FLATPAK_ID")
+            not os.getenv("FLATPAK_ID")
             and shared.GAME_MODE_HELPER.is_file()
             and os.access(shared.GAME_MODE_HELPER, os.X_OK)
             and self._game_mode_setup_process is None
@@ -821,11 +819,7 @@ class CartridgesApplication(Adw.Application):
             if action[1:2]:
                 self.set_accels_for_action(
                     f"app.{action[0]}" if scope == self else f"win.{action[0]}",
-                    (
-                        tuple(s.replace("<primary>", "<meta>") for s in action[1])
-                        if sys.platform.startswith("darwin")
-                        else action[1]
-                    ),
+                    action[1],
                 )
 
             scope.add_action(simple_action)

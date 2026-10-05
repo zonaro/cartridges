@@ -51,6 +51,14 @@ class WallhavenTests(unittest.TestCase):
         shared = types.ModuleType("cartridges.shared")
         shared.schema = _Schema()
         sys.modules["cartridges.shared"] = shared
+        # `from cartridges import shared` prefere o atributo do pacote-pai
+        # ao sys.modules; sem isso, qualquer teste que importe o shared
+        # real antes deste quebra a troca abaixo.
+        parent = sys.modules.get("cartridges")
+        cls.had_parent_attr = parent is not None and "shared" in parent.__dict__
+        cls.original_parent_attr = parent.__dict__.get("shared") if parent else None
+        if parent is not None:
+            parent.shared = shared
         sys.modules.pop("cartridges.utils.wallhaven", None)
         cls.module = importlib.import_module("cartridges.utils.wallhaven")
         cls.shared = shared
@@ -62,6 +70,12 @@ class WallhavenTests(unittest.TestCase):
             sys.modules["cartridges.shared"] = cls.original_shared
         else:
             sys.modules.pop("cartridges.shared", None)
+        parent = sys.modules.get("cartridges")
+        if parent is not None:
+            if cls.had_parent_attr:
+                parent.shared = cls.original_parent_attr
+            else:
+                parent.__dict__.pop("shared", None)
 
     def setUp(self):
         self.shared.schema = _Schema()

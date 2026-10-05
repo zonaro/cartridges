@@ -120,15 +120,4 @@ class URLExecutableSource(ExecutableFormatSource):
 
     @property
     def executable_format(self) -> str:
-        if sys.platform.startswith("win32"):
-            return f"start {self.url_format}"
-
-        if sys.platform.startswith("linux"):
-            return f"xdg-open {self.url_format}"
-
-        if sys.platform.startswith("darwin"):
-            return f"open {self.url_format}"
-
-        raise NotImplementedError(
-            f"No URL handler command available for {sys.platform}"
-        )
+        return f"xdg-open {self.url_format}"

@@ -23,7 +23,6 @@ import json
 import math
 import shlex
 from pathlib import Path
-from sys import platform
 from time import time
 from typing import Any, Optional
 
@@ -260,19 +259,11 @@ class DetailsDialog(Adw.Dialog):
         # As in software
         exe_name = _("program")
 
-        if platform == "win32":
-            exe_name += ".exe"
-            # Translate this string as you would translate "path to {}"
-            exe_path = _("C:\\path\\to\\{}").format(exe_name)
-            # Translate this string as you would translate "path to {}"
-            file_path = _("C:\\path\\to\\{}").format(file_name)
-            command = "start"
-        else:
-            # Translate this string as you would translate "path to {}"
-            exe_path = _("/path/to/{}").format(exe_name)
-            # Translate this string as you would translate "path to {}"
-            file_path = _("/path/to/{}").format(file_name)
-            command = "open" if platform == "darwin" else "xdg-open"
+        # Translate this string as you would translate "path to {}"
+        exe_path = _("/path/to/{}").format(exe_name)
+        # Translate this string as you would translate "path to {}"
+        file_path = _("/path/to/{}").format(file_name)
+        command = "xdg-open"
 
         # pylint: disable=line-too-long
         exec_info_text = _(
