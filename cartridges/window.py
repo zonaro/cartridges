@@ -249,6 +249,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
         for source_id in shared.store.source_games:
             if source_id == "imported":
                 continue
+            if source_id == "xcloud" and not shared.schema.get_boolean(
+                "xbox-cloud-gaming"
+            ):
+                continue
             if not (removed := get_removed(source_id)):
                 continue
 
@@ -409,7 +413,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
             Gio.SettingsBindFlags.GET,
         )
         shared.schema.connect(
-            "changed::xbox-cloud-gaming", lambda *_: self.atualizar_launchers()
+            "changed::xbox-cloud-gaming", self._xcloud_enabled_changed
         )
         shared.schema.connect("changed::better-xcloud", self._better_xcloud_changed)
         self.connect("notify::fullscreened", self._update_xcloud_fullscreen_button)
@@ -803,6 +807,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         for game in shared.store:
             if game.blacklisted or restauracao.e_pendente(game.game_id):
+                continue
+            if game.base_source == "xcloud" and not shared.schema.get_boolean(
+                "xbox-cloud-gaming"
+            ):
                 continue
             if game.is_launcher and not game.hidden:
                 continue
@@ -1593,6 +1601,25 @@ class CartridgesWindow(Adw.ApplicationWindow):
         if xbox_enabled:
             self.launchers_box.append(self.build_xcloud_card(theme))
 
+    def _xcloud_enabled_changed(self, *_args: Any) -> None:
+        self.atualizar_launchers()
+        enabled = shared.schema.get_boolean("xbox-cloud-gaming")
+        app = self.get_application()
+        previous_state = app.state
+        app.state = shared.AppState.LOAD_FROM_DISK
+        try:
+            for game in tuple(shared.store.source_games.get("xcloud", {}).values()):
+                game.update()
+        finally:
+            app.state = previous_state
+        self.set_library_child()
+        self.library.invalidate_filter()
+        self.create_source_rows()
+        if enabled:
+            from cartridges.xcloud_catalog import sync_async
+
+            sync_async()
+
     def on_launcher_clicked(self, _button: Gtk.Button, game: Game) -> None:
         game.launch()
 
@@ -1675,7 +1702,34 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.xcloud_close_button.grab_focus()
         self._load_xcloud_fresh()
 
-    def _load_xcloud_fresh(self) -> None:
+    def open_xcloud_game(self, url: str) -> bool:
+        """Abre um card da biblioteca no webview xCloud já existente."""
+        from cartridges import xcloud
+
+        if not shared.schema.get_boolean("xbox-cloud-gaming"):
+            return False
+        if not xcloud.webkit_available():
+            self.toast_queue.add(
+                Adw.Toast.new(_("Xbox Cloud Gaming precisa do WebKitGTK instalado"))
+            )
+            return False
+        if self.navigation_view.get_visible_page() != self.xcloud_page:
+            self._xcloud_was_fullscreen = self.get_fullscreened()
+            self.navigation_view.push(self.xcloud_page)
+        self._update_xcloud_fullscreen_button()
+        self.xcloud_close_button.grab_focus()
+        # Se o usuário já abriu o xCloud, preserve literalmente a mesma
+        # WebView (sessão, página e Better xCloud) e apenas navegue para o jogo.
+        if self._xcloud_webview is not None:
+            self.xcloud_error.set_visible(False)
+            self.xcloud_spinner.set_visible(False)
+            self.xcloud_container.set_visible(True)
+            xcloud.load_xcloud_game(self._xcloud_webview, url)
+        else:
+            self._load_xcloud_fresh(url)
+        return True
+
+    def _load_xcloud_fresh(self, game_url: Optional[str] = None) -> None:
         from cartridges import xcloud
 
         self._xcloud_load_generation += 1
@@ -1721,7 +1775,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
             self.xcloud_container.set_visible(True)
             if better_xcloud_enabled and script is not None:
                 xcloud.watch_script_active(webview, self._on_xcloud_script_check)
-            xcloud.load_xcloud_home(webview)
+            if game_url:
+                xcloud.load_xcloud_game(webview, game_url)
+            else:
+                xcloud.load_xcloud_home(webview)
 
         if shared.schema.get_boolean("better-xcloud"):
             xcloud.fetch_better_xcloud_async(done)

@@ -253,6 +253,15 @@ class Game(Gtk.Box):
         shared.win.toast_queue.add(toast)
 
     def launch(self) -> None:
+        if self.base_source == "xcloud":
+            if not shared.win.open_xcloud_game(self.executable):
+                return
+            self.last_played = int(time())
+            self.save()
+            self.update()
+            self.create_toast(_("{} launched"))
+            return
+
         try:
             launcher = run_executable(
                 self.executable,

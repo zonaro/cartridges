@@ -209,6 +209,13 @@ def load_xcloud_home(webview) -> None:
     webview.load_uri(XCLOUD_HOME_URL)
 
 
+def load_xcloud_game(webview, url: str) -> None:
+    """Abre um título no mesmo webview usado pela tela normal do xCloud."""
+    if not url.startswith("https://www.xbox.com/play/launch/"):
+        raise ValueError("URL de jogo do xCloud inválida")
+    webview.load_uri(url)
+
+
 def check_script_active(webview, callback: Callable[[bool], None]) -> None:
     try:
 
