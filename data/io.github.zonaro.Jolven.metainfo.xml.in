@@ -56,7 +56,11 @@
   <releases>
     <release version="3.0.0" date="2026-10-05">
       <description translate="no">
-        <p>Jolven 3.0: the Cartridges fork becomes Jolven — turn any Linux PC into a console. New identity, dedicated Jolven Session, same library (migrated automatically).</p>
+        <ul>
+          <li>The Cartridges fork becomes Jolven, with a new identity and dedicated Jolven Session.</li>
+          <li>Added importing of Android apps installed through Waydroid.</li>
+          <li>Existing libraries migrate automatically without deleting the original data.</li>
+        </ul>
       </description>
     </release>
     <release version="2.14.0" date="2026-10-04">

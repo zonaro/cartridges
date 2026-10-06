@@ -75,6 +75,11 @@ class DesktopSourceIterable(SourceIterable):
                 if entry.suffix != ".desktop":
                     continue
 
+                # Waydroid apps have their own source, which filters Android
+                # system utilities and preserves the package id.
+                if entry.name.startswith("waydroid."):
+                    continue
+
                 # Skip Lutris games
                 if str(entry.name).startswith("net.lutris."):
                     continue

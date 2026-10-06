@@ -64,6 +64,7 @@ from cartridges.importer.lutris_source import LutrisSource
 from cartridges.importer.retroarch_source import RetroarchSource
 from cartridges.importer.steam_source import SteamSource
 from cartridges.importer.twintail_source import TwintailSource
+from cartridges.importer.waydroid_source import WaydroidSource
 from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.logging.setup import log_system_info, setup_logging
 from cartridges.power import PowerManager
@@ -573,7 +574,7 @@ class CartridgesApplication(Adw.Application):
         return win
 
     def on_launch_game_action(self, *_args: Any) -> None:
-        shared.win.active_game.launch()
+        shared.win.launch_library_game(shared.win.active_game)
 
     def on_continue_game_action(self, *_args: Any) -> None:
         games = [

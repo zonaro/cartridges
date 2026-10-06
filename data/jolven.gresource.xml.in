@@ -32,6 +32,7 @@
   <file alias="retroarch-source-symbolic.svg">icons/sources/retroarch-source-symbolic.svg</file>
   <file alias="steam-source-symbolic.svg">icons/sources/steam-source-symbolic.svg</file>
   <file alias="twintail-source-symbolic.svg">icons/sources/twintail-source-symbolic.svg</file>
+  <file alias="waydroid-source-symbolic.svg">icons/sources/waydroid-source-symbolic.svg</file>
   <file alias="yuzu-source-symbolic.svg">icons/sources/yuzu-source-symbolic.svg</file>
   <file alias="xbox-cloud-symbolic.svg">icons/sources/xbox-cloud-symbolic.svg</file>
   </gresource>

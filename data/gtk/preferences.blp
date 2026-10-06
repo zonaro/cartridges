@@ -602,6 +602,17 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         }
       }
 
+      Adw.ExpanderRow waydroid_expander_row {
+        title: _("Waydroid");
+        subtitle: _("Android apps installed through Waydroid");
+        show-enable-switch: true;
+
+        [prefix]
+        Image {
+          icon-name: "waydroid-source-symbolic";
+        }
+      }
+
       Adw.ExpanderRow yuzu_expander_row {
         title: _("Yuzu");
         show-enable-switch: true;

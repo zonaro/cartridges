@@ -66,10 +66,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
     game_mode_library_button: Gtk.Button = Gtk.Template.Child()
     sidebar_navigation_page: Adw.NavigationPage = Gtk.Template.Child()
     sidebar: Gtk.ListBox = Gtk.Template.Child()
-    all_games_row_box: Gtk.Box = Gtk.Template.Child()
-    all_games_no_label: Gtk.Label = Gtk.Template.Child()
-    added_row_box: Gtk.Box = Gtk.Template.Child()
-    added_games_no_label: Gtk.Label = Gtk.Template.Child()
     toast_overlay: Adw.ToastOverlay = Gtk.Template.Child()
     session_overlay: Gtk.Overlay = Gtk.Template.Child()
     session_blocker: Gtk.Box = Gtk.Template.Child()
@@ -199,8 +195,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
     _fundo_biblioteca_jogo: Optional[str] = None
     _fundo_biblioteca_lado: bool = False
     sort_state: str = "last_played"
-    filter_state: str = "all"
-    source_rows: dict = {}
+    active_source_filters: set[str]
+    known_source_filters: set[str]
+    source_rows: dict
 
     def add_toast(self, toast: Adw.Toast) -> None:
         self.toast_queue.add(toast)
@@ -208,140 +205,150 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def create_source_rows(self) -> None:
         theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
 
-        def get_removed(source_id: str) -> Any:
-            removed = tuple(
-                game.removed or game.hidden or game.blacklisted
-                for game in shared.store.source_games[source_id].values()
-            )
-            return (
-                (count,) if (count := sum(removed)) != len(removed) else False
-            )  # Return a tuple because 0 == False and 1 == True
-
-        total_games_no = 0
-        restored = False
-
-        selected_id = (
-            self.source_rows[selected_row][0]
-            if (selected_row := self.sidebar.get_selected_row()) in self.source_rows
-            else None
-        )
-
-        if selected_row == self.added_row_box.get_parent():
-            self.sidebar.select_row(self.added_row_box.get_parent())
-            restored = True
-
-        if added_missing := (
-            not shared.store.source_games.get("imported")
-            or not (removed := get_removed("imported"))
-        ):
-            self.sidebar.select_row(self.all_games_row_box.get_parent())
-        else:
-            games_no = len(shared.store.source_games["imported"]) - removed[0]
-            self.added_games_no_label.set_label(str(games_no))
-            total_games_no += games_no
-        self.added_row_box.get_parent().set_visible(not added_missing)
-
-        self.sidebar.get_row_at_index(2).set_visible(False)
-
-        while row := self.sidebar.get_row_at_index(3):
-            self.sidebar.remove(row)
-
-        for source_id in shared.store.source_games:
-            if source_id == "imported":
+        counts: dict[str, int] = {}
+        for game in shared.store:
+            if game.removed or game.hidden or game.blacklisted:
                 continue
-            if source_id == "xcloud" and not shared.schema.get_boolean(
+            if game.base_source == "xcloud" and not shared.schema.get_boolean(
                 "xbox-cloud-gaming"
             ):
                 continue
-            if not (removed := get_removed(source_id)):
-                continue
+            filter_id = self._source_filter_id(game)
+            counts[filter_id] = counts.get(filter_id, 0) + 1
 
-            row = Gtk.Box(
+        new_filters = set(counts) - self.known_source_filters
+        self.active_source_filters.update(new_filters)
+        self.known_source_filters.update(counts)
+
+        while row := self.sidebar.get_row_at_index(1):
+            self.sidebar.remove(row)
+        self.source_rows.clear()
+
+        def sort_key(item: tuple[str, int]) -> tuple:
+            source_id, games_no = item
+            priority = {
+                "imported": 0,
+                "xcloud_gamepass": 1,
+                "xcloud_free": 2,
+                "xcloud_owned": 3,
+            }.get(source_id, 4)
+            return (priority, -games_no, self._source_filter_name(source_id).casefold())
+
+        for source_id, games_no in sorted(counts.items(), key=sort_key):
+            content = Gtk.Box(
                 margin_top=12,
                 margin_bottom=12,
                 margin_start=6,
                 margin_end=6,
                 spacing=12,
             )
-            games_no = len(shared.store.source_games[source_id]) - removed[0]
-            total_games_no += games_no
-
-            row.append(
-                Gtk.Image.new_from_icon_name(
-                    self._icone_disponivel(
-                        theme,
-                        launcher.nomes_de_icone_da_fonte(source_id),
-                    )
-                )
-            )
-
-            row.append(
+            content.append(self._source_filter_image(source_id, theme))
+            content.append(
                 Gtk.Label(
-                    label=self.get_application().get_source_name(source_id),
+                    label=self._source_filter_name(source_id),
                     halign=Gtk.Align.START,
                     wrap=True,
                     wrap_mode=Pango.WrapMode.CHAR,
                 )
             )
-
-            row.append(
-                games_no_label := Gtk.Label(
+            content.append(
+                count_label := Gtk.Label(
                     label=str(games_no),
                     hexpand=True,
                     halign=Gtk.Align.END,
                 )
             )
+            count_label.add_css_class("dim-label")
 
-            games_no_label.add_css_class("dim-label")
-
-            # Order rows based on the number of games in them
-            index = 3
-            while source_row := self.sidebar.get_row_at_index(index):
-                if self.source_rows[source_row][1] < games_no:
-                    self.sidebar.insert(row, index)
-                    break
-                index += 1
-            if not row.get_parent():
-                self.sidebar.append(row)
-
-            self.source_rows[row.get_parent()] = (
-                source_id,
-                games_no,
+            button = Gtk.ToggleButton(
+                active=source_id in self.active_source_filters,
+                child=content,
+                hexpand=True,
+                css_classes=["flat", "source-filter-toggle"],
             )
+            button.connect("toggled", self._source_filter_toggled, source_id)
+            self.sidebar.append(button)
+            self.source_rows[button] = (source_id, games_no)
 
-            if source_id == selected_id:
-                self.sidebar.select_row(row.get_parent())
-                restored = True
-
-            self.sidebar.get_row_at_index(2).set_visible(True)
-
-        self.all_games_no_label.set_label(str(total_games_no))
+        header = self.sidebar.get_row_at_index(0)
+        if header is not None:
+            header.set_visible(bool(counts))
+        self._update_source_filter_title()
+        self.library.invalidate_filter()
         self.atualizar_launchers()
 
-        if not restored:
-            self.sidebar.select_row(self.all_games_row_box.get_parent())
+    @staticmethod
+    def _source_filter_id(game: Game) -> str:
+        if game.base_source != "xcloud":
+            return game.base_source
+        if game.source in ("xcloud_free", "xcloud_gamepass", "xcloud_owned"):
+            return game.source
+        return "xcloud_gamepass"
 
-    def row_selected(self, _widget: Any, row: Gtk.ListBoxRow | None) -> None:
-        if not row:
-            return
-        match row.get_child():
-            case self.all_games_row_box:
-                value = "all"
-            case self.added_row_box:
-                value = "imported"
-            case _:
-                value = self.source_rows[row][0]
+    def _source_filter_name(self, source_id: str) -> str:
+        names = {
+            "xcloud_free": _("Xbox Cloud Gaming — Grátis"),
+            "xcloud_gamepass": _("Xbox Cloud Gaming — Game Pass"),
+            "xcloud_owned": _("Xbox Cloud Gaming — Comprados"),
+        }
+        return names.get(source_id, self.get_application().get_source_name(source_id))
 
-        self.library_page.set_title(self.get_application().get_source_name(value))
+    def _source_filter_image(
+        self, source_id: str, theme: Gtk.IconTheme
+    ) -> Gtk.Image:
+        if source_id.startswith("xcloud_"):
+            image = Gtk.Image.new_from_resource(shared.PREFIX + "/xbox-cloud.png")
+            image.set_pixel_size(18)
+            image.add_css_class("better-xcloud-icon")
+            return image
+        if source_id == "imported":
+            return Gtk.Image.new_from_icon_name("list-add-symbolic")
+        return Gtk.Image.new_from_icon_name(
+            self._icone_disponivel(
+                theme,
+                launcher.nomes_de_icone_da_fonte(source_id),
+            )
+        )
 
-        self.filter_state = value
+    def _source_filter_toggled(
+        self, button: Gtk.ToggleButton, source_id: str
+    ) -> None:
+        if button.get_active():
+            self.active_source_filters.add(source_id)
+        else:
+            self.active_source_filters.discard(source_id)
+        self._update_source_filter_title()
         self.library.invalidate_filter()
 
-        if self.overlay_split_view.get_collapsed():
-            self.overlay_split_view.set_show_sidebar(False)
+    def _update_source_filter_title(self) -> None:
+        available = {source_id for source_id, _count in self.source_rows.values()}
+        selected = self.active_source_filters & available
+        if not available:
+            title = _("Biblioteca")
+        elif len(selected) == 1:
+            title = self._source_filter_name(next(iter(selected)))
+        elif selected == available and available:
+            title = _("Biblioteca")
+        else:
+            title = _("{} plataformas").format(len(selected))
+        self.library_page.set_title(title)
+
+    def enable_source_filter(self, source_id: str) -> None:
+        """Garante que uma plataforma fique visível sem apagar as demais."""
+        self.active_source_filters.add(source_id)
+        for button, (current_id, _count) in self.source_rows.items():
+            if current_id == source_id:
+                button.set_active(True)
+                break
+        self._update_source_filter_title()
+        self.library.invalidate_filter()
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        self.active_source_filters = set()
+        self.known_source_filters = set()
+        self.source_rows = {}
 
         self.game_mode_home_page.set_visible(shared.runtime.is_game_mode)
         if not shared.runtime.is_game_mode:
@@ -428,8 +435,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
             shared.state_schema.get_boolean("show-sidebar")
         )
 
-        self.sidebar.select_row(self.all_games_row_box.get_parent())
-
         if shared.PROFILE == "development":
             self.add_css_class("devel")
 
@@ -472,8 +477,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
 
         for grade in (self.library, self.hidden_library, self.zerados_library):
             grade.connect("child-activated", self.on_library_child_activated)
-
-        self.sidebar.connect("row-selected", self.row_selected)
 
         self._gamepad_button_widgets = {}
         for code in (304, 305, 307, 308, 310, 311, 314, 315, 316, 317, 318):
@@ -889,10 +892,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
         filtered = text != "" and not any(casa(member) for member in members)
 
         if not filtered and not em_zerados:
-            if self.filter_state == "all":
-                pass
-            elif all(
-                member.base_source != self.filter_state for member in members
+            if not any(
+                self._source_filter_id(member) in self.active_source_filters
+                for member in members
             ):
                 filtered = True
 
@@ -1623,6 +1625,32 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def on_launcher_clicked(self, _button: Gtk.Button, game: Game) -> None:
         game.launch()
 
+    def launch_library_game(self, game: Game) -> None:
+        """Joga pela plataforma que tornou o card agrupado visível.
+
+        Um card pode representar, por exemplo, uma instalação local e a
+        edição do xCloud. Quando apenas o filtro do xCloud está ativo, lançar
+        o primário local faria o botão parecer inerte (ou abriria a cópia
+        errada). Preserve o primário quando ele ainda pertence aos filtros
+        visíveis; caso contrário, use o membro visível preferido do grupo.
+        """
+        members = agrupamento.membros(game)
+        visible_members = [
+            member
+            for member in members
+            if self._source_filter_id(member) in self.active_source_filters
+        ]
+        target = game
+        if visible_members and game not in visible_members:
+            target = agrupamento.primario(visible_members)
+        logging.info(
+            "Lançando %s via %s (%s)",
+            target.name,
+            target.source,
+            target.executable,
+        )
+        target.launch()
+
     def on_launcher_menu(
         self,
         _gesture: Gtk.GestureClick,
@@ -1707,26 +1735,37 @@ class CartridgesWindow(Adw.ApplicationWindow):
         from cartridges import xcloud
 
         if not shared.schema.get_boolean("xbox-cloud-gaming"):
+            logging.warning("Jogo xCloud ignorado porque a integração está desativada")
+            self.toast_queue.add(
+                Adw.Toast.new(_("Ative o Xbox Cloud Gaming nas preferências"))
+            )
             return False
         if not xcloud.webkit_available():
             self.toast_queue.add(
                 Adw.Toast.new(_("Xbox Cloud Gaming precisa do WebKitGTK instalado"))
             )
             return False
-        if self.navigation_view.get_visible_page() != self.xcloud_page:
-            self._xcloud_was_fullscreen = self.get_fullscreened()
-            self.navigation_view.push(self.xcloud_page)
-        self._update_xcloud_fullscreen_button()
-        self.xcloud_close_button.grab_focus()
-        # Se o usuário já abriu o xCloud, preserve literalmente a mesma
-        # WebView (sessão, página e Better xCloud) e apenas navegue para o jogo.
-        if self._xcloud_webview is not None:
-            self.xcloud_error.set_visible(False)
-            self.xcloud_spinner.set_visible(False)
-            self.xcloud_container.set_visible(True)
-            xcloud.load_xcloud_game(self._xcloud_webview, url)
-        else:
-            self._load_xcloud_fresh(url)
+        try:
+            if self.navigation_view.get_visible_page() != self.xcloud_page:
+                self._xcloud_was_fullscreen = self.get_fullscreened()
+                self.navigation_view.push(self.xcloud_page)
+            self._update_xcloud_fullscreen_button()
+            self.xcloud_close_button.grab_focus()
+            # Se o usuário já abriu o xCloud, preserve literalmente a mesma
+            # WebView (sessão, página e Better xCloud) e apenas navegue para o jogo.
+            if self._xcloud_webview is not None:
+                self.xcloud_error.set_visible(False)
+                self.xcloud_spinner.set_visible(False)
+                self.xcloud_container.set_visible(True)
+                xcloud.load_xcloud_game(self._xcloud_webview, url)
+            else:
+                self._load_xcloud_fresh(url)
+        except Exception:  # pylint: disable=broad-exception-caught
+            logging.exception("Não foi possível abrir o jogo no xCloud")
+            self.toast_queue.add(
+                Adw.Toast.new(_("Não foi possível abrir o jogo no Xbox Cloud Gaming"))
+            )
+            return False
         return True
 
     def _load_xcloud_fresh(self, game_url: Optional[str] = None) -> None:

@@ -28,10 +28,10 @@ class GlobalShortcutTests(unittest.TestCase):
 
     def test_resolve_command_prefers_local_install(self):
         with mock.patch.object(
-            Path, "is_file", lambda self: str(self).endswith(".local/bin/cartridges")
+            Path, "is_file", lambda self: str(self).endswith(".local/bin/jolven")
         ), mock.patch("os.access", return_value=True):
             self.assertTrue(
-                global_shortcut.resolve_command().endswith(".local/bin/cartridges")
+                global_shortcut.resolve_command().endswith(".local/bin/jolven")
             )
 
     def test_resolve_command_honours_env_override(self):

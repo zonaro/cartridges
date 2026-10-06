@@ -92,6 +92,9 @@
     <key name="retroarch-location" type="s">
       <default>"~/.var/app/org.libretro.RetroArch/config/retroarch/"</default>
     </key>
+    <key name="waydroid" type="b">
+      <default>true</default>
+    </key>
     <key name="yuzu" type="b">
       <default>true</default>
     </key>

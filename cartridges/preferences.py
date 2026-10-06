@@ -49,6 +49,7 @@ from cartridges.importer.retroarch_source import RetroarchSource
 from cartridges.importer.source import Source
 from cartridges.importer.steam_source import SteamSource
 from cartridges.importer.twintail_source import TwintailSource
+from cartridges.importer.waydroid_source import WaydroidSource
 from cartridges.importer.yuzu_source import YuzuSource
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
@@ -122,6 +123,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     retroarch_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     retroarch_config_action_row: Adw.ActionRow = Gtk.Template.Child()
     retroarch_config_file_chooser_button: Gtk.Button = Gtk.Template.Child()
+
+    waydroid_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
 
     yuzu_expander_row: Adw.ExpanderRow = Gtk.Template.Child()
     yuzu_data_action_row: Adw.ActionRow = Gtk.Template.Child()
@@ -252,6 +255,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             RetroarchSource,
             SteamSource,
             TwintailSource,
+            WaydroidSource,
             YuzuSource,
         ):
             source = source_class()
@@ -937,7 +941,6 @@ class CartridgesPreferences(Adw.PreferencesDialog):
 
     def remove_all_games(self, *_args: Any) -> None:
         shared.win.get_application().state = shared.AppState.REMOVE_ALL_GAMES
-        shared.win.row_selected(None, shared.win.all_games_row_box.get_parent())
         for game in shared.store:
             if not game.removed:
                 self.removed_games.add(game)

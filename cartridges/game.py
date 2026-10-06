@@ -411,7 +411,7 @@ class Game(Gtk.Box):
 
     def main_button_clicked(self, _widget: Any, button: bool) -> None:
         if shared.schema.get_boolean("cover-launches-game") ^ button:
-            self.launch()
+            shared.win.launch_library_game(self)
         else:
             shared.win.show_details_page(self)
 

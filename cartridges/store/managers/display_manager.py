@@ -78,7 +78,11 @@ def _atualizar_badge_fontes(game: Game, members: list, grouped: bool) -> None:
             continue
         vistos.add(base)
         nomes.append(str(nome))
-        icones.append(_icone_da_fonte(membro.source))
+        icones.append(
+            "__better_xcloud__"
+            if base == "xcloud"
+            else _icone_da_fonte(membro.source)
+        )
 
     if not icones:
         badge.set_visible(False)
@@ -86,7 +90,11 @@ def _atualizar_badge_fontes(game: Game, members: list, grouped: bool) -> None:
         return
 
     for nome_icone in icones:
-        imagem = Gtk.Image.new_from_icon_name(nome_icone)
+        imagem = (
+            Gtk.Image.new_from_resource(shared.PREFIX + "/xbox-cloud.png")
+            if nome_icone == "__better_xcloud__"
+            else Gtk.Image.new_from_icon_name(nome_icone)
+        )
         imagem.set_pixel_size(16)
         badge.append(imagem)
     badge.set_tooltip_text(", ".join(nomes))

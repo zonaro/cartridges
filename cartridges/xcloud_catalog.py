@@ -26,6 +26,10 @@ from PIL import Image, UnidentifiedImageError
 
 SOURCE_ID = "xcloud"
 CATALOG_LIST_ID = "29a81209-df6f-41fd-a528-2ae6b91f719c"
+# Fortnite is served by Microsoft's separate free-to-play offering and is not
+# consistently present in the public ``allCloud`` SIGL, although its Store
+# page explicitly lists Xbox Cloud Gaming support.
+FREE_CLOUD_PRODUCT_IDS = ("BT5P2X999VH2",)
 SIGL_URL = "https://catalog.gamepass.com/sigls/v2"
 PRODUCTS_URL = "https://displaycatalog.mp.microsoft.com/v7.0/products"
 PLAY_URL = "https://www.xbox.com/play/launch/{product_id}"
@@ -47,6 +51,7 @@ class CloudGame:
     publisher: Optional[str] = None
     description: Optional[str] = None
     cover_url: Optional[str] = None
+    is_free: bool = False
 
     @property
     def game_id(self) -> str:
@@ -136,6 +141,7 @@ def parse_products(data: Any) -> list[CloudGame]:
                 publisher=_text(localized.get("PublisherName")),
                 description=_text(localized.get("ShortDescription")),
                 cover_url=_image_url(localized),
+                is_free=_is_free_product(product),
             )
         )
     return games
@@ -143,6 +149,32 @@ def parse_products(data: Any) -> list[CloudGame]:
 
 def _text(value: Any) -> Optional[str]:
     return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def _is_free_product(product: dict[str, Any]) -> bool:
+    """True quando há uma oferta pública comprável por preço zero.
+
+    Ofertas de assinatura também chegam com preço zero, mas exigem
+    ``RemediationRequired``. Exigi-la como falsa evita classificar todo o Game
+    Pass como grátis.
+    """
+    for sku in product.get("DisplaySkuAvailabilities") or ():
+        if not isinstance(sku, dict):
+            continue
+        if (sku.get("Sku") or {}).get("SkuType") == "trial":
+            continue
+        for availability in sku.get("Availabilities") or ():
+            if not isinstance(availability, dict):
+                continue
+            actions = availability.get("Actions") or ()
+            price = (availability.get("OrderManagementData") or {}).get("Price") or {}
+            if (
+                "Purchase" in actions
+                and not availability.get("RemediationRequired")
+                and price.get("ListPrice") == 0
+            ):
+                return True
+    return False
 
 
 def _batches(values: list[str], size: int = BATCH_SIZE) -> Iterable[list[str]]:
@@ -156,6 +188,7 @@ def fetch_catalog() -> list[CloudGame]:
         {"id": CATALOG_LIST_ID, "market": market, "language": language}
     )
     product_ids = parse_product_ids(_request_json(f"{SIGL_URL}?{sigl_query}"))
+    product_ids = list(dict.fromkeys((*product_ids, *FREE_CLOUD_PRODUCT_IDS)))
     if not product_ids:
         raise ValueError("o catálogo público do xCloud retornou vazio")
 
@@ -238,6 +271,7 @@ def _install_catalog(
             changed = True
         else:
             for attr, value in (
+                ("source", f"{SOURCE_ID}_{'free' if item.is_free else 'gamepass'}"),
                 ("name", item.name),
                 ("executable", item.play_url),
                 ("developer", item.developer),
@@ -248,6 +282,12 @@ def _install_catalog(
                 if value is not None and getattr(existing, attr, None) != value:
                     setattr(existing, attr, value)
                     changed = True
+
+        # Novos registros também precisam nascer na subcategoria correta.
+        expected_source = f"{SOURCE_ID}_{'free' if item.is_free else 'gamepass'}"
+        if existing.source != expected_source:
+            existing.source = expected_source
+            changed = True
 
         if changed:
             shared.store.managers[FileManager].main(existing, {})

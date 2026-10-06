@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#12101a">
-    <meta name="description" content="Jolven transforma qualquer PC Linux em um console: uma biblioteca gamepad-first para Steam, Heroic, Lutris, Bottles e emuladores, com capas automáticas, iluminação ambiente Tuya e sessão dedicada de console.">
-    <meta name="keywords" content="Jolven, Linux gaming, game launcher, console interface, Steam, Heroic, Lutris, Bottles, emulators, GameMode, Gamescope, Tuya LED, SteamGridDB, IGDB, TheGamesDB, Wallhaven, gamepad, couch gaming">
+    <meta name="description" content="Jolven transforma qualquer PC Linux em um console: uma biblioteca gamepad-first para Steam, Heroic, Lutris, Waydroid e emuladores, com capas automáticas, iluminação ambiente Tuya e sessão dedicada de console.">
+    <meta name="keywords" content="Jolven, Linux gaming, game launcher, console interface, Steam, Heroic, Lutris, Bottles, Waydroid, Android games, emulators, GameMode, Gamescope, Tuya LED, SteamGridDB, IGDB, TheGamesDB, Wallhaven, gamepad, couch gaming">
     <meta name="author" content="Jolven contributors">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://zonaro.github.io/jolven/">
@@ -16,7 +16,7 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Jolven">
     <meta property="og:title" content="Jolven — Transforme qualquer PC Linux em um console">
-    <meta property="og:description" content="Uma biblioteca gamepad-first para toda sua coleção Linux: capas e detalhes automáticos, iluminação ambiente Tuya, perfis de desempenho por jogo e uma sessão de console dedicada opcional.">
+    <meta property="og:description" content="Uma biblioteca gamepad-first para jogos Linux, emuladores e apps Android via Waydroid, com arte automática, iluminação Tuya e uma sessão de console opcional.">
     <meta property="og:url" content="https://zonaro.github.io/jolven/">
     <meta property="og:image" content="https://zonaro.github.io/jolven/screenshots/1.png">
     <meta property="og:image:alt" content="Biblioteca de jogos do Jolven">
@@ -25,7 +25,7 @@
     <meta property="og:locale:alternate" content="es_ES">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Jolven — Transforme qualquer PC Linux em um console">
-    <meta name="twitter:description" content="Uma biblioteca gamepad-first para Steam, Heroic, Lutris, Bottles e emuladores — com arte automática, iluminação Tuya e sessão de console.">
+    <meta name="twitter:description" content="Uma biblioteca gamepad-first para Steam, Heroic, Lutris, Waydroid e emuladores — com arte automática, iluminação Tuya e sessão de console.">
     <meta name="twitter:image" content="https://zonaro.github.io/jolven/screenshots/1.png">
     <title>Jolven — Transforme qualquer PC Linux em um console</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -43,7 +43,7 @@
       "url": "https://zonaro.github.io/jolven/",
       "codeRepository": "https://github.com/zonaro/jolven",
       "license": "https://www.gnu.org/licenses/gpl-3.0.html",
-      "description": "Gamepad-first gaming interface for Linux: one console-style library for Steam, Heroic, Lutris, Bottles and emulators, with automatic covers (SteamGridDB), details (TheGamesDB), screenshots (IGDB), wallpapers (Wallhaven), Tuya ambient lighting and a dedicated Gamescope console session.",
+      "description": "Gamepad-first gaming interface for Linux: one console-style library for Steam, Heroic, Lutris, Bottles, Android apps through Waydroid and emulators, with automatic covers (SteamGridDB), details (TheGamesDB), screenshots (IGDB), wallpapers (Wallhaven), Tuya ambient lighting and a dedicated Gamescope console session.",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "isAccessibleForFree": true,
       "inLanguage": ["pt-BR", "en", "es"]
@@ -123,6 +123,7 @@
           <li>RetroArch</li>
           <li>Dolphin</li>
           <li>Yuzu</li>
+          <li>Waydroid</li>
           <li>TwinTail</li>
           <li data-i18n="chipManual">Jogos manuais</li>
           <li class="chip-experimental" title="Experimental" data-i18n-title="chipExpTitle">Xbox Cloud <small data-i18n="chipExperimental">experimental</small></li>
@@ -131,7 +132,7 @@
           <article>
             <span class="feature-icon">◫</span>
             <h3 data-i18n="benefitOneTitle">Tudo junto</h3>
-            <p data-i18n="benefitOneText">Jogos instalados, launchers e emuladores aparecem na mesma coleção, com capas, detalhes e capturas.</p>
+            <p data-i18n="benefitOneText">Jogos instalados, launchers, emuladores e apps Android via Waydroid aparecem na mesma coleção, com capas, detalhes e capturas.</p>
           </article>
           <article>
             <span class="feature-icon">◷</span>
@@ -311,7 +312,7 @@
         </div>
         <div class="faq-list">
           <details><summary data-i18n="faqOneQ">O Jolven é uma distribuição Linux?</summary><p data-i18n="faqOneA">Não. O Jolven roda sobre sua instalação Linux atual — Fedora, Ubuntu, Arch, a que você usar. É uma interface de jogos e uma sessão dedicada opcional, não um sistema operacional.</p></details>
-          <details><summary data-i18n="faqTwoQ">Preciso do Steam?</summary><p data-i18n="faqTwoA">Não. O Jolven importa de Steam, Heroic, Lutris, Bottles, Flatpak, entradas desktop, emuladores e jogos manuais. Use qualquer combinação — ou nenhuma.</p></details>
+          <details><summary data-i18n="faqTwoQ">Preciso do Steam?</summary><p data-i18n="faqTwoA">Não. O Jolven importa de Steam, Heroic, Lutris, Bottles, Waydroid, Flatpak, entradas desktop, emuladores e jogos manuais. Use qualquer combinação — ou nenhuma.</p></details>
           <details><summary data-i18n="faqThreeQ">Posso usar o Jolven sem a sessão dedicada?</summary><p data-i18n="faqThreeA">Sim. O Jolven funciona como aplicativo desktop normal dentro do GNOME, KDE ou outro ambiente gráfico.</p></details>
           <details><summary data-i18n="faqFourQ">Posso voltar ao GNOME ou KDE?</summary><p data-i18n="faqFourA">Sim. A Jolven Session dedicada é opcional. Ao sair dela você volta ao display manager, com seu desktop intacto.</p></details>
           <details><summary data-i18n="faqFiveQ">Vou perder minha biblioteca ao migrar do fork Cartridges?</summary><p data-i18n="faqFiveA">Não. Na primeira execução, o Jolven copia sua biblioteca, capas, ajustes e metadados para as próprias pastas. Seus dados originais nunca são apagados.</p></details>

@@ -83,6 +83,7 @@ One-time setup with a friendly wizard, credentials stored encrypted, and from th
 - **Per-game launch profiles** — set resolution, FPS limit, scaling, working folder and extra options once per title, then just press play.
 - **GameMode + MangoHud + Gamescope, without the terminal** — toggle performance boosts and overlays per game or globally, from a normal settings screen.
 - **Xbox Cloud Gaming (experimental)** — stream from the cloud alongside your installed games.
+- **Waydroid apps** — import installed Android games with their package ids and local icons, while filtering system utilities.
 - **GNOME search provider** — hit Super, type a game name, press Enter.
 - **Animated, gamepad-first interface** — every screen works from the couch, with hotplug controllers, an on-screen keyboard and a global menu (library, power, session).
 

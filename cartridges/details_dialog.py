@@ -712,11 +712,7 @@ class DetailsDialog(Adw.Dialog):
                 }
             )
 
-            if shared.win.sidebar.get_selected_row().get_child() not in (
-                shared.win.all_games_row_box,
-                shared.win.added_row_box,
-            ):
-                shared.win.sidebar.select_row(shared.win.added_row_box.get_parent())
+            shared.win.enable_source_filter("imported")
 
         else:
             if final_name == "":
