@@ -33,30 +33,58 @@ Jolven is **not** a Linux distribution, **not** an operating system and **not** 
 
 ## Features
 
-- Manually adding and editing games
-- Importing games from various sources:
-  - Steam
-  - Lutris
-  - Heroic
-  - Bottles
-  - itch
-  - Legendary
-  - RetroArch
-  - Dolphin
-  - Yuzu
-  - TwinTail
-  - Flatpak
-  - Desktop Entries
+### One library for everything you play
+
+Manually add and edit games, or let Jolven pull them in automatically from:
+
+- Steam
+- Lutris
+- Heroic (Epic, GOG, Amazon, sideloaded)
+- Bottles
+- itch
+- Legendary
+- RetroArch
+- Dolphin
+- Yuzu
+- TwinTail
+- Flatpak
+- Desktop Entries
 - Xbox Cloud Gaming (experimental)
-- Filtering games by source
-- Searching and sorting by title, date added and last played
-- Hiding games
-- Automatically downloading cover art from [SteamGridDB](https://www.steamgriddb.com/)
-- Game details, screenshots, and fallback artwork from [TheGamesDB](https://thegamesdb.net/)
-- Searching for games on various databases
-- Animated covers
-- Playtime and session tracking, per-game launch profiles
-- A search provider for GNOME
+
+Filter by source, search, sort by title, date added or last played, and hide the games you don't want on the couch.
+
+### A library that looks amazing with zero effort
+
+You press play — Jolven takes care of the shelf. No hunting for images, no blank tiles:
+
+- **Covers that find themselves** — automatic artwork from [SteamGridDB](https://www.steamgriddb.com/), with a visual picker to choose your favorite in one click.
+- **Animated covers** — your shelf comes alive with motion covers for the games you love.
+- **Logos, not just titles** — clean game logos on tiles and details, so the library feels like a real console.
+- **Details that help you choose** — synopsis, genres, players, co-op, age rating, release date and platform, powered by [TheGamesDB](https://thegamesdb.net/).
+- **Screenshots that set the mood** — real in-game captures via [IGDB](https://www.igdb.com/) in full HD, used as the backdrop of your library.
+- **Wallpapers that match your taste** — automatic and hand-picked backgrounds from [Wallhaven](https://wallhaven.cc/), with filters for category, color and mood.
+- **Fallbacks that never leave you hanging** — if one source doesn't know your game, Jolven tries the next one automatically (IGDB → TheGamesDB → Wallhaven). Your library always looks finished.
+
+> Bring your own free API keys in Preferences and unlock the full magic. Without keys, Jolven still works — with keys, it shines.
+
+### A room that plays along with you ✨
+
+Jolven talks to your **Tuya / Smart Life LED strips** over your local network:
+
+- The room glows in Jolven purple when you open the app.
+- When a game starts, the lights dress up in that game's color — pulled straight from its cover.
+- When you quit, everything returns to exactly how it was — even if the lights were off.
+
+One-time setup with a friendly wizard, credentials stored encrypted, and from then on it's all local and automatic. Movie night energy, every game night.
+
+### Fast where it matters, quiet where it doesn't
+
+- **Playtime and session tracking** — see how long you've actually played each game, automatically.
+- **Per-game launch profiles** — set resolution, FPS limit, scaling, working folder and extra options once per title, then just press play.
+- **GameMode + MangoHud + Gamescope, without the terminal** — toggle performance boosts and overlays per game or globally, from a normal settings screen.
+- **Xbox Cloud Gaming (experimental)** — stream from the cloud alongside your installed games.
+- **GNOME search provider** — hit Super, type a game name, press Enter.
+- **Animated, gamepad-first interface** — every screen works from the couch, with hotplug controllers, an on-screen keyboard and a global menu (library, power, session).
 
 Your existing data is safe: on first launch, Jolven copies the library, covers, settings, favorites and metadata from the previous `cartridges` folders into its own folders. The originals are never deleted. GSettings keys are migrated the same way (new keys win when already customized).
 

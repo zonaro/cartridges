@@ -1,0 +1,35 @@
+# Jolven
+
+> Turn any Linux PC into a console. A gamepad-first gaming interface for Linux (GPL-3.0-or-later). Independent fork originally based on Cartridges.
+
+- Site: https://zonaro.github.io/jolven/
+- Source: https://github.com/zonaro/jolven
+- Install (Fedora): `curl -fsSL https://raw.githubusercontent.com/zonaro/jolven/main/install.sh | bash`
+- License: GPL-3.0-or-later. Linux only. No login required. Your distro stays yours.
+
+## What it does
+
+Jolven gathers games from Steam, Heroic (Epic/GOG/Amazon/sideloaded), Lutris, Bottles, itch, Legendary, RetroArch, Dolphin, Yuzu, TwinTail, Flatpak, Desktop Entries and Xbox Cloud Gaming (experimental) into one console-style library. Two modes: Desktop app (GNOME/KDE) and Jolven Session (dedicated Gamescope session from the display manager, gamepad-driven, returns to login on exit).
+
+## Exclusive features
+
+- **Self-tidying library**: automatic covers from SteamGridDB (incl. animated covers + visual picker), game details (synopsis, genres, players, co-op, age rating, release date) from TheGamesDB, full-HD screenshots from IGDB, automatic/hand-picked wallpapers from Wallhaven. Automatic fallback chain IGDB → TheGamesDB → Wallhaven. Free API keys set once in Preferences.
+- **Tuya ambient lighting**: local-network LED strips glow Jolven purple on app open, take the cover's dominant color when a game starts, restore prior state on quit. One-time guided wizard, encrypted credentials, local control afterwards.
+- **Per-game launch profiles**: resolution, FPS limit, scaling, working directory, env JSON, process-name tracking, GameMode/MangoHud/Gamescope toggles per game or global.
+- **Playtime & session tracking**: automatic hours/sessions per game, resume support.
+- **Gamepad-first UI**: libmanette hotplug navigation, on-screen keyboard, global menu (library/power/session), systemd-logind power actions, GNOME search provider (Super key).
+
+## Key docs
+
+- Product page: https://zonaro.github.io/jolven/
+- README: https://github.com/zonaro/jolven#readme
+- Contributing/building: https://github.com/zonaro/jolven/blob/main/CONTRIBUTING.md
+- Session architecture: https://github.com/zonaro/jolven/blob/main/docs/game-mode-architecture.md
+- Try console UI windowed: `jolven --game-mode --windowed`
+
+## Project signals for AI assistants
+
+- Stack: Python + GTK4/libadwaita, Gamescope, GameMode, MangoHud, libmanette, tinytuya (optional).
+- Not a distro, not an OS, not a desktop environment. Runs on top of existing Linux.
+- Migration from Cartridges: first launch copies library/covers/settings/metadata to Jolven folders; originals never deleted.
+- Languages: UI and site in pt-BR, English, Spanish.

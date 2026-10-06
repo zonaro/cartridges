@@ -4,12 +4,51 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#12101a">
-    <meta name="description" content="A gamepad-first gaming interface for Linux. Launch your entire library from one place — from your desktop or a dedicated gaming session.">
+    <meta name="description" content="Jolven turns any Linux PC into a console: one gamepad-first library for Steam, Heroic, Lutris, Bottles and emulators, with auto covers, Tuya ambient lighting and a dedicated console session.">
+    <meta name="keywords" content="Jolven, Linux gaming, game launcher, console interface, Steam, Heroic, Lutris, Bottles, emulators, GameMode, Gamescope, Tuya LED, SteamGridDB, IGDB, TheGamesDB, Wallhaven, gamepad, couch gaming">
+    <meta name="author" content="Jolven contributors">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://zonaro.github.io/jolven/">
+    <link rel="alternate" hreflang="pt-BR" href="https://zonaro.github.io/jolven/#pt-BR">
+    <link rel="alternate" hreflang="en" href="https://zonaro.github.io/jolven/#en">
+    <link rel="alternate" hreflang="es" href="https://zonaro.github.io/jolven/#es">
+    <link rel="alternate" hreflang="x-default" href="https://zonaro.github.io/jolven/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jolven">
+    <meta property="og:title" content="Jolven — Turn any Linux PC into a console">
+    <meta property="og:description" content="One gamepad-first library for your whole Linux collection: auto covers and details, Tuya ambient lighting, per-game performance profiles and an optional dedicated console session.">
+    <meta property="og:url" content="https://zonaro.github.io/jolven/">
+    <meta property="og:image" content="https://zonaro.github.io/jolven/screenshots/1.png">
+    <meta property="og:image:alt" content="Jolven game library">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:locale:alternate" content="es_ES">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jolven — Turn any Linux PC into a console">
+    <meta name="twitter:description" content="One gamepad-first library for Steam, Heroic, Lutris, Bottles and emulators — with auto artwork, Tuya lighting and a console session.">
+    <meta name="twitter:image" content="https://zonaro.github.io/jolven/screenshots/1.png">
     <title>Jolven — Turn any Linux PC into a console</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="assets/favicon-32.png">
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Jolven",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Linux",
+      "url": "https://zonaro.github.io/jolven/",
+      "codeRepository": "https://github.com/zonaro/jolven",
+      "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+      "description": "Gamepad-first gaming interface for Linux: one console-style library for Steam, Heroic, Lutris, Bottles and emulators, with automatic covers (SteamGridDB), details (TheGamesDB), screenshots (IGDB), wallpapers (Wallhaven), Tuya ambient lighting and a dedicated Gamescope console session.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "isAccessibleForFree": true,
+      "inLanguage": ["pt-BR", "en", "es"]
+    }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skip">Pular para o conteúdo</a>
@@ -21,6 +60,7 @@
       </a>
       <nav class="nav-links" aria-label="Primary">
         <a href="#library" data-i18n="navLibrary">Biblioteca</a>
+        <a href="#magic" data-i18n="navMagic">Destaques</a>
         <a href="#controller" data-i18n="navController">Controle</a>
         <a href="#modes" data-i18n="navModes">Modos</a>
         <a href="#faq">FAQ</a>
@@ -106,6 +146,60 @@
         </div>
       </section>
 
+      <section class="section magic" id="magic">
+        <div class="section-heading">
+          <span class="eyebrow" data-i18n="magicEyebrow">Exclusivo Jolven — zero esforço</span>
+          <h2 data-i18n="magicTitle">Uma biblioteca que se arruma sozinha.</h2>
+          <p data-i18n="magicLead">Você só quer jogar. O Jolven cuida da prateleira: busca capas, detalhes, capturas e papéis de parede em quatro fontes — e se uma não conhecer seu jogo, ele tenta a próxima sozinho.</p>
+        </div>
+        <div class="magic-grid">
+          <article class="magic-card">
+            <span class="magic-icon">✦</span>
+            <h3 data-i18n="magicOneTitle">Capas que se encontram sozinhas</h3>
+            <p data-i18n="magicOneText">Arte automática do SteamGridDB, com capas animadas que dão vida à prateleira. Não gostou? Escolha outra com um clique no seletor visual.</p>
+            <span class="magic-tag">SteamGridDB</span>
+          </article>
+          <article class="magic-card">
+            <span class="magic-icon">◫</span>
+            <h3 data-i18n="magicTwoTitle">Detalhes que ajudam a escolher</h3>
+            <p data-i18n="magicTwoText">Sinopse, gêneros, número de jogadores, co-op, faixa etária e data de lançamento — aquela dúvida de “o que vamos jogar hoje?” some em segundos.</p>
+            <span class="magic-tag">TheGamesDB</span>
+          </article>
+          <article class="magic-card">
+            <span class="magic-icon">◎</span>
+            <h3 data-i18n="magicThreeTitle">Capturas que dão o clima</h3>
+            <p data-i18n="magicThreeText">Fotos reais do jogo em alta definição como fundo da biblioteca. Antes mesmo de apertar Play, você já está dentro do jogo.</p>
+            <span class="magic-tag">IGDB</span>
+          </article>
+          <article class="magic-card">
+            <span class="magic-icon">◍</span>
+            <h3 data-i18n="magicFourTitle">Papéis de parede do seu jeito</h3>
+            <p data-i18n="magicFourText">Fundos automáticos ou escolhidos a dedo no Wallhaven, com filtros por categoria, cor e clima. Sua sessão, suas regras — até no visual.</p>
+            <span class="magic-tag">Wallhaven</span>
+          </article>
+        </div>
+        <p class="magic-note" data-i18n="magicNote">Basta adicionar suas chaves gratuitas nas Preferências uma única vez. Sem chaves, o Jolven funciona — com elas, ele brilha.</p>
+      </section>
+
+      <section class="section ambient" id="ambient">
+        <div class="ambient-band">
+          <div class="ambient-copy">
+            <span class="eyebrow" data-i18n="ambientEyebrow">Só o Jolven faz — iluminação Tuya</span>
+            <h2 data-i18n="ambientTitle">A sala joga junto com você.</h2>
+            <p data-i18n="ambientLead">Suas fitas de LED viram parte do jogo: acendem no roxo do Jolven ao abrir o app, vestem a cor da capa quando a partida começa e voltam a como estavam quando você sai — mesmo que estivessem apagadas.</p>
+            <ul class="ambient-list">
+              <li data-i18n="ambientOne">Configuração guiada uma única vez, direto no app</li>
+              <li data-i18n="ambientTwo">Tudo local e automático depois disso — sem nuvem no dia a dia</li>
+              <li data-i18n="ambientThree">Clima de cinema, toda noite de jogo</li>
+            </ul>
+          </div>
+          <div class="ambient-visual" aria-hidden="true">
+            <div class="ambient-glow"></div>
+            <div class="ambient-tv">▶</div>
+          </div>
+        </div>
+      </section>
+
       <section class="section controller" id="controller">
         <div class="section-heading">
           <span class="eyebrow" data-i18n="controllerEyebrow">Gamepad-first by design</span>
@@ -116,6 +210,19 @@
           <article><span>⌁</span><h3 data-i18n="featureControlTitle">Full navigation</h3><p data-i18n="featureControlText">D-pad and sticks move, south confirms, east goes back. Hotplug just works.</p></article>
           <article><span>◉</span><h3 data-i18n="featureOsdTitle">On-screen everything</h3><p data-i18n="featureOsdText">On-screen keyboard, large actions and a global menu with library, power and session controls.</p></article>
           <article><span>◎</span><h3 data-i18n="featureDeskTitle">Still desktop-friendly</h3><p data-i18n="featureDeskText">Mouse and keyboard work everywhere. The controller is an option — never a requirement.</p></article>
+        </div>
+      </section>
+
+      <section class="section performance" id="performance">
+        <div class="section-heading">
+          <span class="eyebrow" data-i18n="perfEyebrow">Rápido onde importa</span>
+          <h2 data-i18n="perfTitle">Configure uma vez. Jogue para sempre.</h2>
+          <p data-i18n="perfLead">Cada jogo lembra do seu jeito favorito de rodar — e o Jolven lembra quanto você já viveu nele.</p>
+        </div>
+        <div class="feature-grid">
+          <article><span>⚡</span><h3 data-i18n="perfOneTitle">Perfil por jogo</h3><p data-i18n="perfOneText">Resolução, limite de quadros e opções de execução guardados por título. Ajustou uma vez, apertou Play para sempre.</p></article>
+          <article><span>◷</span><h3 data-i18n="perfTwoTitle">Seu tempo, registrado</h3><p data-i18n="perfTwoText">Horas jogadas e sessões contadas sozinhas. Descubra seus favoritos de verdade — e retome de onde parou.</p></article>
+          <article><span>✦</span><h3 data-i18n="perfThreeTitle">Potência sem terminal</h3><p data-i18n="perfThreeText">GameMode, MangoHud e Gamescope com interruptores simples, por jogo ou globais. Desempenho de console, sem decorar comandos.</p></article>
         </div>
       </section>
 
