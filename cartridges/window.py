@@ -1625,15 +1625,15 @@ class CartridgesWindow(Adw.ApplicationWindow):
             valign=Gtk.Align.CENTER,
         )
         # Logo Better-XCloud (branco sobre transparente) embutido no
-        # GResource como xbox-cloud.png. Gtk.Picture preserva o PNG
-        # original em vez de recolorir como ícone symbolic.
+        # GResource como xbox-cloud.png. Gtk.Image preserva o PNG
+        # original em vez de recolorir como ícone symbolic, e pixel_size
+        # 16 iguala aos outros launchers (Gtk.Image.new_from_icon_name).
         try:
-            picture = Gtk.Picture.new_for_resource(
+            image = Gtk.Image.new_from_resource(
                 shared.PREFIX + "/xbox-cloud.png"
             )
-            picture.set_content_fit(Gtk.ContentFit.CONTAIN)
-            picture.set_size_request(24, 24)
-            button.set_child(picture)
+            image.set_pixel_size(16)
+            button.set_child(image)
         except Exception:
             icon_name = self._icone_disponivel(
                 theme,
