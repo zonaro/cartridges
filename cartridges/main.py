@@ -351,6 +351,11 @@ class CartridgesApplication(Adw.Application):
         shared.store.add_manager(SgdbManager())
         shared.store.toggle_manager_in_pipelines(FileManager, True)
 
+        if shared.schema.get_boolean("xbox-cloud-gaming"):
+            from cartridges.xcloud_catalog import sync_async
+
+            sync_async()
+
         # Create actions
         self.create_actions(
             {
@@ -490,6 +495,8 @@ class CartridgesApplication(Adw.Application):
             name = _("All Games")
         elif source_id == "imported":
             name = _("Added")
+        elif source_id.split("_")[0] == "xcloud":
+            name = _("Xbox Cloud Gaming")
         else:
             try:
                 name = globals()[f"{source_id.split('_')[0].title()}Source"].name

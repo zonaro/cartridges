@@ -134,6 +134,8 @@ def nomes_de_icone_da_fonte(source_id: str) -> tuple[str, ...]:
     tipo = source_id.split("_")[0]
     if tipo == "desktop":
         return ("desktop-source-symbolic", "user-desktop-symbolic")
+    if tipo == "xcloud":
+        return ("xbox-cloud-symbolic", "xbox-symbolic", "xbox")
     return (f"{tipo}-source-symbolic", *(_APLICATIVOS.get(tipo, ())))
 
 

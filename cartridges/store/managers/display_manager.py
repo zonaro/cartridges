@@ -105,6 +105,14 @@ class DisplayManager(Manager):
             if game.get_parent():
                 game.get_parent().set_child()
 
+        if game.base_source == "xcloud" and not shared.schema.get_boolean(
+            "xbox-cloud-gaming"
+        ):
+            if shared.win.get_application().state == shared.AppState.DEFAULT:
+                shared.win.set_library_child()
+                shared.win.create_source_rows()
+            return
+
         game.menu_button.set_menu_model(
             game.hidden_game_options if game.hidden else game.game_options
         )
