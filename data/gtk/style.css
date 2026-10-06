@@ -106,19 +106,3 @@ flowboxchild:focus-visible {
   color: var(--accent-fg-color, white);
   background-color: var(--accent-bg-color, #3584e4);
 }
-
-/* Card do Xbox Cloud Gaming: logo Better-XCloud é branco sobre
-   transparente, então o botão precisa do verde Xbox de fundo para
-   ficar visível tanto no tema claro quanto no escuro. */
-.xcloud-card {
-  background-color: #107c10;
-  color: white;
-}
-
-.xcloud-card:hover {
-  background-color: #0e6e0e;
-}
-
-.xcloud-card:active {
-  background-color: #0c5f0c;
-}

@@ -1619,7 +1619,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def build_xcloud_card(self, theme: Gtk.IconTheme) -> Gtk.Button:
         button = Gtk.Button(
             tooltip_text=_("Xbox Cloud Gaming"),
-            css_classes=["flat", "circular", "xcloud-card"],
+            css_classes=["flat", "circular"],
             width_request=40,
             height_request=40,
             valign=Gtk.Align.CENTER,
