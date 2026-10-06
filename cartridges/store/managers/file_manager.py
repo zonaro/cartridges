@@ -94,6 +94,7 @@ class FileManager(AsyncManager):
             "track_process",
             "process_executable",
             "is_launcher",
+            "fundo_biblioteca",
         )
 
         json.dump(

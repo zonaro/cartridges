@@ -260,6 +260,12 @@ def consultas(nome: str) -> list[str]:
     guarda de duas palavras — ela derruba justamente os casos ruins
     ("Alien", "Vampire", "Commandos") e preserva os bons ("Watch Dogs 2",
     "The Outer Worlds").
+
+    Quando nenhum degrau fiel dá resultado, entram as formas melhoradas
+    (camelCase separado, versão e região/idioma removidos): "MeuJogo" vira
+    "Meu Jogo", "Meu jogo v1.0" vira "Meu jogo", "Jogo (BR)" vira "Jogo" e
+    "[USA] Game" vira "Game". Elas ficam por último de propósito — só são
+    tentadas quando a busca padrão volta vazia.
     """
     limpo = re.sub(r"[™®©]", "", nome)
     limpo = limpo.replace("_", " ").replace("’", "'")
@@ -274,6 +280,16 @@ def consultas(nome: str) -> list[str]:
     base = re.split(r"\s*(?::|\s[-–]\s)\s*", sem_edicao or limpo)[0].strip()
     if base and base not in formas and len(base.split()) >= 2:
         formas.append(base)
+
+    try:
+        from cartridges.utils.name_cleaner import search_variants
+
+        for forma in list(formas):
+            for variante in search_variants(forma):
+                if variante and variante not in formas:
+                    formas.append(variante)
+    except Exception:
+        pass
 
     return formas
 

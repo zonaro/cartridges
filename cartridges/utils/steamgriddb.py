@@ -30,7 +30,7 @@ from requests.exceptions import HTTPError, RequestException
 from cartridges import shared
 from cartridges.game import Game
 from cartridges.utils.download import download_bytes, get_capped
-from cartridges.utils.name_cleaner import clean_for_search
+from cartridges.utils.name_cleaner import clean_for_search, search_variants
 from cartridges.utils.save_cover import ANIMATED_SUFFIXES, convert_cover, save_cover
 from cartridges.utils.title_match import rank_candidates
 
@@ -106,35 +106,41 @@ class SgdbHelper:
         """Get the best matching SGDB game id for a game. Can raise an exception."""
         # The query is a path segment, so it must be URL-encoded — otherwise
         # spaces and characters like ':', '&', "'" or accents break the request.
-        query = clean_for_search(game.name)
-        uri = f"{self.base_url}search/autocomplete/{quote(query, safe='')}"
-        res = get_capped(uri, headers=self.auth_headers, timeout=10)
-        match res.status_code:
-            case 200:
-                results = [r for r in _data_list(res) if isinstance(r, dict)]
-                if not results:
-                    raise SgdbGameNotFound(query)
-                with_ids = [r for r in results if r.get("id") is not None]
-                if not with_ids:
+        queries = search_variants(game.name) or [clean_for_search(game.name)]
+        last_not_found: SgdbError | None = None
+        for query in queries:
+            uri = f"{self.base_url}search/autocomplete/{quote(query, safe='')}"
+            res = get_capped(uri, headers=self.auth_headers, timeout=10)
+            match res.status_code:
+                case 200:
+                    results = [r for r in _data_list(res) if isinstance(r, dict)]
+                    if not results:
+                        last_not_found = SgdbGameNotFound(query)
+                        continue
+                    with_ids = [r for r in results if r.get("id") is not None]
+                    if not with_ids:
+                        raise SgdbBadRequest(res.status_code)
+                    # Ranked by the same title matching as the Steam lookup, not
+                    # by string equality: the query is the *cleaned* name and the
+                    # results are raw, so a fuzzy first hit used to win. A
+                    # confident match ranks first; failing one, the best plausible
+                    # title; a sequel or an unrelated title is never taken.
+                    ranked = rank_candidates(query, with_ids)
+                    if not ranked:
+                        last_not_found = SgdbGameNotFound(query)
+                        continue
+                    return ranked[0][0]["id"]
+                case 401:
+                    raise auth_error(res)
+                case 404:
+                    last_not_found = SgdbGameNotFound(query)
+                    continue
+                case _:
+                    # raise_for_status() only raises on 4xx/5xx; guard against an
+                    # unexpected 2xx/3xx silently returning None.
+                    res.raise_for_status()
                     raise SgdbBadRequest(res.status_code)
-                # Ranked by the same title matching as the Steam lookup, not
-                # by string equality: the query is the *cleaned* name and the
-                # results are raw, so a fuzzy first hit used to win. A
-                # confident match ranks first; failing one, the best plausible
-                # title; a sequel or an unrelated title is never taken.
-                ranked = rank_candidates(query, with_ids)
-                if not ranked:
-                    raise SgdbGameNotFound(query)
-                return ranked[0][0]["id"]
-            case 401:
-                raise auth_error(res)
-            case 404:
-                raise SgdbGameNotFound(res.status_code)
-            case _:
-                # raise_for_status() only raises on 4xx/5xx; guard against an
-                # unexpected 2xx/3xx silently returning None.
-                res.raise_for_status()
-                raise SgdbBadRequest(res.status_code)
+        raise last_not_found or SgdbGameNotFound(queries[0] if queries else game.name)
 
     def search_games(self, query: str) -> list[dict]:
         """Return the SGDB games matching a query (list of ``{id, name, …}``)."""
@@ -191,6 +197,32 @@ class SgdbHelper:
         behind the metadata.
         """
         uri = f"{self.base_url}logos/game/{game_id}?types=static&nsfw=false&humor=false"
+        res = get_capped(uri, headers=self.auth_headers, timeout=10)
+        match res.status_code:
+            case 200:
+                return _data_list(res)
+            case 401:
+                raise auth_error(res)
+            case 404:
+                raise SgdbGameNotFound(res.status_code)
+            case _:
+                res.raise_for_status()
+                return []
+
+    def get_heroes(
+        self, game_id: str, dimensions: Optional[str] = None
+    ) -> list[dict]:
+        """Return the landscape heroes available for a SGDB game id.
+
+        Heroes are the wide banners (1920x620 and friends), which is what a
+        library background wants. Each item has at least ``url`` (full image)
+        and ``thumb`` (preview), like grids. ``dimensions`` restricts sizes
+        the same way as in :meth:`get_grids`.
+        """
+        params = ["types=static"]
+        if dimensions:
+            params.append(f"dimensions={dimensions}")
+        uri = f"{self.base_url}heroes/game/{game_id}?" + "&".join(params)
         res = get_capped(uri, headers=self.auth_headers, timeout=10)
         match res.status_code:
             case 200:

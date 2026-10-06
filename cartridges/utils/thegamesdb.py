@@ -102,22 +102,28 @@ class TheGamesDBClient:
         return payload
 
     def find_game(self, name: str) -> TheGamesDBResult:
-        payload = self._get(
-            "Games/ByGameName",
-            name=name,
-            fields=DETAIL_FIELDS,
-            include="boxart,platform",
-        )
-        games = payload["data"].get("games")
-        candidates = [
-            game
-            for game in games or []
-            if isinstance(game, dict) and game.get("id") is not None
-        ]
-        ranked = rank_candidates(name, candidates, name_key="game_title")
-        if not ranked or ranked[0][1].score < CONFIDENT_SCORE:
+        from cartridges.utils.name_cleaner import search_variants
+
+        queries = search_variants(name) or [name]
+        for query in queries:
+            payload = self._get(
+                "Games/ByGameName",
+                name=query,
+                fields=DETAIL_FIELDS,
+                include="boxart,platform",
+            )
+            games = payload["data"].get("games")
+            candidates = [
+                game
+                for game in games or []
+                if isinstance(game, dict) and game.get("id") is not None
+            ]
+            ranked = rank_candidates(query, candidates, name_key="game_title")
+            if ranked and ranked[0][1].score >= CONFIDENT_SCORE:
+                game = ranked[0][0]
+                break
+        else:
             raise TheGamesDBNotFound(name)
-        game = ranked[0][0]
 
         include = (
             payload.get("include") if isinstance(payload.get("include"), dict) else {}

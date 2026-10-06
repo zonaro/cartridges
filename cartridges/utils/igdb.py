@@ -48,6 +48,7 @@ from cartridges.utils.title_match import CONFIDENT_SCORE, rank_candidates
 
 _JOGOS_URL = "https://api.igdb.com/v4/games"
 _CAPTURAS_URL = "https://api.igdb.com/v4/screenshots"
+_CAPAS_URL = "https://api.igdb.com/v4/covers"
 _TOKEN_URL = "https://id.twitch.tv/oauth2/token"
 
 # O que a URL crua traz (``t_thumb``) é miniatura; a ``t_1080p`` é a maior
@@ -147,8 +148,24 @@ def _consultar(
         raise IGDBError("resposta não era JSON") from erro
 
 
+def _url_grande(item: Any) -> Optional[str]:
+    """A URL de ``item`` na maior variação, ou ``None`` quando não há URL."""
+    if not isinstance(item, dict) or not item.get("url"):
+        return None
+    url = str(item["url"])
+    if url.startswith("//"):
+        url = f"https:{url}"
+    # Troca a variação da miniatura pela grande; se a URL não tem variação
+    # nenhuma, segue como veio.
+    if "/t_thumb/" in url:
+        url = url.replace("/t_thumb/", f"/{_IMAGEM_GRANDE}/")
+    elif "/t_cover_small/" in url or "/t_logo_med/" in url:
+        url = url.rsplit("/", 1)[0] + f"/{_IMAGEM_GRANDE}/" + url.rsplit("/", 1)[1]
+    return url
+
+
 class IGDBClient:
-    """Busca capturas de tela usando as chaves das preferências."""
+    """Busca capas e capturas de tela usando as chaves das preferências."""
 
     def __init__(
         self,
@@ -160,27 +177,72 @@ class IGDBClient:
         self.client_id = client_id
         self.client_secret = client_secret
 
+    def buscar_jogos(self, nome: str, timeout: float = 15) -> list[dict]:
+        """Os jogos que o IGDB devolve para ``nome``, sem filtrar.
+
+        É o picker quem rankeia e mostra qual casou: aqui vem a lista crua
+        (``id`` + ``name``). Lista vazia quando nada casou.
+
+        :raises IGDBError: rede fora, resposta inesperada ou sem credenciais
+        """
+        from cartridges.utils.name_cleaner import search_variants
+
+        token = _token_valido(self.client_id, self.client_secret, timeout)
+        vistos: set = set()
+        achados: list[dict] = []
+        for query in search_variants(nome) or [nome]:
+            jogos = _consultar(
+                _JOGOS_URL,
+                f'search "{query}"; fields id,name; limit 10;',
+                self.client_id,
+                token,
+                timeout,
+            )
+            for jogo in jogos or []:
+                if (
+                    isinstance(jogo, dict)
+                    and jogo.get("id") is not None
+                    and jogo.get("id") not in vistos
+                ):
+                    vistos.add(jogo.get("id"))
+                    achados.append(jogo)
+        return achados
+
+    def resolver_jogo(self, nome: str, timeout: float = 15) -> tuple[int, str]:
+        """O ``(id, nome)`` do jogo que mais parece ``nome``.
+
+        :raises IGDBNotFound: sem candidato confiante
+        :raises IGDBError: rede fora, resposta inesperada ou sem credenciais
+        """
+        ranked = rank_candidates(nome, self.buscar_jogos(nome, timeout=timeout))
+        if not ranked or ranked[0][1].score < CONFIDENT_SCORE:
+            raise IGDBNotFound(nome)
+        melhor = ranked[0][0]
+        return int(melhor["id"]), str(melhor.get("name") or nome)
+
     def id_do_jogo(self, nome: str, timeout: float = 15) -> int:
         """O id IGDB do jogo que mais parece ``nome``.
 
         :raises IGDBNotFound: sem candidato confiante
         :raises IGDBError: rede fora, resposta inesperada ou sem credenciais
         """
+        jogo_id, _nome = self.resolver_jogo(nome, timeout=timeout)
+        return jogo_id
+
+    def capas(self, jogo_id: int | str, timeout: float = 15) -> list[str]:
+        """As URLs das capas de ``jogo_id``, na maior variação.
+
+        :raises IGDBError: rede fora ou resposta inesperada
+        """
         token = _token_valido(self.client_id, self.client_secret, timeout)
-        jogos = _consultar(
-            _JOGOS_URL,
-            f'search "{nome}"; fields id,name; limit 10;',
+        itens = _consultar(
+            _CAPAS_URL,
+            f"where game = {jogo_id}; fields url; limit 10;",
             self.client_id,
             token,
             timeout,
         )
-        candidatos = [
-            jogo for jogo in jogos or [] if isinstance(jogo, dict) and jogo.get("id")
-        ]
-        ranked = rank_candidates(nome, candidatos)
-        if not ranked or ranked[0][1].score < CONFIDENT_SCORE:
-            raise IGDBNotFound(nome)
-        return int(ranked[0][0]["id"])
+        return [url for url in (_url_grande(item) for item in itens or []) if url]
 
     def capturas(self, jogo_id: int | str, timeout: float = 15) -> list[str]:
         """As URLs das capturas de ``jogo_id``, da maior para a menor variação.
@@ -195,21 +257,7 @@ class IGDBClient:
             token,
             timeout,
         )
-        urls = []
-        for item in itens or []:
-            if not isinstance(item, dict) or not item.get("url"):
-                continue
-            url = str(item["url"])
-            if url.startswith("//"):
-                url = f"https:{url}"
-            # Troca a variação da miniatura pela grande; se a URL não tem
-            # variação nenhuma, segue como veio.
-            if "/t_thumb/" in url:
-                url = url.replace("/t_thumb/", f"/{_IMAGEM_GRANDE}/")
-            elif "/t_cover_small/" in url or "/t_logo_med/" in url:
-                url = url.rsplit("/", 1)[0] + f"/{_IMAGEM_GRANDE}/" + url.rsplit("/", 1)[1]
-            urls.append(url)
-        return urls
+        return [url for url in (_url_grande(item) for item in itens or []) if url]
 
 
 class IGDBNotFound(IGDBError):

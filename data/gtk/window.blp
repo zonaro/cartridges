@@ -438,7 +438,10 @@ Adw.StatusPage zerados_notice_empty {
                   valign: start;
                   column-spacing: 12;
                   row-spacing: 12;
-                  margin-top: 15;
+                  // Mantém a primeira fileira afastada dos launchers para
+                  // revelar o wallpaper. Como a margem pertence ao conteúdo
+                  // rolável, ela desaparece naturalmente durante a rolagem.
+                  margin-top: 96;
                   margin-bottom: 15;
                   margin-start: 15;
                   margin-end: 15;

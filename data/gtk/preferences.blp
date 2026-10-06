@@ -772,7 +772,6 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
     name: "thegamesdb";
     title: _("TheGamesDB");
     icon-name: "applications-games-symbolic";
-
     Adw.PreferencesGroup thegamesdb_key_group {
       title: _("Autenticação");
 
@@ -807,6 +806,33 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
             valign: center;
           }
         }
+      }
+    }
+  }
+
+  Adw.PreferencesPage {
+    name: "igdb";
+    title: _("IGDB");
+    icon-name: "applications-games-symbolic";
+
+    Adw.PreferencesGroup igdb_key_group {
+      title: _("Autenticação");
+
+      Adw.EntryRow igdb_client_id_entry_row {
+        title: _("Client ID");
+      }
+
+      Adw.EntryRow igdb_client_secret_entry_row {
+        title: _("Client Secret");
+      }
+    }
+
+    Adw.PreferencesGroup {
+      title: _("Capas e capturas");
+
+      Adw.ActionRow {
+        title: _("Onde conseguir as chaves");
+        subtitle: _("Crie um app em api.igdb.com para obter o Client ID e o Secret");
       }
     }
   }

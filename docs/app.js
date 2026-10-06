@@ -30,6 +30,8 @@ const translations = {
     installEyebrow: "Pronto para jogar?", installTitle: "Get Jolven.", installLead: "No Fedora, um único comando baixa e instala o Jolven no seu usuário.", copy: "Copiar", copied: "Copiado!", installNote: "O instalador baixa o binário oficial, cuida das dependências e instala tudo no seu usuário. Depois, abra o Jolven pelo menu de aplicativos.", installCardText: "App desktop + sessão console", viewSource: "Ver código-fonte",
     faqTitle: "Dúvidas antes de apertar Play?", faqOneQ: "O Jolven é uma distribuição Linux?", faqOneA: "Não. O Jolven roda sobre sua instalação Linux atual — Fedora, Ubuntu, Arch, a que você usar. É uma interface de jogos e uma sessão dedicada opcional, não um sistema operacional.", faqTwoQ: "Preciso do Steam?", faqTwoA: "Não. O Jolven importa de Steam, Heroic, Lutris, Bottles, Flatpak, entradas desktop, emuladores e jogos manuais. Use qualquer combinação — ou nenhuma.", faqThreeQ: "Posso usar o Jolven sem a sessão dedicada?", faqThreeA: "Sim. O Jolven funciona como aplicativo desktop normal dentro do GNOME, KDE ou outro ambiente gráfico.", faqFourQ: "Posso voltar ao GNOME ou KDE?", faqFourA: "Sim. A Jolven Session dedicada é opcional. Ao sair dela você volta ao display manager, com seu desktop intacto.", faqFiveQ: "Vou perder minha biblioteca ao migrar do fork Cartridges?", faqFiveA: "Não. Na primeira execução, o Jolven copia sua biblioteca, capas, ajustes e metadados para as próprias pastas. Seus dados originais nunca são apagados.", faqSixQ: "Quais sistemas são suportados?", faqSixA: "O app mira desktops Linux. A instalação da Jolven Session dedicada está preparada atualmente para Fedora.",
     finalTitle: "Transforme qualquer PC Linux em um console.", finalText: "Instale o Jolven na sua distribuição Linux atual e jogue.", finalButton: "Get Jolven", footerText: "Um fork independente originalmente baseado no Cartridges. GPL-3.0-or-later.",
+    navFaq: "FAQ", faqEyebrow: "FAQ", chipDesktop: "Entradas desktop", chipExpTitle: "Experimental",
+    navAria: "Primária", langAria: "Idioma", trustAria: "Destaques", heroVisualAria: "Prévia do Jolven", chipsAria: "Fontes suportadas",
     pageTitle: "Jolven — Transforme qualquer PC Linux em um console", pageDescription: "Uma interface de jogos gamepad-first para Linux. Lance sua biblioteca inteira de um só lugar — no desktop ou em uma sessão dedicada."
   },
   en: {
@@ -63,6 +65,8 @@ const translations = {
     installEyebrow: "Ready to play?", installTitle: "Get Jolven.", installLead: "On Fedora, one command downloads and installs Jolven for your user.", copy: "Copy", copied: "Copied!", installNote: "The installer downloads the official binary, handles dependencies and installs everything for your user. Then open Jolven from your app menu.", installCardText: "Desktop app + console session", viewSource: "View source code",
     faqTitle: "Questions before pressing Play?", faqOneQ: "Is Jolven a Linux distribution?", faqOneA: "No. Jolven runs on top of your existing Linux installation — Fedora, Ubuntu, Arch, whatever you use. It is a gaming interface and an optional dedicated session, not an OS.", faqTwoQ: "Do I need Steam?", faqTwoA: "No. Jolven imports from Steam, Heroic, Lutris, Bottles, Flatpak, desktop entries, emulators and manually added games. Use any combination you like — or none at all.", faqThreeQ: "Can I use Jolven without the dedicated session?", faqThreeA: "Yes. Jolven works as a regular desktop application inside GNOME, KDE or another graphical environment.", faqFourQ: "Can I return to GNOME or KDE?", faqFourA: "Yes. The dedicated Jolven Session is optional. Leaving it brings you back to the display manager, where your usual desktop is untouched.", faqFiveQ: "Will I lose my library when upgrading from the Cartridges fork?", faqFiveA: "No. On first launch, Jolven copies your existing library, covers, settings and metadata to its own folders. Your original data is never deleted.", faqSixQ: "Which systems are supported?", faqSixA: "The app targets Linux desktops. Dedicated Jolven Session installation is currently prepared for Fedora.",
     finalTitle: "Turn any Linux PC into a console.", finalText: "Install Jolven on your existing Linux distribution and play.", finalButton: "Get Jolven", footerText: "An independent fork originally based on Cartridges. GPL-3.0-or-later.",
+    navFaq: "FAQ", faqEyebrow: "FAQ", chipDesktop: "Desktop entries", chipExpTitle: "Experimental",
+    navAria: "Primary", langAria: "Language", trustAria: "Highlights", heroVisualAria: "Jolven preview", chipsAria: "Supported sources",
     pageTitle: "Jolven — Turn any Linux PC into a console", pageDescription: "A gamepad-first gaming interface for Linux. Launch your entire library from one place — from your desktop or a dedicated gaming session."
   },
   es: {
@@ -96,6 +100,8 @@ const translations = {
     installEyebrow: "¿Listo para jugar?", installTitle: "Get Jolven.", installLead: "En Fedora, un solo comando descarga e instala Jolven para tu usuario.", copy: "Copiar", copied: "¡Copiado!", installNote: "El instalador descarga el binario oficial, gestiona las dependencias y lo instala para tu usuario. Después, abre Jolven desde el menú de aplicaciones.", installCardText: "App de escritorio + sesión consola", viewSource: "Ver código fuente",
     faqTitle: "¿Dudas antes de pulsar Play?", faqOneQ: "¿Jolven es una distribución Linux?", faqOneA: "No. Jolven se ejecuta sobre tu instalación Linux actual — Fedora, Ubuntu, Arch, la que uses. Es una interfaz de juegos y una sesión dedicada opcional, no un sistema operativo.", faqTwoQ: "¿Necesito Steam?", faqTwoA: "No. Jolven importa de Steam, Heroic, Lutris, Bottles, Flatpak, entradas de escritorio, emuladores y juegos manuales. Usa cualquier combinación, o ninguna.", faqThreeQ: "¿Puedo usar Jolven sin la sesión dedicada?", faqThreeA: "Sí. Jolven funciona como aplicación de escritorio normal dentro de GNOME, KDE u otro entorno gráfico.", faqFourQ: "¿Puedo volver a GNOME o KDE?", faqFourA: "Sí. La Jolven Session dedicada es opcional. Al salir vuelves al display manager, con tu escritorio intacto.", faqFiveQ: "¿Perderé mi biblioteca al migrar del fork Cartridges?", faqFiveA: "No. En la primera ejecución, Jolven copia tu biblioteca, carátulas, ajustes y metadatos a sus propias carpetas. Tus datos originales nunca se borran.", faqSixQ: "¿Qué sistemas son compatibles?", faqSixA: "La app apunta a escritorios Linux. La instalación de la Jolven Session dedicada está preparada actualmente para Fedora.",
     finalTitle: "Convierte cualquier PC Linux en una consola.", finalText: "Instala Jolven en tu distribución Linux actual y juega.", finalButton: "Get Jolven", footerText: "Un fork independiente originalmente basado en Cartridges. GPL-3.0-or-later.",
+    navFaq: "FAQ", faqEyebrow: "FAQ", chipDesktop: "Entradas de escritorio", chipExpTitle: "Experimental",
+    navAria: "Principal", langAria: "Idioma", trustAria: "Destacados", heroVisualAria: "Vista previa de Jolven", chipsAria: "Fuentes compatibles",
     pageTitle: "Jolven — Convierte cualquier PC Linux en una consola", pageDescription: "Una interfaz de juegos gamepad-first para Linux. Lanza toda tu biblioteca desde un solo lugar: en el escritorio o en una sesión dedicada."
   }
 };
@@ -116,6 +122,14 @@ function setLanguage(language) {
   document.querySelectorAll("[data-i18n-alt]").forEach(element => {
     const value = dictionary[element.dataset.i18nAlt];
     if (value) element.alt = value;
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach(element => {
+    const value = dictionary[element.dataset.i18nAriaLabel];
+    if (value) element.setAttribute("aria-label", value);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(element => {
+    const value = dictionary[element.dataset.i18nTitle];
+    if (value) element.setAttribute("title", value);
   });
   document.querySelectorAll("[data-lang]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.lang === lang)));
   localStorage.setItem("jolven-language", lang);

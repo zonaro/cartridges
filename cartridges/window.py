@@ -1617,10 +1617,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
         popover.popup()
 
     def build_xcloud_card(self, theme: Gtk.IconTheme) -> Gtk.Button:
-        icon_name = self._icone_disponivel(
-            theme,
-            ("xbox-cloud-symbolic", "xbox-symbolic", "xbox"),
-        )
         button = Gtk.Button(
             tooltip_text=_("Xbox Cloud Gaming"),
             css_classes=["flat", "circular", "xcloud-card"],
@@ -1628,7 +1624,22 @@ class CartridgesWindow(Adw.ApplicationWindow):
             height_request=40,
             valign=Gtk.Align.CENTER,
         )
-        button.set_child(Gtk.Image.new_from_icon_name(icon_name))
+        # Logo Better-XCloud (branco sobre transparente) embutido no
+        # GResource como xbox-cloud.png. Gtk.Picture preserva o PNG
+        # original em vez de recolorir como ícone symbolic.
+        try:
+            picture = Gtk.Picture.new_for_resource(
+                shared.PREFIX + "/xbox-cloud.png"
+            )
+            picture.set_content_fit(Gtk.ContentFit.CONTAIN)
+            picture.set_size_request(24, 24)
+            button.set_child(picture)
+        except Exception:
+            icon_name = self._icone_disponivel(
+                theme,
+                ("xbox-cloud-symbolic", "xbox-symbolic", "xbox"),
+            )
+            button.set_child(Gtk.Image.new_from_icon_name(icon_name))
         button.connect("clicked", lambda *_: self.on_open_xcloud_action())
         return button
 

@@ -37,7 +37,6 @@ import shutil
 import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, NamedTuple, Optional
 from urllib.parse import urlparse
@@ -59,18 +58,14 @@ from cartridges.utils.session_wallpaper import (
     imagem_para_textura_bytes,
 )
 from cartridges.utils.wallhaven import (
-    ALCANCES_TOPLIST,
-    CORES,
     IMAGE_SUFFIXES,
-    ORDENACOES,
     Filtros,
     WallhavenError,
     buscar,
     gerar_seed,
     ler_filtros,
-    salvar_filtros,
-    tem_chave,
 )
+from cartridges.wallhaven_filter_bar import WallhavenFilterBar
 
 # Uma página do site. A grade de quatro colunas mostra seis linhas com isso.
 MAX_RESULTS = 24
@@ -195,11 +190,12 @@ class WallpaperPicker(Adw.Dialog):
 
         # Os filtros guardados nas preferências. A troca automática ignora tudo
         # isso de propósito (fica no seguro); aqui cada imagem passa pelo olho
-        # antes de ir para a parede, então vale o que o usuário escolheu.
+        # antes de ir para a parede, então vale o que o usuário escolheu. A
+        # régua é a mesma do picker unificado de imagens.
         self._filtros = ler_filtros()
-        self._tem_chave = tem_chave()
-        self._trava_filtros = False
-        self._montar_filtros()
+        self._barra_filtros = WallhavenFilterBar(self._on_filtros_trocados)
+        self._filtros = self._barra_filtros.filtros
+        self.filter_box.append(self._barra_filtros)
         self.stack.connect("notify::visible-child-name", self._atualizar_filtros)
         self._atualizar_filtros()
 
@@ -232,147 +228,6 @@ class WallpaperPicker(Adw.Dialog):
 
     # region Filters
 
-    def _rotulos_ordenacao(self) -> list[str]:
-        return [
-            _("Relevância"),
-            _("Adicionadas recentemente"),
-            _("Mais vistas"),
-            _("Mais favoritadas"),
-            _("Em alta no toplist"),
-            _("Aleatórias"),
-            _("Em alta"),
-        ]
-
-    def _rotulos_alcance(self) -> list[str]:
-        return [
-            _("Último dia"),
-            _("Últimos 3 dias"),
-            _("Última semana"),
-            _("Último mês"),
-            _("Últimos 3 meses"),
-            _("Últimos 6 meses"),
-            _("Último ano"),
-        ]
-
-    def _montar_filtros(self) -> None:
-        """Os controles da régua, refletindo os filtros guardados."""
-        self._trava_filtros = True
-        try:
-            linha1 = Gtk.Box(
-                orientation=Gtk.Orientation.HORIZONTAL,
-                spacing=8,
-                halign=Gtk.Align.CENTER,
-            )
-            self._botoes_categorias = self._caixa_bandeiras(
-                linha1,
-                (("general", _("Geral")), ("anime", _("Anime")), ("people", _("Pessoas"))),
-                self._filtros.categorias,
-                0,
-            )
-            linha1.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-            self._botoes_pureza = self._caixa_bandeiras(
-                linha1,
-                (("sfw", "SFW"), ("sketchy", "Sketchy"), ("nsfw", "NSFW")),
-                self._filtros.pureza,
-                1,
-            )
-            if not self._tem_chave:
-                for botao, nome in zip(self._botoes_pureza, ("sfw", "sketchy", "nsfw")):
-                    if nome != "sfw":
-                        botao.set_sensitive(False)
-                        botao.set_tooltip_text(
-                            _("Exige a chave da API (Preferências → Sessão)")
-                        )
-
-            self._ordenacao_dropdown = Gtk.DropDown.new_from_strings(
-                self._rotulos_ordenacao()
-            )
-            self._ordenacao_dropdown.set_tooltip_text(_("Ordenação"))
-            self._ordenacao_dropdown.set_selected(
-                ORDENACOES.index(self._filtros.ordenacao)
-            )
-            self._ordenacao_dropdown.connect("notify::selected", self._on_ordenacao)
-            linha1.append(self._ordenacao_dropdown)
-
-            self._ordem_botao = Gtk.Button()
-            self._atualizar_ordem_botao()
-            self._ordem_botao.connect("clicked", self._on_ordem)
-            linha1.append(self._ordem_botao)
-
-            self._alcance_dropdown = Gtk.DropDown.new_from_strings(
-                self._rotulos_alcance()
-            )
-            self._alcance_dropdown.set_tooltip_text(_("Período do toplist"))
-            self._alcance_dropdown.set_selected(
-                ALCANCES_TOPLIST.index(self._filtros.alcance)
-            )
-            self._alcance_dropdown.connect("notify::selected", self._on_alcance)
-            self._alcance_dropdown.set_visible(self._filtros.ordenacao == "toplist")
-            linha1.append(self._alcance_dropdown)
-            self.filter_box.append(linha1)
-
-            linha2 = Gtk.Box(
-                orientation=Gtk.Orientation.HORIZONTAL,
-                spacing=6,
-                halign=Gtk.Align.CENTER,
-            )
-            linha2.append(Gtk.Label(label=_("Cor:")))
-            self._botoes_cores: dict[str, Gtk.ToggleButton] = {}
-            todas = Gtk.ToggleButton(label=_("Todas"))
-            todas.set_tooltip_text(_("Qualquer cor"))
-            todas.set_active(not self._filtros.cores)
-            todas.connect("toggled", self._on_cor, "")
-            linha2.append(todas)
-            self._botoes_cores[""] = todas
-            for cor in CORES:
-                amostra = Gtk.ToggleButton(tooltip_text=f"#{cor}")
-                amostra.set_size_request(26, 18)
-                amostra.add_css_class("wh-cor")
-                amostra.add_css_class(f"wh-{cor}")
-                amostra.set_active(self._filtros.cores.lower() == cor)
-                amostra.connect("toggled", self._on_cor, cor)
-                linha2.append(amostra)
-                self._botoes_cores[cor] = amostra
-            self._provedor_cores()
-            self.filter_box.append(linha2)
-        finally:
-            self._trava_filtros = False
-
-    def _caixa_bandeiras(
-        self,
-        linha: Gtk.Box,
-        opcoes: tuple[tuple[str, str], ...],
-        flags: str,
-        grupo: int,
-    ) -> list[Gtk.ToggleButton]:
-        """Três botões ligados para um flags de três bits do site."""
-        caixa = Gtk.Box()
-        caixa.add_css_class("linked")
-        botoes = []
-        for posicao, (nome, rotulo) in enumerate(opcoes):
-            botao = Gtk.ToggleButton(label=rotulo)
-            botao.set_tooltip_text(rotulo)
-            botao.set_active(flags[posicao] == "1")
-            botao.connect("toggled", self._on_bandeira, grupo, posicao)
-            caixa.append(botao)
-            botoes.append(botao)
-        linha.append(caixa)
-        return botoes
-
-    def _provedor_cores(self) -> None:
-        regras = [
-            ".wh-cor { padding: 0; min-width: 26px; min-height: 18px; "
-            "border-radius: 5px; }"
-        ]
-        regras += [f".wh-{cor} {{ background: #{cor}; }}" for cor in CORES]
-        provedor = Gtk.CssProvider()
-        provedor.load_from_string("\n".join(regras))
-        tela = Gdk.Display.get_default()
-        if tela is not None:
-            Gtk.StyleContext.add_provider_for_display(
-                tela, provedor, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-            )
-
     def _atualizar_filtros(self, *_args: Any) -> None:
         # A régua só existe onde há busca: com arquivo aberto ela não tem para
         # onde voltar, e na tela de ajuste ela só roubaria espaço da prévia.
@@ -381,104 +236,9 @@ class WallpaperPicker(Adw.Dialog):
             and self.stack.get_visible_child_name() != "adjust"
         )
 
-    def _atualizar_ordem_botao(self) -> None:
-        decrescente = self._filtros.ordem == "desc"
-        self._ordem_botao.set_icon_name(
-            "view-sort-descending-symbolic"
-            if decrescente
-            else "view-sort-ascending-symbolic"
-        )
-        self._ordem_botao.set_tooltip_text(
-            _("Decrescente (clique para inverter)")
-            if decrescente
-            else _("Crescente (clique para inverter)")
-        )
-
-    def _trocar_filtros(self, novos: Filtros) -> None:
+    def _on_filtros_trocados(self, novos: Filtros) -> None:
         self._filtros = novos
-        try:
-            salvar_filtros(novos)
-        except Exception as erro:  # preferência fora do ar não cancela a busca
-            logging.info("Filtros do wallhaven não foram guardados (%s)", erro)
         self.search()
-
-    def _on_bandeira(
-        self, botao: Gtk.ToggleButton, grupo: int, posicao: int
-    ) -> None:
-        """Um dos três bits de categoria ou pureza. Nunca deixa zerar."""
-        if self._trava_filtros:
-            return
-        campo = "categorias" if grupo == 0 else "pureza"
-        bits = list(getattr(self._filtros, campo))
-        bits[posicao] = "1" if botao.get_active() else "0"
-        if all(bit == "0" for bit in bits):
-            self._trava_filtros = True
-            try:
-                botao.set_active(True)
-            finally:
-                self._trava_filtros = False
-            return
-        try:
-            novos = replace(self._filtros, **{campo: "".join(bits)})
-        except ValueError:
-            return
-        self._trocar_filtros(novos)
-
-    def _on_ordenacao(self, lista: Gtk.DropDown, *_args: Any) -> None:
-        if self._trava_filtros:
-            return
-        try:
-            novos = replace(self._filtros, ordenacao=ORDENACOES[lista.get_selected()])
-        except (ValueError, IndexError):
-            return
-        self._alcance_dropdown.set_visible(novos.ordenacao == "toplist")
-        self._trocar_filtros(novos)
-
-    def _on_ordem(self, *_args: Any) -> None:
-        if self._trava_filtros:
-            return
-        self._trocar_filtros(
-            replace(
-                self._filtros, ordem="asc" if self._filtros.ordem == "desc" else "desc"
-            )
-        )
-        self._atualizar_ordem_botao()
-
-    def _on_alcance(self, lista: Gtk.DropDown, *_args: Any) -> None:
-        if self._trava_filtros:
-            return
-        try:
-            novos = replace(self._filtros, alcance=ALCANCES_TOPLIST[lista.get_selected()])
-        except (ValueError, IndexError):
-            return
-        self._trocar_filtros(novos)
-
-    def _on_cor(self, botao: Gtk.ToggleButton, cor: str) -> None:
-        """Uma cor por vez; desligar a ativa volta para todas."""
-        if self._trava_filtros:
-            return
-        if botao.get_active():
-            destino = cor
-        else:
-            destino = "" if cor else None
-            if destino is None:
-                self._trava_filtros = True
-                try:
-                    botao.set_active(True)
-                finally:
-                    self._trava_filtros = False
-                return
-        self._trava_filtros = True
-        try:
-            for outra, outro_botao in self._botoes_cores.items():
-                if outro_botao is not botao:
-                    outro_botao.set_active(outra == destino)
-        finally:
-            self._trava_filtros = False
-        try:
-            self._trocar_filtros(replace(self._filtros, cores=destino))
-        except ValueError:
-            return
 
     # endregion
     # region Search
@@ -524,15 +284,25 @@ class WallpaperPicker(Adw.Dialog):
             filtros = self._filtros
             semente = gerar_seed() if filtros.ordenacao == "random" else None
             minimo = self.formatos.minimo
-            achados = buscar(
-                query, *minimo, formato=self.formatos.ratio, filtros=filtros, seed=semente
-            )
-            vistos = {item["id"] for item in achados}
-            achados += [
-                item
-                for item in buscar(query, *minimo, filtros=filtros, seed=semente)
-                if item["id"] not in vistos
-            ]
+            from cartridges.utils.name_cleaner import search_variants
+
+            achados: list = []
+            for variant in search_variants(query) or [query]:
+                achados = buscar(
+                    variant,
+                    *minimo,
+                    formato=self.formatos.ratio,
+                    filtros=filtros,
+                    seed=semente,
+                )
+                vistos = {item["id"] for item in achados}
+                achados += [
+                    item
+                    for item in buscar(variant, *minimo, filtros=filtros, seed=semente)
+                    if item["id"] not in vistos
+                ]
+                if achados:
+                    break
         except WallhavenError as error:
             logging.warning("Busca de papel de parede falhou: %s", error)
             entregar_na_tela(

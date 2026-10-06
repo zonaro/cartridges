@@ -7,13 +7,17 @@
     <file preprocess="xml-stripblanks" alias="gtk/game.ui">game.ui</file>
     <file preprocess="xml-stripblanks" alias="gtk/logo-picker.ui">logo-picker.ui</file>
     <file preprocess="xml-stripblanks" alias="gtk/preferences.ui">preferences.ui</file>
-    <file preprocess="xml-stripblanks" alias="gtk/sgdb-picker.ui">sgdb-picker.ui</file>
+    <file preprocess="xml-stripblanks" alias="gtk/image-picker.ui">image-picker.ui</file>
     <file preprocess="xml-stripblanks" alias="gtk/wallpaper-picker.ui">wallpaper-picker.ui</file>
     <file preprocess="xml-stripblanks" alias="gtk/window.ui">window.ui</file>
     <file preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">shortcuts-dialog.ui</file>
     <file alias="style.css">gtk/style.css</file>
     <file>library_placeholder.svg</file>
     <file>library_placeholder_small.svg</file>
+    <!-- Logo Better-XCloud (branco sobre transparente) usado no card do
+         Xbox Cloud Gaming. Fonte:
+         https://github.com/redphx/better-xcloud/blob/typescript/resources/logos/better-xcloud-transparent.png -->
+    <file>xbox-cloud.png</file>
     <file alias="alternatives/jolven-portal.svg">icons/alternatives/jolven-portal.svg</file>
   </gresource>
   <gresource prefix="@PREFIX@/icons/scalable/categories/">

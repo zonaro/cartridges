@@ -147,6 +147,9 @@ class Game(Gtk.Box):
     scaling_mode: str = ""
     track_process: bool = False
     process_executable: str = ""
+    # Fundo manual da biblioteca (nome do arquivo em `wallpapers_dir`,
+    # ex: "<game_id>-fundo.jpg"). None é automático (IGDB → TGDB → wallhaven).
+    fundo_biblioteca: Optional[str] = None
 
     @property
     def has_update(self) -> bool:

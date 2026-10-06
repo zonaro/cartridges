@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#12101a">
-    <meta name="description" content="Jolven turns any Linux PC into a console: one gamepad-first library for Steam, Heroic, Lutris, Bottles and emulators, with auto covers, Tuya ambient lighting and a dedicated console session.">
+    <meta name="description" content="Jolven transforma qualquer PC Linux em um console: uma biblioteca gamepad-first para Steam, Heroic, Lutris, Bottles e emuladores, com capas automáticas, iluminação ambiente Tuya e sessão dedicada de console.">
     <meta name="keywords" content="Jolven, Linux gaming, game launcher, console interface, Steam, Heroic, Lutris, Bottles, emulators, GameMode, Gamescope, Tuya LED, SteamGridDB, IGDB, TheGamesDB, Wallhaven, gamepad, couch gaming">
     <meta name="author" content="Jolven contributors">
     <meta name="robots" content="index, follow, max-image-preview:large">
@@ -15,19 +15,19 @@
     <link rel="alternate" hreflang="x-default" href="https://zonaro.github.io/jolven/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Jolven">
-    <meta property="og:title" content="Jolven — Turn any Linux PC into a console">
-    <meta property="og:description" content="One gamepad-first library for your whole Linux collection: auto covers and details, Tuya ambient lighting, per-game performance profiles and an optional dedicated console session.">
+    <meta property="og:title" content="Jolven — Transforme qualquer PC Linux em um console">
+    <meta property="og:description" content="Uma biblioteca gamepad-first para toda sua coleção Linux: capas e detalhes automáticos, iluminação ambiente Tuya, perfis de desempenho por jogo e uma sessão de console dedicada opcional.">
     <meta property="og:url" content="https://zonaro.github.io/jolven/">
     <meta property="og:image" content="https://zonaro.github.io/jolven/screenshots/1.png">
-    <meta property="og:image:alt" content="Jolven game library">
+    <meta property="og:image:alt" content="Biblioteca de jogos do Jolven">
     <meta property="og:locale" content="pt_BR">
     <meta property="og:locale:alternate" content="en_US">
     <meta property="og:locale:alternate" content="es_ES">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Jolven — Turn any Linux PC into a console">
-    <meta name="twitter:description" content="One gamepad-first library for Steam, Heroic, Lutris, Bottles and emulators — with auto artwork, Tuya lighting and a console session.">
+    <meta name="twitter:title" content="Jolven — Transforme qualquer PC Linux em um console">
+    <meta name="twitter:description" content="Uma biblioteca gamepad-first para Steam, Heroic, Lutris, Bottles e emuladores — com arte automática, iluminação Tuya e sessão de console.">
     <meta name="twitter:image" content="https://zonaro.github.io/jolven/screenshots/1.png">
-    <title>Jolven — Turn any Linux PC into a console</title>
+    <title>Jolven — Transforme qualquer PC Linux em um console</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="assets/favicon-32.png">
@@ -58,14 +58,14 @@
         <img src="assets/favicon.svg" alt="">
         <span class="wordmark">Jolven</span>
       </a>
-      <nav class="nav-links" aria-label="Primary">
+      <nav class="nav-links" aria-label="Primária" data-i18n-aria-label="navAria">
         <a href="#library" data-i18n="navLibrary">Biblioteca</a>
         <a href="#magic" data-i18n="navMagic">Destaques</a>
         <a href="#controller" data-i18n="navController">Controle</a>
         <a href="#modes" data-i18n="navModes">Modos</a>
-        <a href="#faq">FAQ</a>
+        <a href="#faq" data-i18n="navFaq">FAQ</a>
       </nav>
-      <div class="language-switcher" role="group" aria-label="Language">
+      <div class="language-switcher" role="group" aria-label="Idioma" data-i18n-aria-label="langAria">
         <button type="button" data-lang="pt-BR" aria-pressed="true">BR</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
         <button type="button" data-lang="es" aria-pressed="false">ES</button>
@@ -76,72 +76,72 @@
       <section class="hero" id="top">
         <div class="hero-copy">
           <span class="eyebrow">Jolven</span>
-          <h1 data-i18n="heroTitle">Turn any Linux PC into a console.</h1>
-          <p class="hero-lead" data-i18n="heroLead">A gamepad-first gaming interface for Linux. Launch your entire library from one place — use Jolven from your desktop or start directly into a dedicated gaming session.</p>
+          <h1 data-i18n="heroTitle">Transforme qualquer PC Linux em um console.</h1>
+          <p class="hero-lead" data-i18n="heroLead">Uma interface de jogos gamepad-first para Linux. Lance sua biblioteca inteira de um só lugar — use o Jolven no desktop ou inicie direto em uma sessão dedicada de jogos.</p>
           <div class="hero-actions">
             <a class="button primary" href="#install" data-i18n="ctaGet">Get Jolven</a>
             <a class="button secondary" href="https://github.com/zonaro/jolven" data-i18n="ctaGithub">View on GitHub</a>
           </div>
-          <ul class="trust-list" aria-label="Highlights">
-            <li data-i18n="trustOpen">Open source</li>
-            <li data-i18n="trustNoLogin">No login required</li>
-            <li data-i18n="trustDistro">Your distro stays yours</li>
+          <ul class="trust-list" aria-label="Destaques" data-i18n-aria-label="trustAria">
+            <li data-i18n="trustOpen">Código aberto</li>
+            <li data-i18n="trustNoLogin">Sem login obrigatório</li>
+            <li data-i18n="trustDistro">Sua distro continua sua</li>
           </ul>
         </div>
-        <div class="hero-visual" aria-label="Jolven preview">
+        <div class="hero-visual" aria-label="Prévia do Jolven" data-i18n-aria-label="heroVisualAria">
           <div class="glow"></div>
           <div class="tv">
-            <img class="app-shot" src="screenshots/1.png" alt="Jolven game library" data-i18n-alt="heroImageAlt">
+            <img class="app-shot" src="screenshots/1.png" alt="Biblioteca de jogos do Jolven" data-i18n-alt="heroImageAlt">
             <div class="tv-stand"></div>
           </div>
           <div class="floating-card card-controller">
             <span class="card-icon">⌁</span>
-            <div><strong data-i18n="floatControllerTitle">Controller first</strong><small data-i18n="floatControllerText">Every screen, couch-ready</small></div>
+            <div><strong data-i18n="floatControllerTitle">Controle primeiro</strong><small data-i18n="floatControllerText">Toda tela, pronta para o sofá</small></div>
           </div>
           <div class="floating-card card-library">
             <span class="card-icon">✦</span>
-            <div><strong data-i18n="floatLibraryTitle">One library</strong><small data-i18n="floatLibraryText">Steam, Heroic, Lutris &amp; more</small></div>
+            <div><strong data-i18n="floatLibraryTitle">Uma biblioteca</strong><small data-i18n="floatLibraryText">Steam, Heroic, Lutris e mais</small></div>
           </div>
         </div>
       </section>
 
       <section class="section library" id="library">
         <div class="section-heading">
-          <span class="eyebrow" data-i18n="libraryEyebrow">One interface, every source</span>
-          <h2 data-i18n="libraryTitle">Your entire library.</h2>
-          <p data-i18n="libraryLead">Jolven gathers games from different places into a single console-style library — no need to hop between launchers on the couch.</p>
+          <span class="eyebrow" data-i18n="libraryEyebrow">Uma interface, todas as origens</span>
+          <h2 data-i18n="libraryTitle">Sua biblioteca inteira.</h2>
+          <p data-i18n="libraryLead">O Jolven reúne jogos de diferentes lugares em uma única biblioteca estilo console — sem pular entre launchers no sofá.</p>
         </div>
-        <ul class="chip-row" aria-label="Supported sources">
+        <ul class="chip-row" aria-label="Fontes suportadas" data-i18n-aria-label="chipsAria">
           <li>Steam</li>
           <li>Heroic</li>
           <li>Lutris</li>
           <li>Bottles</li>
           <li>Flatpak</li>
-          <li>Desktop entries</li>
+          <li data-i18n="chipDesktop">Entradas desktop</li>
           <li>itch</li>
           <li>Legendary</li>
           <li>RetroArch</li>
           <li>Dolphin</li>
           <li>Yuzu</li>
           <li>TwinTail</li>
-          <li data-i18n="chipManual">Manual games</li>
-          <li class="chip-experimental" title="Experimental">Xbox Cloud <small data-i18n="chipExperimental">experimental</small></li>
+          <li data-i18n="chipManual">Jogos manuais</li>
+          <li class="chip-experimental" title="Experimental" data-i18n-title="chipExpTitle">Xbox Cloud <small data-i18n="chipExperimental">experimental</small></li>
         </ul>
         <div class="benefit-grid">
           <article>
             <span class="feature-icon">◫</span>
-            <h3 data-i18n="benefitOneTitle">Everything together</h3>
-            <p data-i18n="benefitOneText">Installed games, launchers and emulators appear in the same collection, with covers, details and screenshots.</p>
+            <h3 data-i18n="benefitOneTitle">Tudo junto</h3>
+            <p data-i18n="benefitOneText">Jogos instalados, launchers e emuladores aparecem na mesma coleção, com capas, detalhes e capturas.</p>
           </article>
           <article>
             <span class="feature-icon">◷</span>
-            <h3 data-i18n="benefitTwoTitle">Pick up and play</h3>
-            <p data-i18n="benefitTwoText">Resume games, track playtime and sessions, and find what to play next without digging through menus.</p>
+            <h3 data-i18n="benefitTwoTitle">Jogar e retomar</h3>
+            <p data-i18n="benefitTwoText">Retome partidas, acompanhe tempo de jogo e sessões, e ache o próximo jogo sem cavar menus.</p>
           </article>
           <article>
             <span class="feature-icon">⚡</span>
-            <h3 data-i18n="benefitThreeTitle">Per-game profiles</h3>
-            <p data-i18n="benefitThreeText">Tune resolution, frame limits and launch options for each title — once, then just press play.</p>
+            <h3 data-i18n="benefitThreeTitle">Perfil por jogo</h3>
+            <p data-i18n="benefitThreeText">Ajuste resolução, limite de quadros e opções de execução para cada título — uma vez, depois é só jogar.</p>
           </article>
         </div>
       </section>
@@ -202,14 +202,14 @@
 
       <section class="section controller" id="controller">
         <div class="section-heading">
-          <span class="eyebrow" data-i18n="controllerEyebrow">Gamepad-first by design</span>
-          <h2 data-i18n="controllerTitle">Built for the controller.</h2>
-          <p data-i18n="controllerLead">Every screen is navigable with a gamepad: browse the library, open details, change settings and power the machine — from ten feet away.</p>
+          <span class="eyebrow" data-i18n="controllerEyebrow">Gamepad-first por projeto</span>
+          <h2 data-i18n="controllerTitle">Feito para o controle.</h2>
+          <p data-i18n="controllerLead">Toda tela é navegável com gamepad: explore a biblioteca, abra detalhes, mude ajustes e desligue a máquina — do sofá.</p>
         </div>
         <div class="feature-grid">
-          <article><span>⌁</span><h3 data-i18n="featureControlTitle">Full navigation</h3><p data-i18n="featureControlText">D-pad and sticks move, south confirms, east goes back. Hotplug just works.</p></article>
-          <article><span>◉</span><h3 data-i18n="featureOsdTitle">On-screen everything</h3><p data-i18n="featureOsdText">On-screen keyboard, large actions and a global menu with library, power and session controls.</p></article>
-          <article><span>◎</span><h3 data-i18n="featureDeskTitle">Still desktop-friendly</h3><p data-i18n="featureDeskText">Mouse and keyboard work everywhere. The controller is an option — never a requirement.</p></article>
+          <article><span>⌁</span><h3 data-i18n="featureControlTitle">Navegação total</h3><p data-i18n="featureControlText">Direcional e analógicos movem, sul confirma, leste volta. Hotplug funciona.</p></article>
+          <article><span>◉</span><h3 data-i18n="featureOsdTitle">Tudo na tela</h3><p data-i18n="featureOsdText">Teclado virtual, ações grandes e um menu global com biblioteca, energia e sessão.</p></article>
+          <article><span>◎</span><h3 data-i18n="featureDeskTitle">Amigável no desktop</h3><p data-i18n="featureDeskText">Mouse e teclado funcionam em tudo. O controle é uma opção — nunca obrigação.</p></article>
         </div>
       </section>
 
@@ -229,107 +229,107 @@
       <section class="section game-mode" id="modes">
         <div class="mode-visual">
           <div class="mode-screen">
-            <img src="screenshots/2.png" alt="Jolven game details" data-i18n-alt="modeImageAlt">
+            <img src="screenshots/2.png" alt="Detalhes de um jogo no Jolven" data-i18n-alt="modeImageAlt">
           </div>
         </div>
         <div class="mode-copy">
-          <span class="eyebrow" data-i18n="modeEyebrow">Two ways to play</span>
-          <h2 data-i18n="modeTitle">Desktop or console mode.</h2>
-          <p data-i18n="modeLead">Same library, same settings — pick the experience that fits the moment.</p>
+          <span class="eyebrow" data-i18n="modeEyebrow">Dois jeitos de jogar</span>
+          <h2 data-i18n="modeTitle">Desktop ou console mode.</h2>
+          <p data-i18n="modeLead">Mesma biblioteca, mesmos ajustes — escolha a experiência do momento.</p>
           <div class="mode-cards">
             <div class="mode-card">
               <h3 data-i18n="modeDesktopTitle">Desktop mode</h3>
-              <p data-i18n="modeDesktopText">Use Jolven as a regular app inside GNOME, KDE or any Linux desktop.</p>
+              <p data-i18n="modeDesktopText">Use o Jolven como um app normal dentro do GNOME, KDE ou outro desktop Linux.</p>
             </div>
             <div class="mode-card">
               <h3 data-i18n="modeSessionTitle">Jolven Session</h3>
-              <p data-i18n="modeSessionText">Start straight into Jolven from your display manager for a temporary console-like experience — no desktop loaded.</p>
+              <p data-i18n="modeSessionText">Inicie direto no Jolven pelo display manager para uma experiência temporária estilo console — sem carregar o desktop.</p>
             </div>
           </div>
           <div class="mode-steps">
-            <div><span>1</span><p data-i18n="modeStepOne">Install Jolven on your existing Linux distribution.</p></div>
-            <div><span>2</span><p data-i18n="modeStepTwo">Optionally enable the Jolven Session for your login screen.</p></div>
-            <div><span>3</span><p data-i18n="modeStepThree">Grab the controller. Leaving the session returns you to the display manager.</p></div>
+            <div><span>1</span><p data-i18n="modeStepOne">Instale o Jolven na sua distribuição Linux atual.</p></div>
+            <div><span>2</span><p data-i18n="modeStepTwo">Ative a Jolven Session para a tela de login (opcional).</p></div>
+            <div><span>3</span><p data-i18n="modeStepThree">Pegue o controle. Sair da sessão volta ao display manager.</p></div>
           </div>
         </div>
       </section>
 
       <section class="section distro" id="distro">
         <div class="section-heading">
-          <span class="eyebrow" data-i18n="distroEyebrow">Not a distro, not an OS</span>
-          <h2 data-i18n="distroTitle">Your Linux stays your Linux.</h2>
-          <p data-i18n="distroLead">Jolven doesn't replace your distribution. Keep Fedora, Ubuntu, Arch — whatever Linux you already use — and turn your PC into a console whenever you want. Jolven complements your Linux; it never competes with it.</p>
+          <span class="eyebrow" data-i18n="distroEyebrow">Não é distro, não é SO</span>
+          <h2 data-i18n="distroTitle">Seu Linux continua seu Linux.</h2>
+          <p data-i18n="distroLead">O Jolven não substitui sua distribuição. Mantenha Fedora, Ubuntu, Arch — o Linux que você já usa — e transforme o PC em console quando quiser. O Jolven complementa seu Linux; nunca compete com ele.</p>
         </div>
       </section>
 
       <section class="section gallery" aria-labelledby="gallery-title">
         <div class="section-heading compact">
-          <span class="eyebrow" data-i18n="galleryEyebrow">Simple outside. Powerful inside.</span>
-          <h2 id="gallery-title" data-i18n="galleryTitle">A library that makes you want to play.</h2>
+          <span class="eyebrow" data-i18n="galleryEyebrow">Simples por fora. Poderoso por dentro.</span>
+          <h2 id="gallery-title" data-i18n="galleryTitle">Uma biblioteca que convida você a jogar.</h2>
         </div>
         <div class="gallery-grid">
-          <figure><img src="screenshots/1.png" alt="Game library" data-i18n-alt="galleryOneAlt"><figcaption data-i18n="galleryOne">The whole collection at a glance</figcaption></figure>
-          <figure><img src="screenshots/2.png" alt="Game details" data-i18n-alt="galleryTwoAlt"><figcaption data-i18n="galleryTwo">Details that help pick your next game</figcaption></figure>
-          <figure><img src="screenshots/4.png" alt="Preferences" data-i18n-alt="galleryThreeAlt"><figcaption data-i18n="galleryThree">Clear preferences, at your pace</figcaption></figure>
+          <figure><img src="screenshots/1.png" alt="Biblioteca do Jolven" data-i18n-alt="galleryOneAlt"><figcaption data-i18n="galleryOne">Toda a coleção em um olhar</figcaption></figure>
+          <figure><img src="screenshots/2.png" alt="Detalhes de um jogo" data-i18n-alt="galleryTwoAlt"><figcaption data-i18n="galleryTwo">Detalhes para decidir o próximo jogo</figcaption></figure>
+          <figure><img src="screenshots/4.png" alt="Preferências do Jolven" data-i18n-alt="galleryThreeAlt"><figcaption data-i18n="galleryThree">Preferências claras, no seu ritmo</figcaption></figure>
         </div>
       </section>
 
       <section class="section oss" id="opensource">
         <div class="oss-band">
           <div>
-            <span class="eyebrow" data-i18n="ossEyebrow">Community-driven</span>
-            <h2 data-i18n="ossTitle">Open source, Linux native.</h2>
-            <p data-i18n="ossLead">Jolven is free software under the GPL-3.0 — an independent fork originally based on Cartridges. Extensible, transparent, and built in the open with the Linux gaming community.</p>
+            <span class="eyebrow" data-i18n="ossEyebrow">Feito pela comunidade</span>
+            <h2 data-i18n="ossTitle">Open source, nativo Linux.</h2>
+            <p data-i18n="ossLead">Jolven é software livre sob GPL-3.0 — um fork independente originalmente baseado no Cartridges. Extensível, transparente e construído em aberto com a comunidade Linux.</p>
           </div>
-          <a class="button secondary" href="https://github.com/zonaro/jolven" data-i18n="ossButton">Contribute on GitHub</a>
+          <a class="button secondary" href="https://github.com/zonaro/jolven" data-i18n="ossButton">Contribuir no GitHub</a>
         </div>
       </section>
 
       <section class="section install" id="install">
         <div class="install-copy">
-          <span class="eyebrow" data-i18n="installEyebrow">Ready to play?</span>
+          <span class="eyebrow" data-i18n="installEyebrow">Pronto para jogar?</span>
           <h2 data-i18n="installTitle">Get Jolven.</h2>
-          <p data-i18n="installLead">On Fedora, one command downloads and installs Jolven for your user.</p>
+          <p data-i18n="installLead">No Fedora, um único comando baixa e instala o Jolven no seu usuário.</p>
           <div class="command-box">
             <code id="install-command">curl -fsSL https://raw.githubusercontent.com/zonaro/jolven/main/install.sh | bash</code>
-            <button type="button" id="copy-command" data-i18n="copy">Copy</button>
+            <button type="button" id="copy-command" data-i18n="copy">Copiar</button>
           </div>
-          <p class="command-note" data-i18n="installNote">The installer downloads the official binary, handles dependencies and installs everything for your user. Then open Jolven from your app menu.</p>
+          <p class="command-note" data-i18n="installNote">O instalador baixa o binário oficial, cuida das dependências e instala tudo no seu usuário. Depois, abra o Jolven pelo menu de aplicativos.</p>
         </div>
         <div class="install-card">
           <img src="assets/favicon.svg" alt="">
-          <strong>Jolven 3.0</strong>
-          <span data-i18n="installCardText">Desktop app + console session</span>
-          <a href="https://github.com/zonaro/jolven" data-i18n="viewSource">View source code</a>
+          <strong>Jolven</strong>
+          <span data-i18n="installCardText">App desktop + sessão console</span>
+          <a href="https://github.com/zonaro/jolven" data-i18n="viewSource">Ver código-fonte</a>
         </div>
       </section>
 
       <section class="section faq" id="faq">
         <div class="section-heading compact">
-          <span class="eyebrow">FAQ</span>
-          <h2 data-i18n="faqTitle">Questions before pressing Play?</h2>
+          <span class="eyebrow" data-i18n="faqEyebrow">FAQ</span>
+          <h2 data-i18n="faqTitle">Dúvidas antes de apertar Play?</h2>
         </div>
         <div class="faq-list">
-          <details><summary data-i18n="faqOneQ">Is Jolven a Linux distribution?</summary><p data-i18n="faqOneA">No. Jolven runs on top of your existing Linux installation — Fedora, Ubuntu, Arch, whatever you use. It is a gaming interface and an optional dedicated session, not an OS.</p></details>
-          <details><summary data-i18n="faqTwoQ">Do I need Steam?</summary><p data-i18n="faqTwoA">No. Jolven imports from Steam, Heroic, Lutris, Bottles, Flatpak, desktop entries, emulators and manually added games. Use any combination you like — or none at all.</p></details>
-          <details><summary data-i18n="faqThreeQ">Can I use Jolven without the dedicated session?</summary><p data-i18n="faqThreeA">Yes. Jolven works as a regular desktop application inside GNOME, KDE or another graphical environment.</p></details>
-          <details><summary data-i18n="faqFourQ">Can I return to GNOME or KDE?</summary><p data-i18n="faqFourA">Yes. The dedicated Jolven Session is optional. Leaving it brings you back to the display manager, where your usual desktop is untouched.</p></details>
-          <details><summary data-i18n="faqFiveQ">Will I lose my library when upgrading from the Cartridges fork?</summary><p data-i18n="faqFiveA">No. On first launch, Jolven copies your existing library, covers, settings and metadata to its own folders. Your original data is never deleted.</p></details>
-          <details><summary data-i18n="faqSixQ">Which systems are supported?</summary><p data-i18n="faqSixA">The app targets Linux desktops. Dedicated Jolven Session installation is currently prepared for Fedora.</p></details>
+          <details><summary data-i18n="faqOneQ">O Jolven é uma distribuição Linux?</summary><p data-i18n="faqOneA">Não. O Jolven roda sobre sua instalação Linux atual — Fedora, Ubuntu, Arch, a que você usar. É uma interface de jogos e uma sessão dedicada opcional, não um sistema operacional.</p></details>
+          <details><summary data-i18n="faqTwoQ">Preciso do Steam?</summary><p data-i18n="faqTwoA">Não. O Jolven importa de Steam, Heroic, Lutris, Bottles, Flatpak, entradas desktop, emuladores e jogos manuais. Use qualquer combinação — ou nenhuma.</p></details>
+          <details><summary data-i18n="faqThreeQ">Posso usar o Jolven sem a sessão dedicada?</summary><p data-i18n="faqThreeA">Sim. O Jolven funciona como aplicativo desktop normal dentro do GNOME, KDE ou outro ambiente gráfico.</p></details>
+          <details><summary data-i18n="faqFourQ">Posso voltar ao GNOME ou KDE?</summary><p data-i18n="faqFourA">Sim. A Jolven Session dedicada é opcional. Ao sair dela você volta ao display manager, com seu desktop intacto.</p></details>
+          <details><summary data-i18n="faqFiveQ">Vou perder minha biblioteca ao migrar do fork Cartridges?</summary><p data-i18n="faqFiveA">Não. Na primeira execução, o Jolven copia sua biblioteca, capas, ajustes e metadados para as próprias pastas. Seus dados originais nunca são apagados.</p></details>
+          <details><summary data-i18n="faqSixQ">Quais sistemas são suportados?</summary><p data-i18n="faqSixA">O app mira desktops Linux. A instalação da Jolven Session dedicada está preparada atualmente para Fedora.</p></details>
         </div>
       </section>
 
       <section class="final-cta">
         <img src="assets/favicon.svg" alt="">
-        <h2 data-i18n="finalTitle">Turn any Linux PC into a console.</h2>
-        <p data-i18n="finalText">Install Jolven on your existing Linux distribution and play.</p>
+        <h2 data-i18n="finalTitle">Transforme qualquer PC Linux em um console.</h2>
+        <p data-i18n="finalText">Instale o Jolven na sua distribuição Linux atual e jogue.</p>
         <a class="button primary" href="#install" data-i18n="finalButton">Get Jolven</a>
       </section>
     </main>
 
     <footer>
       <a class="brand" href="#top"><img src="assets/favicon.svg" alt=""><span class="wordmark">Jolven</span></a>
-      <p data-i18n="footerText">An independent fork originally based on Cartridges. GPL-3.0-or-later.</p>
+      <p data-i18n="footerText">Um fork independente originalmente baseado no Cartridges. GPL-3.0-or-later.</p>
       <a href="https://github.com/zonaro/jolven">GitHub</a>
     </footer>
   </body>

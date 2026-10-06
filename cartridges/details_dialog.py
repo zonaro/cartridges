@@ -33,8 +33,8 @@ from cartridges import shared
 from cartridges.errors.friendly_error import FriendlyError
 from cartridges.game import Game, STATUS_LABELS
 from cartridges.game_cover import GameCover
+from cartridges.image_picker import ImagePicker
 from cartridges.logo_picker import LogoPicker
-from cartridges.sgdb_picker import SgdbPicker
 from cartridges.store.managers.cover_manager import CoverManager
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
@@ -90,6 +90,10 @@ class DetailsDialog(Adw.Dialog):
     wallpaper_button_reset: Gtk.Button = Gtk.Template.Child()
     wallpaper_button_browse: Gtk.Button = Gtk.Template.Child()
     wallpaper_button_file: Gtk.Button = Gtk.Template.Child()
+    fundo_row: Adw.ActionRow = Gtk.Template.Child()
+    fundo_button_reset: Gtk.Button = Gtk.Template.Child()
+    fundo_button_browse: Gtk.Button = Gtk.Template.Child()
+    fundo_button_file: Gtk.Button = Gtk.Template.Child()
     fita_row: Adw.ActionRow = Gtk.Template.Child()
     fita_button_reset: Gtk.Button = Gtk.Template.Child()
     fita_cor_menu: Gtk.MenuButton = Gtk.Template.Child()
@@ -123,6 +127,8 @@ class DetailsDialog(Adw.Dialog):
     _logo_choice: Optional[tuple[str, Optional[Path]]] = None
     _wallpaper_choice: Optional[tuple[str, Optional[Path], Posicoes]] = None
     _wallpaper_tmp: Optional[Path] = None
+    _fundo_choice: Optional[tuple[str, Optional[Path]]] = None
+    _fundo_tmp: Optional[Path] = None
     _logo_tmp: Optional[Path] = None
     _fita_mostrada: Optional[session_fita.Cor] = None
     _fita_redefinir: bool = False
@@ -205,6 +211,7 @@ class DetailsDialog(Adw.Dialog):
                 self.cover_button_delete_revealer.set_reveal_child(True)
             self.update_logo_row()
             self.update_wallpaper_row()
+            self.update_fundo_row()
             self.atualizar_fita()
             if self.game.zerado:
                 for widget in (
@@ -293,6 +300,9 @@ class DetailsDialog(Adw.Dialog):
         self.wallpaper_button_browse.connect("clicked", self.browse_wallpapers)
         self.wallpaper_button_file.connect("clicked", self.choose_wallpaper_file)
         self.wallpaper_button_reset.connect("clicked", self.reset_wallpaper_choice)
+        self.fundo_button_browse.connect("clicked", self.browse_fundos)
+        self.fundo_button_file.connect("clicked", self.choose_fundo_file)
+        self.fundo_button_reset.connect("clicked", self.reset_fundo_choice)
         self.fita_button_reset.connect("clicked", self.redefinir_fita)
         self.fita_color_button.connect("notify::rgba", self.previa_da_fita)
         self.fita_color_button.connect(
@@ -324,6 +334,7 @@ class DetailsDialog(Adw.Dialog):
             self.tmp_cover_path.unlink(missing_ok=True)
         self._discard_tmp("_logo_tmp")
         self.discard_wallpaper_tmp()
+        self._discard_tmp("_fundo_tmp")
         self.encerrar_previa()
 
         self.set_is_open(False)
@@ -338,7 +349,9 @@ class DetailsDialog(Adw.Dialog):
             setattr(self, attribute, None)
 
     def browse_covers(self, *_args: Any) -> None:
-        SgdbPicker(self.name.get_text(), self.set_cover_from_path).present(self)
+        ImagePicker(
+            self.name.get_text(), self.set_cover_from_path, mode="capa"
+        ).present(self)
 
     def set_cover_from_path(self, new_path: Path) -> None:
         if self.tmp_cover_path:
@@ -489,6 +502,69 @@ class DetailsDialog(Adw.Dialog):
 
         self.discard_wallpaper_tmp()
         self._wallpaper_choice = None
+        return True
+
+    def browse_fundos(self, *_args: Any) -> None:
+        ImagePicker(
+            self.name.get_text(), self.set_fundo_from_picker, mode="fundo"
+        ).present(self)
+
+    def choose_fundo_file(self, *_args: Any) -> None:
+        self.image_file_dialog.open(self.get_root(), None, self.set_fundo_file)
+
+    def set_fundo_file(self, _source: Any, result: Gio.Task, *_args: Any) -> None:
+        try:
+            chosen = self.image_file_dialog.open_finish(result).get_path()
+        except GLib.Error:
+            return
+        if chosen:
+            self.set_fundo_from_path(Path(chosen))
+
+    def set_fundo_from_picker(self, path: Path) -> None:
+        self.set_fundo_from_path(path)
+        self._fundo_tmp = path
+
+    def set_fundo_from_path(self, path: Path) -> None:
+        self._discard_tmp("_fundo_tmp")
+        self._fundo_choice = ("manual", path)
+        self.update_fundo_row()
+
+    def reset_fundo_choice(self, *_args: Any) -> None:
+        self._discard_tmp("_fundo_tmp")
+        self._fundo_choice = ("auto", None)
+        self.update_fundo_row()
+
+    def update_fundo_row(self) -> None:
+        if self._fundo_choice:
+            choice = self._fundo_choice[0]
+        elif self.game and getattr(self.game, "fundo_biblioteca", None):
+            choice = "manual"
+        else:
+            choice = "auto"
+
+        self.fundo_row.set_subtitle(
+            {"manual": _("Escolhido manualmente")}.get(
+                choice, _("Automático (IGDB, TheGamesDB, wallhaven)")
+            )
+        )
+        self.fundo_button_reset.set_visible(choice != "auto")
+
+    def apply_fundo_choice(self, game: Game) -> bool:
+        if not self._fundo_choice:
+            return False
+
+        from cartridges.utils.library_background import redefinir_fundo, salvar_fundo
+
+        choice, path = self._fundo_choice
+        if choice == "manual" and path:
+            destino = salvar_fundo(game.game_id, path)
+            game.fundo_biblioteca = destino.name if destino else None
+        else:
+            redefinir_fundo(game.game_id)
+            game.fundo_biblioteca = None
+
+        self._discard_tmp("_fundo_tmp")
+        self._fundo_choice = None
         return True
 
     def cor_automatica(self) -> session_fita.Cor:
@@ -722,6 +798,7 @@ class DetailsDialog(Adw.Dialog):
 
         self.apply_logo_choice(self.game)
         self.apply_wallpaper_choice(self.game)
+        self.apply_fundo_choice(self.game)
         self.aplicar_fita(self.game)
 
         shared.store.add_game(self.game, {}, run_pipeline=False)

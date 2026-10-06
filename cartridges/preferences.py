@@ -154,6 +154,9 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     thegamesdb_fetch_button: Gtk.Button = Gtk.Template.Child()
     thegamesdb_stack: Gtk.Stack = Gtk.Template.Child()
     thegamesdb_spinner: Adw.Spinner = Gtk.Template.Child()
+    igdb_key_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    igdb_client_id_entry_row: Adw.EntryRow = Gtk.Template.Child()
+    igdb_client_secret_entry_row: Adw.EntryRow = Gtk.Template.Child()
 
     danger_zone_group = Gtk.Template.Child()
     remove_all_games_button_row = Gtk.Template.Child()
@@ -224,6 +227,13 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.export_backup_button_row.connect("activated", self.export_backup)
         self.import_backup_button_row.connect("activated", self.import_backup)
         self.setup_app_icon_row()
+
+        # "Exit After Launching Games" makes no sense in the exclusive
+        # Jolven Session: closing Jolven ends Gamescope and returns to the
+        # login screen, so the option is completely ignored while in the
+        # session (see Game.launch) and must stay hidden there.
+        if shared.runtime.is_session:
+            self.exit_after_launch_switch.set_visible(False)
 
         # Debug
         if shared.PROFILE == "development":
@@ -331,6 +341,31 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "A chave permite buscar detalhes, capturas de tela e imagens. "
                 "Consulte a {}página da API do TheGamesDB{}."
             ).format('<a href="https://api.thegamesdb.net/">', "</a>")
+        )
+
+        # IGDB (Client ID + Secret do Twitch; sem eles a fonte fica indisponível)
+        def igdb_key_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "igdb-client-id", self.igdb_client_id_entry_row.get_text().strip()
+            )
+            shared.schema.set_string(
+                "igdb-client-secret",
+                self.igdb_client_secret_entry_row.get_text().strip(),
+            )
+
+        self.igdb_client_id_entry_row.set_text(
+            shared.schema.get_string("igdb-client-id")
+        )
+        self.igdb_client_secret_entry_row.set_text(
+            shared.schema.get_string("igdb-client-secret")
+        )
+        self.igdb_client_id_entry_row.connect("changed", igdb_key_changed)
+        self.igdb_client_secret_entry_row.connect("changed", igdb_key_changed)
+        self.igdb_key_group.set_description(
+            _(
+                "As credenciais permitem buscar capas e capturas de tela. "
+                "Consulte a {}página da API do IGDB{}."
+            ).format('<a href="https://api.igdb.com/">', "</a>")
         )
 
         def update_thegamesdb(*_args: Any) -> None:

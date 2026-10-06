@@ -151,13 +151,22 @@ class LogoPicker(Adw.Dialog):
 
     def _search_thread(self, query: str, generation: int) -> None:
         try:
-            games = self.sgdb.search_games(query)
-            # .get, não [ ]: um item sem "id" (200 de shape inesperado) matava
-            # a thread com KeyError fora dos excepts e o spinner ficava eterno.
-            first_id = (
-                games[0].get("id") if games and isinstance(games[0], dict) else None
-            )
-            logos = self.sgdb.get_logos(first_id) if first_id is not None else []
+            from cartridges.utils.name_cleaner import search_variants
+
+            queries = search_variants(query) or [query]
+            logos: list = []
+            for variant in queries:
+                games = self.sgdb.search_games(variant)
+                # .get, não [ ]: um item sem "id" (200 de shape inesperado) matava
+                # a thread com KeyError fora dos excepts e o spinner ficava eterno.
+                first_id = (
+                    games[0].get("id") if games and isinstance(games[0], dict) else None
+                )
+                if first_id is None:
+                    continue
+                logos = self.sgdb.get_logos(first_id)
+                if logos:
+                    break
         except SgdbAuthError:
             entregar_na_tela(
                 self._show_empty,

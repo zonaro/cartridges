@@ -80,6 +80,39 @@ _SEARCH_SEPARATORS_RE = re.compile(r"[-–—:;,./]+")
 # missed "Assassin’s Creed Shadows" purely because the shortcut carried a
 # curly quote, and the search term never matched anything.
 _APOSTROPHE_RE = re.compile("[’ʼ‘‛´`]")
+# Sufixo de versão no fim do título: "Meu jogo v1.0" -> "Meu jogo". Só vale com
+# o marcador "v"/"ver"/"version" ou com número pontilhado ("1.0", "2.3.1") — um
+# "Game 2" sozinho é número de sequência e nunca é cortado aqui.
+_VERSION_RE = re.compile(
+    r"\s*[-–—_]?\s*v(?:er(?:sion|são|ao)?)?\.?\s*\d+(?:[.\s]\d+)*"
+    r"(?:\s*(?:beta|alpha|rc\d*))?\s*$",
+    re.IGNORECASE,
+)
+_BARE_DOTTED_VERSION_RE = re.compile(r"\s+[-–—_]?\s*\d+(?:[.\s]\d+)+\s*$")
+_VERSION_IN_BRACKETS_RE = re.compile(
+    r"\s*[\(\[]\s*v(?:er(?:sion|são|ao)?)?\.?\s*\d+[^)\]]*[\)\]]\s*$",
+    re.IGNORECASE,
+)
+
+# Grupos entre parênteses/colchetes que só dizem região ou idioma: "Jogo (BR)"
+# -> "Jogo", "[USA] Game" -> "Game". Só vale quando TODO o conteúdo do grupo é
+# região/idioma (inclusive combinados como "EN-FR-DE" ou "PT-BR"); um "(GOTY)"
+# ou "(Remake)" nunca entra aqui.
+_REGION_TOKENS = frozenset(
+    {
+        "br", "bra", "brasil", "brazil", "pt", "por", "portugues", "portuguese",
+        "ptbr", "brpt", "en", "eng", "english", "ingles", "us", "usa",
+        "american", "america", "eu", "eur", "europe", "europa", "pal", "ntsc",
+        "ntscu", "ntscj", "ntsce", "uk", "fr", "fra", "french", "frances",
+        "de", "ger", "german", "alemao", "es", "spa", "spanish", "espanhol",
+        "it", "ita", "italian", "italiano", "jp", "jpn", "japan", "japones",
+        "j", "u", "e", "w", "world", "asia", "kor", "korea", "chn", "china",
+        "multi", "multilanguage", "multilingual", "multilingue",
+        "dublado", "legendado",
+    }
+)
+_REGION_SPLIT_RE = re.compile(r"[\s,;/+_\-]+")
+_BRACKET_GROUP_RE = re.compile(r"[\(\[]([^)\]]*)[\)\]]")
 
 
 def _normalize(token: str) -> str:
@@ -144,3 +177,102 @@ def clean_for_search(name: str) -> str:
     display = clean_game_name(name)
     cleaned = _SEARCH_SEPARATORS_RE.sub(" ", _APOSTROPHE_RE.sub("'", display))
     return re.sub(r"\s+", " ", cleaned).strip() or display
+
+
+def split_camel_case(name: str) -> str:
+    if not name:
+        return name
+    out: list[str] = []
+    for i, char in enumerate(name):
+        if i > 0 and char.isupper():
+            prev = name[i - 1]
+            nxt = name[i + 1] if i + 1 < len(name) else ""
+            if prev.islower() or prev.isdigit():
+                out.append(" ")
+            elif prev.isupper() and nxt.islower():
+                out.append(" ")
+        out.append(char)
+    return re.sub(r"\s+", " ", "".join(out)).strip() or name
+
+
+def strip_version_suffix(name: str) -> str:
+    if not name:
+        return name
+    current = name.strip()
+    while True:
+        nxt = _VERSION_IN_BRACKETS_RE.sub("", current).strip()
+        if nxt != current:
+            current = nxt
+            continue
+        nxt = _VERSION_RE.sub("", current).strip()
+        if nxt != current:
+            # "v" sozinho no fim ("Game v") é resto da remoção acima, não título.
+            nxt = re.sub(r"\s+v\s*$", "", nxt, flags=re.IGNORECASE).strip()
+            current = nxt
+            continue
+        nxt = _BARE_DOTTED_VERSION_RE.sub("", current).strip()
+        if nxt != current:
+            current = nxt
+            continue
+        break
+    cleaned = re.sub(r"\s+", " ", current).strip(" -–—")
+    return cleaned or name.strip()
+
+
+def _is_region_group(inner: str) -> bool:
+    parts = [p for p in _REGION_SPLIT_RE.split((inner or "").lower()) if p]
+    if not parts:
+        return False
+    return all(_normalize(p) in _REGION_TOKENS or p in _REGION_TOKENS for p in parts)
+
+
+def strip_region_tokens(name: str) -> str:
+    if not name:
+        return name
+    current = _BRACKET_GROUP_RE.sub(
+        lambda m: " " if _is_region_group(m.group(1)) else m.group(0),
+        name.strip(),
+    )
+    cleaned = re.sub(r"\s+", " ", current).strip(" -–—")
+    return cleaned or name.strip()
+
+
+def loosen_for_search(name: str) -> str:
+    base = clean_for_search(name)
+    current = split_camel_case(base)
+    while True:
+        nxt = strip_version_suffix(current)
+        if nxt != current:
+            current = nxt
+            continue
+        nxt = strip_region_tokens(current)
+        if nxt != current:
+            current = nxt
+            continue
+        break
+    return re.sub(r"\s+", " ", current).strip() or base
+
+
+def search_variants(name: str) -> list[str]:
+    base = clean_for_search(name or "")
+    if not base:
+        return []
+    variants = [base]
+    current = base
+    camel = split_camel_case(current)
+    if camel and camel != current:
+        variants.append(camel)
+        current = camel
+    while True:
+        nxt = strip_version_suffix(current)
+        if nxt and nxt != current and nxt not in variants:
+            variants.append(nxt)
+            current = nxt
+            continue
+        nxt = strip_region_tokens(current)
+        if nxt and nxt != current and nxt not in variants:
+            variants.append(nxt)
+            current = nxt
+            continue
+        break
+    return variants

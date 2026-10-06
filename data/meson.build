@@ -6,7 +6,7 @@ foreach name : [
   'game',
   'logo-picker',
   'preferences',
-  'sgdb-picker',
+  'image-picker',
   'shortcuts-dialog',
   'wallpaper-picker',
   'window',

@@ -88,18 +88,77 @@ def _tentar_urls(urls: list[str], destino_dir: Path) -> Optional[Path]:
     return None
 
 
+def _manual_nome(game_id: str) -> str:
+    return f"{game_id}-fundo"
+
+
+def _manual_arquivo(game_id: str) -> Optional[Path]:
+    """O fundo escolhido à mão para ``game_id``, se ainda está em disco."""
+    for sufixo in _SUFIXOS:
+        caminho = shared.wallpapers_dir / f"{_manual_nome(game_id)}{sufixo}"
+        if caminho.is_file():
+            return caminho
+    return None
+
+
+def fundo_escolhido(game: "Game") -> Optional[Path]:
+    """O fundo manual de ``game``, ou ``None`` quando está no automático.
+
+    Aponta para um arquivo que sumiu? Volta ao automático em vez de ficar sem
+    fundo em silêncio — a mesma regra da parede da sessão.
+    """
+    if not getattr(game, "fundo_biblioteca", None):
+        return None
+    return _manual_arquivo(game.game_id)
+
+
+def salvar_fundo(game_id: str, origem: Path) -> Optional[Path]:
+    """Adota ``origem`` como o fundo manual de ``game_id``.
+
+    Devolve o destino em ``wallpapers_dir`` (o ``Game.fundo_biblioteca`` deve
+    apontar para o nome dele) ou ``None`` quando não deu para guardar.
+    """
+    sufixo = origem.suffix.lower()
+    if sufixo not in _SUFIXOS:
+        sufixo = ".jpg"
+    destino = shared.wallpapers_dir / f"{_manual_nome(game_id)}{sufixo}"
+    try:
+        shared.wallpapers_dir.mkdir(parents=True, exist_ok=True)
+        for outro in _SUFIXOS:
+            candidato = shared.wallpapers_dir / f"{_manual_nome(game_id)}{outro}"
+            if candidato != destino:
+                candidato.unlink(missing_ok=True)
+        destino.write_bytes(origem.read_bytes())
+    except OSError as erro:
+        logging.warning("Não foi possível guardar o fundo escolhido: %s", erro)
+        return None
+    return destino
+
+
+def redefinir_fundo(game_id: str) -> None:
+    """Devolve o fundo de ``game_id`` ao automático."""
+    for sufixo in _SUFIXOS:
+        (shared.wallpapers_dir / f"{_manual_nome(game_id)}{sufixo}").unlink(
+            missing_ok=True
+        )
+
+
 def resolver_fundo(
     game: "Game", largura: int = 1920, altura: int = 1080
 ) -> Optional[Path]:
     """O arquivo de imagem para o fundo com ``game`` em foco, ou ``None``.
 
-    Desce os degraus IGDB → TheGamesDB (capturas, depois fanarts) → wallhaven.
-    ``largura`` x ``altura`` é o mínimo que o fundo precisa, como o ``atleast``
-    da busca do wallhaven. Nunca levanta: sem imagem, o fundo fica como está.
+    A escolha à mão vence tudo; depois descem os degraus IGDB → TheGamesDB
+    (capturas, depois fanarts) → wallhaven. ``largura`` x ``altura`` é o
+    mínimo que o fundo precisa, como o ``atleast`` da busca do wallhaven.
+    Nunca levanta: sem imagem, o fundo fica como está.
 
     Bloqueante (rede): chamar fora da thread de UI.
     """
     try:
+        if manual := fundo_escolhido(game):
+            return manual
+
         destino_dir = _cache_dir(game.game_id)
         nome = game.name
 
