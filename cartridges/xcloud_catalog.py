@@ -332,6 +332,26 @@ def _install_catalog(
     return GLib.SOURCE_REMOVE
 
 
+def _cover_fit(image: Image.Image, width: int = 200, height: int = 300) -> Image.Image:
+    """Redimensiona com ajuste cover: preenche e recorta o centro.
+
+    O ``resize`` direto estica qualquer aspecto diferente de 2:3 (caso das
+    BoxArt quadradas do catálogo Microsoft). Aqui a imagem é escalada para
+    cobrir o alvo preservando proporção e o excedente é cortado no centro,
+    espelhando o ``content-fit: cover`` do tile.
+    """
+    if image.width <= 0 or image.height <= 0:
+        return image.resize((width, height), Image.Resampling.LANCZOS)
+    scale = max(width / image.width, height / image.height)
+    resized = image.resize(
+        (max(1, round(image.width * scale)), max(1, round(image.height * scale))),
+        Image.Resampling.LANCZOS,
+    )
+    left = (resized.width - width) // 2
+    top = (resized.height - height) // 2
+    return resized.crop((left, top, left + width, top + height))
+
+
 def _download_cover(url: str) -> Optional[bytes]:
     try:
         request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -340,7 +360,7 @@ def _download_cover(url: str) -> Optional[bytes]:
         with Image.open(BytesIO(raw)) as image:
             if image.mode not in ("RGB", "RGBA"):
                 image = image.convert("RGB")
-            image = image.resize((200, 300), Image.Resampling.LANCZOS)
+            image = _cover_fit(image)
             output = BytesIO()
             image.save(output, format="TIFF", compression="tiff_adobe_deflate")
             return output.getvalue()
