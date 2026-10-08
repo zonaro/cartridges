@@ -99,6 +99,32 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       }
     }
 
+    Adw.PreferencesGroup sunshine_group {
+      title: _("Sunshine");
+
+      Adw.SwitchRow sunshine_auto_sync_switch {
+        title: _("Adicionar jogos ao Sunshine automaticamente");
+        subtitle: _("Novos jogos entram no apps.json do Sunshine, exceto Xbox Cloud");
+      }
+
+      Adw.EntryRow sunshine_apps_path_row {
+        title: _("Arquivo apps.json (vazio usa o padrão)");
+        sensitive: bind sunshine_auto_sync_switch.active;
+      }
+
+      Adw.ActionRow sunshine_sync_all_row {
+        title: _("Sincronizar biblioteca");
+        subtitle: _("Exporta todos os jogos atuais para o Sunshine");
+        activatable-widget: sunshine_sync_all_button;
+
+        [suffix]
+        Button sunshine_sync_all_button {
+          valign: center;
+          label: _("Sincronizar agora");
+        }
+      }
+    }
+
     Adw.PreferencesGroup {
       title: _("Backup da sua biblioteca");
       description: _("Salve em um arquivo .zip a biblioteca completa e todas as configurações. A restauração substitui a biblioteca e as configurações atuais pelas do backup.");

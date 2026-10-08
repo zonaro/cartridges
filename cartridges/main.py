@@ -76,6 +76,7 @@ from cartridges.store.managers.display_manager import DisplayManager
 from cartridges.store.managers.file_manager import FileManager
 from cartridges.store.managers.sgdb_manager import SgdbManager
 from cartridges.store.managers.steam_api_manager import SteamAPIManager
+from cartridges.store.managers.sunshine_manager import SunshineManager
 from cartridges.store.managers.thegamesdb_manager import TheGamesDBManager
 from cartridges.store.store import Store
 from cartridges.utils import backup, session_fita, session_wallpaper
@@ -350,6 +351,7 @@ class CartridgesApplication(Adw.Application):
         shared.store.add_manager(SteamAPIManager())
         shared.store.add_manager(TheGamesDBManager())
         shared.store.add_manager(SgdbManager())
+        shared.store.add_manager(SunshineManager())
         shared.store.toggle_manager_in_pipelines(FileManager, True)
 
         if shared.schema.get_boolean("xbox-cloud-gaming"):
@@ -366,6 +368,7 @@ class CartridgesApplication(Adw.Application):
                 ("launch_game",),
                 ("hide_game",),
                 ("edit_game",),
+                ("add_to_sunshine",),
                 ("add_game", ("<primary>n",)),
                 ("import", ("<primary>i",)),
                 ("remove_game_details_view", ("Delete",)),
@@ -590,6 +593,25 @@ class CartridgesApplication(Adw.Application):
 
     def on_edit_game_action(self, *_args: Any) -> None:
         DetailsDialog(shared.win.active_game).present(shared.win)
+
+    def on_add_to_sunshine_action(self, *_args: Any) -> None:
+        from cartridges.utils import sunshine
+
+        game = shared.win.active_game
+        if game is None:
+            return
+        if not sunshine.is_eligible(game):
+            game.create_toast(_("This game cannot be added to Sunshine"))
+            return
+        try:
+            sunshine.add_game(
+                game, shared.schema.get_string("sunshine-apps-path")
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            logging.exception("Could not export %s to Sunshine", game.game_id)
+            game.create_toast(_("Could not add to Sunshine"))
+            return
+        game.create_toast(_("{} added to Sunshine").format(game.name))
 
     def on_add_game_action(self, *_args: Any) -> None:
         if DetailsDialog.is_open:

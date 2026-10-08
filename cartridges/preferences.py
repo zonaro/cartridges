@@ -80,6 +80,11 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     better_xcloud_update_row: Adw.ActionRow = Gtk.Template.Child()
     better_xcloud_update_button: Gtk.Button = Gtk.Template.Child()
 
+    sunshine_auto_sync_switch: Adw.SwitchRow = Gtk.Template.Child()
+    sunshine_apps_path_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_sync_all_row: Adw.ActionRow = Gtk.Template.Child()
+    sunshine_sync_all_button: Gtk.Button = Gtk.Template.Child()
+
     auto_import_switch: Adw.SwitchRow = Gtk.Template.Child()
     remove_missing_switch: Adw.SwitchRow = Gtk.Template.Child()
 
@@ -276,6 +281,19 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.sgdb_key_entry_row.set_text(shared.schema.get_string("sgdb-key"))
         self.sgdb_key_entry_row.connect("changed", sgdb_key_changed)
 
+        # Sunshine
+        def sunshine_apps_path_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "sunshine-apps-path",
+                self.sunshine_apps_path_row.get_text().strip(),
+            )
+
+        self.sunshine_apps_path_row.set_text(
+            shared.schema.get_string("sunshine-apps-path")
+        )
+        self.sunshine_apps_path_row.connect("changed", sunshine_apps_path_changed)
+        self.sunshine_sync_all_button.connect("clicked", self.sincronizar_sunshine)
+
         self.sgdb_key_group.set_description(
             _(
                 "An API key is required to use SteamGridDB. You can generate one {}here{}."
@@ -427,6 +445,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "high-quality-images",
                 "xbox-cloud-gaming",
                 "better-xcloud",
+                "sunshine-auto-sync",
                 "auto-import",
                 "remove-missing",
                 "lutris-import-steam",
@@ -539,6 +558,41 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             self.reler_better_xcloud()
 
         xcloud.fetch_better_xcloud_async(done)
+
+    def sincronizar_sunshine(self, *_args: Any) -> None:
+        import threading
+
+        from cartridges.utils import sunshine
+
+        self.sunshine_sync_all_button.set_sensitive(False)
+        custom = shared.schema.get_string("sunshine-apps-path")
+        jogos = [game for game in shared.store if sunshine.is_eligible(game)]
+
+        def concluir(resultado: dict) -> bool:
+            total = resultado.get("added", 0) + resultado.get("updated", 0)
+            self.sunshine_sync_all_button.set_sensitive(True)
+            self.add_toast(
+                Adw.Toast.new(
+                    _("{} jogo(s) sincronizado(s) com o Sunshine").format(total)
+                )
+            )
+            return GLib.SOURCE_REMOVE
+
+        def falhar(mensagem: str) -> bool:
+            self.sunshine_sync_all_button.set_sensitive(True)
+            self.add_toast(Adw.Toast.new(_("Não foi possível sincronizar")))
+            logging.error("Sunshine sync-all failed: %s", mensagem)
+            return GLib.SOURCE_REMOVE
+
+        def executar() -> None:
+            try:
+                resultado = sunshine.sync_library(jogos, custom)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(falhar, str(error))
+            else:
+                entregar_na_tela(concluir, resultado)
+
+        threading.Thread(target=executar, daemon=True).start()
 
     def atualizar_atalho_global(self) -> None:
         try:

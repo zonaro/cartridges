@@ -1802,3 +1802,74 @@ msgstr ""
 #: cartridges/store/managers/thegamesdb_manager.py:96
 msgid "Verifique a chave da API e a franquia mensal disponível."
 msgstr ""
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:241
+msgid "Automatically add games to Sunshine"
+msgstr ""
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:242
+msgid "When enabled, new and edited games are exported to the Sunshine apps.json file, except Xbox Cloud Gaming titles."
+msgstr ""
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:246
+msgid "Sunshine apps.json location"
+msgstr ""
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:247
+msgid "Custom path to the Sunshine apps.json file. Empty means the default ~/.config/sunshine/apps.json."
+msgstr ""
+
+#: data/gtk/preferences.blp:103
+msgid "Sunshine"
+msgstr ""
+
+#: data/gtk/preferences.blp:106
+msgid "Adicionar jogos ao Sunshine automaticamente"
+msgstr ""
+
+#: data/gtk/preferences.blp:107
+msgid "Novos jogos entram no apps.json do Sunshine, exceto Xbox Cloud"
+msgstr ""
+
+#: data/gtk/preferences.blp:111
+msgid "Arquivo apps.json (vazio usa o padrão)"
+msgstr ""
+
+#: data/gtk/preferences.blp:116
+msgid "Sincronizar biblioteca"
+msgstr ""
+
+#: data/gtk/preferences.blp:117
+msgid "Exporta todos os jogos atuais para o Sunshine"
+msgstr ""
+
+#: data/gtk/preferences.blp:123
+msgid "Sincronizar agora"
+msgstr ""
+
+#: data/gtk/game.blp:120
+#: data/gtk/game.blp:129
+#: cartridges/window.py:1514
+#: cartridges/main.py:594
+msgid "Add to Sunshine"
+msgstr ""
+
+#: cartridges/main.py:601
+msgid "This game cannot be added to Sunshine"
+msgstr ""
+
+#: cartridges/main.py:609
+msgid "Could not add to Sunshine"
+msgstr ""
+
+#: cartridges/main.py:611
+msgid "{} added to Sunshine"
+msgstr ""
+
+#: cartridges/preferences.py:558
+msgid "{} jogo(s) sincronizado(s) com o Sunshine"
+msgstr ""
+
+#: cartridges/preferences.py:565
+msgid "Não foi possível sincronizar"
+msgstr ""

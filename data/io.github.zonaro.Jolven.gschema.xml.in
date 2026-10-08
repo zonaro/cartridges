@@ -236,6 +236,16 @@
     <key name="better-xcloud" type="b">
       <default>true</default>
     </key>
+    <key name="sunshine-auto-sync" type="b">
+      <default>false</default>
+      <summary>Automatically add games to Sunshine</summary>
+      <description>When enabled, new and edited games are exported to the Sunshine apps.json file, except Xbox Cloud Gaming titles.</description>
+    </key>
+    <key name="sunshine-apps-path" type="s">
+      <default>""</default>
+      <summary>Sunshine apps.json location</summary>
+      <description>Custom path to the Sunshine apps.json file. Empty means the default ~/.config/sunshine/apps.json.</description>
+    </key>
     <key name="app-icon" type="s">
       <choices>
         <choice value="jolven-dpad" />

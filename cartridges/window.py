@@ -1512,6 +1512,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
             (_("Edit"), "app.edit_game"),
             (_("Unhide") if game.hidden else _("Hide"), "app.hide_game"),
             (_("Remove"), "app.remove_game"),
+            (_("Add to Sunshine"), "app.add_to_sunshine"),
         ):
             item = Gio.MenuItem.new(label, None)
             item.set_action_and_target_value(action, None)
