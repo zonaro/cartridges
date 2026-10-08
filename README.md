@@ -83,9 +83,18 @@ One-time setup with a friendly wizard, credentials stored encrypted, and from th
 - **Per-game launch profiles** — set resolution, FPS limit, scaling, working folder and extra options once per title, then just press play.
 - **GameMode + MangoHud + Gamescope, without the terminal** — toggle performance boosts and overlays per game or globally, from a normal settings screen.
 - **Xbox Cloud Gaming (experimental)** — stream from the cloud alongside your installed games.
+- **Sunshine streaming** — export games to Sunshine with one click or automatically, then play them over Moonlight on any screen.
 - **Waydroid apps** — import installed Android games with their package ids and local icons, while filtering system utilities.
 - **GNOME search provider** — hit Super, type a game name, press Enter.
 - **Animated, gamepad-first interface** — every screen works from the couch, with hotplug controllers, an on-screen keyboard and a global menu (library, power, session).
+
+### Streaming via Sunshine (Moonlight)
+
+Jolven exports your games to [Sunshine](https://github.com/LizardByte/Sunshine) (self-hosted game stream host for Moonlight):
+
+- Open a game's menu and choose **Add to Sunshine**, or turn on the automatic sync in Preferences to export new games as they arrive (Xbox Cloud Gaming titles are skipped).
+- The export writes to your local Sunshine `apps.json` — no account, no network — preserving anything already there.
+- Then open [Moonlight](https://moonlight-stream.org/) on your TV, phone or another PC and play.
 
 Your existing data is safe: on first launch, Jolven copies the library, covers, settings, favorites and metadata from the previous `cartridges` folders into its own folders. The originals are never deleted. GSettings keys are migrated the same way (new keys win when already customized).
 

@@ -875,3 +875,74 @@ msgstr "Verifique a sua chave de API nas preferências"
 
 #~ msgid "Talking to Steam"
 #~ msgstr "Falando com a Steam"
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:241
+msgid "Automatically add games to Sunshine"
+msgstr "Adicionar jogos ao Sunshine automaticamente"
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:242
+msgid "When enabled, new and edited games are exported to the Sunshine apps.json file, except Xbox Cloud Gaming titles."
+msgstr "Quando ativado, os jogos novos e editados são exportados para o apps.json do Sunshine, exceto os títulos do Xbox Cloud Gaming."
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:246
+msgid "Sunshine apps.json location"
+msgstr "Local do apps.json do Sunshine"
+
+#: data/io.github.zonaro.Jolven.gschema.xml.in:247
+msgid "Custom path to the Sunshine apps.json file. Empty means the default ~/.config/sunshine/apps.json."
+msgstr "Caminho personalizado do apps.json do Sunshine. Vazio usa o padrão ~/.config/sunshine/apps.json."
+
+#: data/gtk/preferences.blp:103
+msgid "Sunshine"
+msgstr "Sunshine"
+
+#: data/gtk/preferences.blp:106
+msgid "Adicionar jogos ao Sunshine automaticamente"
+msgstr "Adicionar jogos ao Sunshine automaticamente"
+
+#: data/gtk/preferences.blp:107
+msgid "Novos jogos entram no apps.json do Sunshine, exceto Xbox Cloud"
+msgstr "Novos jogos entram no apps.json do Sunshine, exceto Xbox Cloud"
+
+#: data/gtk/preferences.blp:111
+msgid "Arquivo apps.json (vazio usa o padrão)"
+msgstr "Arquivo apps.json (vazio usa o padrão)"
+
+#: data/gtk/preferences.blp:116
+msgid "Sincronizar biblioteca"
+msgstr "Sincronizar biblioteca"
+
+#: data/gtk/preferences.blp:117
+msgid "Exporta todos os jogos atuais para o Sunshine"
+msgstr "Exporta todos os jogos atuais para o Sunshine"
+
+#: data/gtk/preferences.blp:123
+msgid "Sincronizar agora"
+msgstr "Sincronizar agora"
+
+#: data/gtk/game.blp:120
+#: data/gtk/game.blp:129
+#: cartridges/window.py:1514
+#: cartridges/main.py:594
+msgid "Add to Sunshine"
+msgstr "Adicionar ao Sunshine"
+
+#: cartridges/main.py:601
+msgid "This game cannot be added to Sunshine"
+msgstr "Este jogo não pode ser adicionado ao Sunshine"
+
+#: cartridges/main.py:609
+msgid "Could not add to Sunshine"
+msgstr "Não foi possível adicionar ao Sunshine"
+
+#: cartridges/main.py:611
+msgid "{} added to Sunshine"
+msgstr "{} adicionado ao Sunshine"
+
+#: cartridges/preferences.py:558
+msgid "{} jogo(s) sincronizado(s) com o Sunshine"
+msgstr "{} jogo(s) sincronizado(s) com o Sunshine"
+
+#: cartridges/preferences.py:565
+msgid "Não foi possível sincronizar"
+msgstr "Não foi possível sincronizar"
