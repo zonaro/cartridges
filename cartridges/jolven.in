@@ -87,6 +87,26 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 # Dominio gettext historico: os catalogos em po/ ainda geram
 # cartridges.mo; renomear o dominio esvaziaria as 30 traducoes.
+#
+# Idioma das Preferências ("language"): "auto" respeita o locale do sistema;
+# outro código força o catálogo via LANGUAGE, que o gettext consulta antes de
+# LC_MESSAGES. Precisa rodar antes do install para valer na sessão inteira.
+def _preferred_language() -> "str | None":
+    try:
+        from gi.repository import Gio  # noqa: PLC0415
+
+        lang = Gio.Settings.new("@APP_ID@").get_string("language")
+        if lang and lang != "auto":
+            return lang
+    except Exception:  # schema ausente: segue o locale do sistema
+        pass
+    return None
+
+
+_preferred_language = _preferred_language()
+if _preferred_language is not None:
+    os.environ["LANGUAGE"] = _preferred_language
+
 locale.bindtextdomain("cartridges", LOCALEDIR)
 locale.textdomain("cartridges")
 gettext.install("cartridges", LOCALEDIR, names=['ngettext'])

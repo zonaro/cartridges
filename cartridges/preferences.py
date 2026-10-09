@@ -72,6 +72,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     exit_after_launch_switch: Adw.SwitchRow = Gtk.Template.Child()
     cover_launches_game_switch: Adw.SwitchRow = Gtk.Template.Child()
     agrupar_duplicados_switch: Adw.SwitchRow = Gtk.Template.Child()
+    language_row: Adw.ComboRow = Gtk.Template.Child()
     high_quality_images_switch: Adw.SwitchRow = Gtk.Template.Child()
     app_icon_row: Adw.ComboRow = Gtk.Template.Child()
     xbox_cloud_gaming_switch: Adw.SwitchRow = Gtk.Template.Child()
@@ -253,6 +254,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.export_backup_button_row.connect("activated", self.export_backup)
         self.import_backup_button_row.connect("activated", self.import_backup)
         self.setup_app_icon_row()
+        self.setup_language_row()
 
         # "Exit After Launching Games" makes no sense in the exclusive
         # Jolven Session: closing Jolven ends Gamescope and returns to the
@@ -1512,6 +1514,78 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             )
 
         self.app_icon_row.connect("notify::selected", selected_changed)
+
+    # (código gettext, nome no próprio idioma). Os nomes não passam por
+    # gettext de propósito: o autônimo é igual em todo locale.
+    LANGUAGES = [
+        ("ar", "العربية"),
+        ("be", "Беларуская"),
+        ("ca", "Català"),
+        ("cs", "Čeština"),
+        ("de", "Deutsch"),
+        ("el", "Ελληνικά"),
+        ("en_GB", "English (UK)"),
+        ("es", "Español"),
+        ("eu", "Euskara"),
+        ("fa", "فارسی"),
+        ("fi", "Suomi"),
+        ("fr", "Français"),
+        ("hi", "हिन्दी"),
+        ("hr", "Hrvatski"),
+        ("hu", "Magyar"),
+        ("ia", "Interlingua"),
+        ("ie", "Interlingue"),
+        ("it", "Italiano"),
+        ("ja", "日本語"),
+        ("ka", "ქართული"),
+        ("kk", "Қазақша"),
+        ("ko", "한국어"),
+        ("kw", "Kernewek"),
+        ("nb_NO", "Norsk bokmål"),
+        ("nl", "Nederlands"),
+        ("nn", "Norsk nynorsk"),
+        ("pl", "Polski"),
+        ("pt", "Português"),
+        ("pt_BR", "Português (Brasil)"),
+        ("ro", "Română"),
+        ("ru", "Русский"),
+        ("sv", "Svenska"),
+        ("ta", "தமிழ்"),
+        ("te", "తెలుగు"),
+        ("tr", "Türkçe"),
+        ("uk", "Українська"),
+        ("vi", "Tiếng Việt"),
+        ("zh_Hans", "简体中文"),
+    ]
+
+    def setup_language_row(self) -> None:
+        """Seletor de idioma: detecção automática ou catálogo fixo.
+
+        O valor é lido pelo launcher (jolven.in) antes do gettext.install,
+        por isso a troca só vale após reiniciar o aplicativo.
+        """
+        codes = [code for code, _name in self.LANGUAGES]
+        self.language_row.set_model(
+            Gtk.StringList.new(
+                [_("Automatic detection"), *[name for _code, name in self.LANGUAGES]]
+            )
+        )
+        saved = shared.schema.get_string("language")
+        if saved != "auto" and saved not in codes:
+            shared.schema.set_string("language", "auto")
+            saved = "auto"
+        self.language_row.set_selected(0 if saved == "auto" else codes.index(saved) + 1)
+
+        def selected_changed(widget: Adw.ComboRow, *_args: Any) -> None:
+            selected = widget.get_selected()
+            shared.schema.set_string(
+                "language", "auto" if selected == 0 else codes[selected - 1]
+            )
+            self.add_toast(
+                Adw.Toast.new(_("Restart Jolven to apply the new language"))
+            )
+
+        self.language_row.connect("notify::selected", selected_changed)
 
     def setup_game_overlay_button_row(self) -> None:
         choices = ("mode", "home", "both")

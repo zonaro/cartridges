@@ -20,6 +20,9 @@
     <key name="playtime-tracking" type="b">
       <default>true</default>
     </key>
+    <key name="language" type="s">
+      <default>"auto"</default>
+    </key>
     <key name="process-tracking-grace" type="i">
       <default>5</default>
     </key>
@@ -215,6 +218,15 @@
     <key name="game-mode-hide-mouse-cursor" type="b">
       <default>true</default>
     </key>
+    <key name="game-overlay-button" type="s">
+      <choices>
+        <choice value="mode" />
+        <choice value="home" />
+        <choice value="both" />
+      </choices>
+      <default>"both"</default>
+      <summary>Controller button used to open the in-game overlay</summary>
+    </key>
     <key name="game-mode-monitor" type="s">
       <default>""</default>
     </key>
@@ -233,8 +245,8 @@
     <key name="xbox-cloud-gaming" type="b">
       <default>false</default>
     </key>
-    <key name="better-xcloud" type="b">
-      <default>true</default>
+    <key name="xcloud-fullscreen-on-start" type="b">
+      <default>false</default>
     </key>
     <key name="sunshine-auto-sync" type="b">
       <default>false</default>
