@@ -319,6 +319,11 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       Adw.SwitchRow game_mode_hide_mouse_cursor_switch {
         title: _("Hide mouse cursor when using a controller");
       }
+
+      Adw.ComboRow game_overlay_button_row {
+        title: _("Open the in-game overlay with");
+        subtitle: _("Choose which controller system button opens Jolven while a game is running");
+      }
     }
 
     Adw.PreferencesGroup game_mode_devices_group {
