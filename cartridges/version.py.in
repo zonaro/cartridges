@@ -1,0 +1,16 @@
+# version.py.in — gerado na compilação (não editar manualmente)
+#
+# Copyright 2026 Jolven contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Versão de compilação no formato YY.DDD.HHMM (ano 2 dígitos, dia do ano,
+# hora+minuto 24h). Gerado por build-aux/write-version.py via custom_target
+# (build_always_stale) a cada `meson compile`, portanto reflete a data de
+# compilação e não a do `meson setup`.
+BUILD_VERSION = "@VCS_TAG@"

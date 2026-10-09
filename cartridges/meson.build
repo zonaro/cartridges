@@ -11,6 +11,25 @@ install_subdir('utils', install_dir: moduledir)
 install_subdir('store', install_dir: moduledir)
 install_subdir('logging', install_dir: moduledir)
 install_subdir('errors', install_dir: moduledir)
+
+# Versão de compilação (Fixes #6): regenerada a cada `meson compile` com a
+# data atual (YY.DDD.HHMM via build-aux/write-version.py). Tem precedência
+# sobre o VERSION congelado no `meson setup` (ver shared.py.in).
+# custom_target com build_always_stale funciona desde meson 0.59.
+version_py = custom_target(
+  'jolven-version',
+  input: 'version.py.in',
+  output: 'version.py',
+  command: [
+    py_installation.full_path(),
+    meson.project_source_root() / 'build-aux' / 'write-version.py',
+    '@INPUT@',
+    '@OUTPUT@',
+  ],
+  build_always_stale: true,
+  install: true,
+  install_dir: moduledir,
+)
 install_data(
   [
     'main.py',
