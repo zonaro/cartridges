@@ -28,7 +28,8 @@ from urllib.parse import urlparse
 
 from cartridges import shared
 from cartridges.botao_tarefas import BotaoTarefas
-from cartridges.controller import name_for_button
+from cartridges.controller import detect_controller_layout, name_for_button
+from cartridges.gamepad_visual import GamepadVisual
 from cartridges.game import Game, STATUS_LABELS, status_label
 from cartridges.game_cover import GameCover
 from cartridges.session_history import SessionHistoryDialog
@@ -96,6 +97,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
     launchers_box: Gtk.Box = Gtk.Template.Child()
 
     gamepad_test_page: Adw.NavigationPage = Gtk.Template.Child()
+    gamepad_test_layout_label: Gtk.Label = Gtk.Template.Child()
+    gamepad_visual_slot: Gtk.Box = Gtk.Template.Child()
     gamepad_test_device_label: Gtk.Label = Gtk.Template.Child()
     gamepad_test_event_label: Gtk.Label = Gtk.Template.Child()
     gamepad_test_buttons: Gtk.FlowBox = Gtk.Template.Child()
@@ -488,6 +491,14 @@ class CartridgesWindow(Adw.ApplicationWindow):
             )
             self._gamepad_button_widgets[code] = label
             self.gamepad_test_buttons.append(label)
+        self._gamepad_visual = None
+        try:
+            self._gamepad_visual = GamepadVisual()
+            self.gamepad_visual_slot.append(self._gamepad_visual)
+        except Exception:  # A falha do visual não pode quebrar a janela.
+            logging.exception("Could not build the gamepad visual")
+            self._gamepad_visual = None
+
 
         style_manager = Adw.StyleManager.get_default()
         style_manager.connect("notify::dark", self.set_details_view_opacity)
@@ -577,6 +588,25 @@ class CartridgesWindow(Adw.ApplicationWindow):
             _("Conectado: {}").format(", ".join(names))
             if names
             else _("Nenhum gamepad conectado")
+        layout = (
+            detect_controller_layout(names[0]).value if names else "generic"
+        )
+        badge = {
+            "xbox": _("Controle Xbox"),
+            "playstation": _("Controle PlayStation"),
+            "generic": _("Controle genérico"),
+        }.get(layout, _("Controle genérico"))
+        if not names:
+            badge = _("Layout não identificado")
+        try:
+            self.gamepad_test_layout_label.set_label(badge)
+        except AttributeError:
+            pass
+        if self._gamepad_visual is not None:
+            try:
+                self._gamepad_visual.set_layout(layout)
+            except Exception:
+                logging.exception("Could not apply the gamepad layout")
         )
 
     def update_gamepad_button(self, button: int, pressed: bool) -> None:
@@ -599,6 +629,11 @@ class CartridgesWindow(Adw.ApplicationWindow):
         if pressed:
             label.add_css_class("active")
         else:
+        if self._gamepad_visual is not None:
+            try:
+                self._gamepad_visual.set_button_pressed(button, pressed)
+            except Exception:
+                logging.exception("Could not update the gamepad visual")
             label.remove_css_class("active")
 
     def update_gamepad_axis(self, axis: int, value: float) -> None:
@@ -607,6 +642,11 @@ class CartridgesWindow(Adw.ApplicationWindow):
         )
         label = getattr(self, f"gamepad_test_axis_{axis}", None)
         if label is not None:
+        if self._gamepad_visual is not None:
+            try:
+                self._gamepad_visual.set_axis(axis, value)
+            except Exception:
+                logging.exception("Could not update the gamepad visual")
             label.set_label(f"{value:+.2f}")
 
     def update_gamepad_trigger(self, trigger: str, pressed: bool) -> None:
@@ -616,6 +656,11 @@ class CartridgesWindow(Adw.ApplicationWindow):
         getattr(self, f"gamepad_test_axis_{axis}").set_label(f"{value:.2f}")
         self.gamepad_test_event_label.set_label(
             _("{}: {:.2f}").format(trigger, value)
+        if self._gamepad_visual is not None:
+            try:
+                self._gamepad_visual.set_trigger(trigger, pressed)
+            except Exception:
+                logging.exception("Could not update the gamepad visual")
         )
 
     def update_gamepad_hat(self, axis: int, value: int) -> None:
@@ -635,6 +680,11 @@ class CartridgesWindow(Adw.ApplicationWindow):
         )
         self.gamepad_test_event_label.set_label(
             _("Direcional: {}").format(direction)
+        if self._gamepad_visual is not None:
+            try:
+                self._gamepad_visual.set_hat(axis, value)
+            except Exception:
+                logging.exception("Could not update the gamepad visual")
         )
 
     def gamepad_search(self) -> None:
