@@ -1873,3 +1873,223 @@ msgstr ""
 #: cartridges/preferences.py:565
 msgid "Não foi possível sincronizar"
 msgstr ""
+
+#: data/gtk/preferences.blp:108
+msgid "Exportar jogos"
+msgstr ""
+
+#: data/gtk/preferences.blp:134
+msgid "Conexão com o Sunshine"
+msgstr ""
+
+#: data/gtk/preferences.blp:137
+msgid "Endereço"
+msgstr ""
+
+#: data/gtk/preferences.blp:141
+msgid "Porta"
+msgstr ""
+
+#: data/gtk/preferences.blp:145
+msgid "Usuário"
+msgstr ""
+
+#: data/gtk/preferences.blp:149
+msgid "Senha (só nesta sessão)"
+msgstr ""
+
+#: data/gtk/preferences.blp:153
+msgid "Estado"
+msgstr ""
+
+#: data/gtk/preferences.blp:165
+msgid "Abrir a Web UI do Sunshine"
+msgstr ""
+
+#: data/gtk/preferences.blp:39
+msgid "Abrir"
+msgstr ""
+
+#: data/gtk/preferences.blp:181
+msgid "Exportar biblioteca via API"
+msgstr ""
+
+#: data/gtk/preferences.blp:182
+msgid "Cria os jogos no Sunshine com capa"
+msgstr ""
+
+#: data/gtk/preferences.blp:108
+msgid "Exportar"
+msgstr ""
+
+#: data/gtk/preferences.blp:194
+msgid "Ajustes do host"
+msgstr ""
+
+#: data/gtk/preferences.blp:195
+msgid "Aplicar grava a config inteira e pede reinício"
+msgstr ""
+
+#: data/gtk/preferences.blp:198
+msgid "Bitrate máximo (Kbps, 0 = auto)"
+msgstr ""
+
+#: data/gtk/preferences.blp:202
+msgid "FPS mínimo (0 = auto)"
+msgstr ""
+
+#: data/gtk/preferences.blp:206
+msgid "UPnP"
+msgstr ""
+
+#: data/gtk/preferences.blp:207
+msgid "Abrir portas para a internet"
+msgstr ""
+
+#: data/gtk/preferences.blp:211
+msgid "Web UI permitida (pc, lan ou wan)"
+msgstr ""
+
+#: data/gtk/preferences.blp:215
+msgid "Codificador (auto, nvenc, vaapi, software…)"
+msgstr ""
+
+#: data/gtk/preferences.blp:219
+msgid "Aplicar ajustes"
+msgstr ""
+
+#: data/gtk/preferences.blp:195
+msgid "Aplicar"
+msgstr ""
+
+#: data/gtk/preferences.blp:231
+msgid "Pareamentos"
+msgstr ""
+
+#: data/gtk/preferences.blp:232
+msgid "Pedidos do Moonlight aguardando PIN"
+msgstr ""
+
+#: data/gtk/preferences.blp:236
+msgid "Clientes pareados"
+msgstr ""
+
+#: data/gtk/preferences.blp:239
+msgid "Desemparelhar todos"
+msgstr ""
+
+#: data/gtk/preferences.blp:245
+msgid "Remover"
+msgstr ""
+
+#: cartridges/preferences.py:687
+msgid "Verificando…"
+msgstr ""
+
+#: cartridges/preferences.py:693
+msgid "Não foi possível conectar"
+msgstr ""
+
+#: cartridges/preferences.py:697
+msgid "desconhecida"
+msgstr ""
+
+#: cartridges/preferences.py:700
+msgid "Sunshine {} · {} app(s)"
+msgstr ""
+
+#: cartridges/preferences.py:755
+msgid "Nenhum app cadastrado"
+msgstr ""
+
+#: cartridges/preferences.py:778
+msgid "Remover do Sunshine?"
+msgstr ""
+
+#: cartridges/preferences.py:779
+msgid "{} deixará de aparecer no Moonlight."
+msgstr ""
+
+#: cartridges/preferences.py:800
+msgid "{} jogo(s) exportado(s) via API"
+msgstr ""
+
+#: cartridges/preferences.py:872
+msgid "Bitrate e FPS precisam ser números"
+msgstr ""
+
+#: cartridges/preferences.py:879
+msgid "Origem válida: pc, lan ou wan"
+msgstr ""
+
+#: cartridges/preferences.py:907
+msgid "Aplicar ajustes do host?"
+msgstr ""
+
+#: cartridges/preferences.py:908
+msgid "A config inteira do Sunshine será regravada."
+msgstr ""
+
+#: cartridges/preferences.py:937
+msgid "Reiniciar o Sunshine?"
+msgstr ""
+
+#: cartridges/preferences.py:938
+msgid "Os ajustes do host só valem após reiniciar."
+msgstr ""
+
+#: cartridges/preferences.py:937
+msgid "Reiniciar"
+msgstr ""
+
+#: cartridges/preferences.py:931
+msgid "Ajustes aplicados. Reiniciando…"
+msgstr ""
+
+#: cartridges/preferences.py:966
+msgid "Nenhum pedido pendente"
+msgstr ""
+
+#: cartridges/preferences.py:952
+msgid "Aprovar"
+msgstr ""
+
+#: cartridges/preferences.py:957
+msgid "Recusar"
+msgstr ""
+
+#: cartridges/preferences.py:982
+msgid "Aprovar pareamento?"
+msgstr ""
+
+#: cartridges/preferences.py:983
+msgid "Digite o PIN mostrado no Moonlight."
+msgstr ""
+
+#: cartridges/preferences.py:1051
+msgid "Nenhum cliente pareado"
+msgstr ""
+
+#: cartridges/preferences.py:1072
+msgid "Desemparelhar cliente?"
+msgstr ""
+
+#: cartridges/preferences.py:1097
+msgid "Desemparelhar todos?"
+msgstr ""
+
+#: cartridges/preferences.py:1098
+msgid "Todos os Moonlights precisarão parear de novo."
+msgstr ""
+
+#: cartridges/preferences.py:1099
+msgid "Remover todos"
+msgstr ""
+
+#: cartridges/preferences.py:1111
+msgid "Porta inválida"
+msgstr ""
+
+#: cartridges/preferences.py:948
+msgid "Sem nome"
+msgstr ""

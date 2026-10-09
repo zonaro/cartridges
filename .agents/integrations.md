@@ -140,10 +140,31 @@ inspirada no LutrisToSunshine, por escrita direta no `apps.json`
   `sunshine-port`, `sunshine-username` em GSettings; senha só em
   memória, nunca persistida nem logada), teste que exibe versão e
   quantidade de apps via `GET /api/apps` + `GET /api/config` com Basic
-  auth e sem header `Origin` (isento de CSRF), lista somente-leitura
+  auth e sem header `Origin` (isento de CSRF),   lista somente-leitura
   dos apps e abertura da Web UI. `POST /api/config`, PIN e clientes
   ficam para uma v2 (config exige GET→merge→POST completo + restart;
   índice de app é racy pois a lista reordena por nome).
+
+### Sunshine v2 (config do host, apps, PIN, clientes)
+
+A v2 completa a tela com escrita remota, sempre com Basic auth, timeout
+e senha só em memória (`cartridges/utils/sunshine_api.py`, sem rede nos
+testes):
+
+- Host: leitura via `GET /api/config` preenche as linhas; Aplicar faz
+  GET→merge→`POST /api/config` (o Sunshine substitui o arquivo inteiro)
+  e oferece `POST /api/restart` em diálogo separado. Chaves curadas:
+  `max_bitrate`, `minimum_fps_target`, `upnp`, `origin_web_ui_allowed`,
+  `encoder`.
+- Apps: excluir resolve o índice por nome na hora (`DELETE
+  /api/apps/{index}`, com confirmação); exportar via API cria com
+  `index:-1` e sobe a capa local em base64 (`POST /api/covers/upload`
+  devolve `path`, usado como `image-path`).
+- Pareamentos: `GET /api/pin` lista pendentes; aprovar pede o PIN do
+  Moonlight em diálogo (`POST /api/pin` com `pairing_id`, `pin`,
+  `name`); recusar usa `DELETE /api/pin`.
+- Clientes: `GET /api/clients/list`, desemparelhar um (`POST
+  /api/clients/unpair` com `uuid`) ou todos (com confirmação).
 - Flatpak: o Jolven confinado não enxerga o `~/.config` do host; nesse
   caso aponte `sunshine-apps-path` para um caminho acessível.
 

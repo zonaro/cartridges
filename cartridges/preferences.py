@@ -32,7 +32,6 @@ from typing import Any, Callable, Optional
 from gi.repository import Adw, Gio, GLib, Gtk
 
 from cartridges import shared
-from cartridges import xcloud
 from cartridges.errors.friendly_error import FriendlyError
 from cartridges.game import Game
 from cartridges.hardware import drm_connectors, pipewire_nodes, vrr_supported
@@ -76,15 +75,14 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     high_quality_images_switch: Adw.SwitchRow = Gtk.Template.Child()
     app_icon_row: Adw.ComboRow = Gtk.Template.Child()
     xbox_cloud_gaming_switch: Adw.SwitchRow = Gtk.Template.Child()
-    better_xcloud_switch: Adw.SwitchRow = Gtk.Template.Child()
-    better_xcloud_update_row: Adw.ActionRow = Gtk.Template.Child()
-    better_xcloud_update_button: Gtk.Button = Gtk.Template.Child()
+    xcloud_account_row: Adw.ActionRow = Gtk.Template.Child()
+    xcloud_login_button: Gtk.Button = Gtk.Template.Child()
+    xcloud_fullscreen_on_start_switch: Adw.SwitchRow = Gtk.Template.Child()
 
     sunshine_auto_sync_switch: Adw.SwitchRow = Gtk.Template.Child()
     sunshine_apps_path_row: Adw.EntryRow = Gtk.Template.Child()
     sunshine_sync_all_row: Adw.ActionRow = Gtk.Template.Child()
     sunshine_sync_all_button: Gtk.Button = Gtk.Template.Child()
-
     sunshine_host_row: Adw.EntryRow = Gtk.Template.Child()
     sunshine_port_row: Adw.EntryRow = Gtk.Template.Child()
     sunshine_username_row: Adw.EntryRow = Gtk.Template.Child()
@@ -93,6 +91,15 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     sunshine_test_button: Gtk.Button = Gtk.Template.Child()
     sunshine_web_button: Gtk.Button = Gtk.Template.Child()
     sunshine_apps_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    sunshine_api_sync_button: Gtk.Button = Gtk.Template.Child()
+    sunshine_max_bitrate_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_min_fps_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_upnp_switch: Adw.SwitchRow = Gtk.Template.Child()
+    sunshine_origin_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_encoder_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_apply_button: Gtk.Button = Gtk.Template.Child()
+    sunshine_pairings_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    sunshine_unpair_all_button: Gtk.Button = Gtk.Template.Child()
 
     auto_import_switch: Adw.SwitchRow = Gtk.Template.Child()
     remove_missing_switch: Adw.SwitchRow = Gtk.Template.Child()
@@ -195,6 +202,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     game_mode_enable_vrr_switch: Adw.SwitchRow = Gtk.Template.Child()
     game_mode_start_library_switch: Adw.SwitchRow = Gtk.Template.Child()
     game_mode_hide_mouse_cursor_switch: Adw.SwitchRow = Gtk.Template.Child()
+    game_overlay_button_row: Adw.ComboRow = Gtk.Template.Child()
     game_mode_monitor_entry_row: Adw.ComboRow = Gtk.Template.Child()
     game_mode_audio_output_entry_row: Adw.ComboRow = Gtk.Template.Child()
     game_mode_audio_input_entry_row: Adw.ComboRow = Gtk.Template.Child()
@@ -332,6 +340,10 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.sunshine_username_row.connect("changed", sunshine_username_changed)
         self.sunshine_test_button.connect("clicked", self.testar_sunshine)
         self.sunshine_web_button.connect("clicked", self.abrir_sunshine_web)
+        self.sunshine_apply_button.connect("clicked", self.aplicar_sunshine_host)
+        self.sunshine_api_sync_button.connect("clicked", self.exportar_sunshine_api)
+        self.sunshine_unpair_all_button.connect("clicked", self.desemparelhar_todos)
+        self._linhas_sunshine: list = []
 
         self.sgdb_key_group.set_description(
             _(
@@ -483,7 +495,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "agrupar-duplicados",
                 "high-quality-images",
                 "xbox-cloud-gaming",
-                "better-xcloud",
+                "xcloud-fullscreen-on-start",
                 "sunshine-auto-sync",
                 "auto-import",
                 "remove-missing",
@@ -514,10 +526,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.agrupar_duplicados_switch.connect(
             "notify::active", lambda *_: self._reagrupar()
         )
-        self.better_xcloud_update_button.connect(
-            "clicked", self.atualizar_better_xcloud
-        )
-        self.reler_better_xcloud()
+        self.xcloud_login_button.connect("clicked", self.alternar_xcloud_login)
+        self.reler_xcloud_login()
         self.atalho_global_button.connect("clicked", self.alternar_atalho_global)
         self._atalho_ativo = False
         self.atualizar_atalho_global()
@@ -546,6 +556,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.game_mode_use_mangohud_switch.set_sensitive(which("mangohud") is not None)
         gamescope_available = which("gamescope") is not None
         self.game_mode_enable_fps_limiter_switch.set_sensitive(gamescope_available)
+        self.setup_game_overlay_button_row()
 
         def set_sgdb_sensitive(widget: Adw.EntryRow) -> None:
             if not widget.get_text():
@@ -573,30 +584,27 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.setup_fita_rows()
         self.reler_fitas()
 
-    def reler_better_xcloud(self) -> None:
-        version = xcloud.get_cached_version()
-        self.better_xcloud_update_row.set_subtitle(
-            _("Script v{} em cache").format(version)
-            if version
-            else _("Nunca baixado")
+    def alternar_xcloud_login(self, *_args: Any) -> None:
+        from cartridges import xcloud_login
+
+        if xcloud_login.has_saved_login():
+            xcloud_login.clear_saved_login()
+            self.reler_xcloud_login()
+            return
+
+        def finished(resultado: Any) -> None:
+            self.reler_xcloud_login()
+
+        xcloud_login.show_login_dialog(parent=self, on_finished=finished)
+
+    def reler_xcloud_login(self) -> None:
+        from cartridges import xcloud_login
+
+        conectado = xcloud_login.has_saved_login()
+        self.xcloud_account_row.set_subtitle(
+            _("Conectado") if conectado else _("Não conectado")
         )
-
-    def atualizar_better_xcloud(self, *_args: Any) -> None:
-        self.better_xcloud_update_row.set_subtitle(_("Baixando do GitHub…"))
-
-        def done(script: Optional[str], _from_network: bool) -> None:
-            version = xcloud.parse_version(script)
-            if version:
-                self.add_toast(
-                    Adw.Toast.new(_("Better xCloud v{} pronto").format(version))
-                )
-            else:
-                self.add_toast(
-                    Adw.Toast.new(_("Não foi possível baixar o Better xCloud"))
-                )
-            self.reler_better_xcloud()
-
-        xcloud.fetch_better_xcloud_async(done)
+        self.xcloud_login_button.set_label(_("Sair") if conectado else _("Entrar"))
 
     def sincronizar_sunshine(self, *_args: Any) -> None:
         import threading
@@ -647,6 +655,28 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             password=self.sunshine_password_row.get_text(),
         )
 
+    def _limpar_linhas_sunshine(self) -> None:
+        for linha in self._linhas_sunshine:
+            parent = linha.get_parent()
+            if parent is not None:
+                parent.remove(linha)
+        self._linhas_sunshine = []
+
+    def _confirmar(
+        self, titulo: str, corpo: str, rotulo: str, ao_confirmar: Any
+    ) -> None:
+        dialog = Adw.AlertDialog.new(titulo, corpo)
+        dialog.add_response("cancel", _("Cancelar"))
+        dialog.add_response("ok", rotulo)
+        dialog.set_default_response("ok")
+
+        def resposta(_dialog: Any, codigo: str) -> None:
+            if codigo == "ok":
+                ao_confirmar()
+
+        dialog.connect("response", resposta)
+        dialog.present(self)
+
     def testar_sunshine(self, *_args: Any) -> None:
         import threading
 
@@ -656,36 +686,419 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.sunshine_test_button.set_sensitive(False)
         self.sunshine_status_row.set_subtitle(_("Verificando…"))
 
-        def concluir(resultado: Any) -> bool:
+        def concluir(resultado: dict) -> bool:
             self.sunshine_test_button.set_sensitive(True)
-            if isinstance(resultado, Exception):
+            erro = resultado.get("error")
+            if erro is not None:
                 self.sunshine_status_row.set_subtitle(_("Não foi possível conectar"))
-                self.add_toast(Adw.Toast.new(str(resultado)))
+                self.add_toast(Adw.Toast.new(str(erro)))
                 return GLib.SOURCE_REMOVE
-            versao = resultado.version or _("desconhecida")
-            total = len(resultado.app_names)
+            status = resultado["status"]
+            versao = status.version or _("desconhecida")
+            total = len(status.app_names)
             self.sunshine_status_row.set_subtitle(
                 _("Sunshine {} · {} app(s)").format(versao, total)
             )
-            while (filho := self.sunshine_apps_group.get_first_child()) is not None:
-                self.sunshine_apps_group.remove(filho)
-            if not resultado.app_names:
-                self.sunshine_apps_group.add(
-                    Adw.ActionRow(title=_("Nenhum app cadastrado"))
-                )
-            for nome in sorted(resultado.app_names, key=str.casefold):
-                self.sunshine_apps_group.add(Adw.ActionRow(title=nome))
+            self._limpar_linhas_sunshine()
+            self._preencher_config_sunshine(resultado["config"])
+            self._listar_apps_sunshine(conexao, status.app_names)
+            self._listar_pareamentos(conexao, resultado["pairings"])
+            self._listar_clientes(conexao, resultado["clients"])
             return GLib.SOURCE_REMOVE
 
         def executar() -> None:
             try:
-                resultado = sunshine_api.probe(conexao)
+                status = sunshine_api.probe(conexao)
+                config = sunshine_api.fetch_config(conexao)
             except Exception as error:  # pylint: disable=broad-exception-caught
-                entregar_na_tela(concluir, error)
-            else:
-                entregar_na_tela(concluir, resultado)
+                entregar_na_tela(concluir, {"error": error, "status": None})
+                return
+            try:
+                pareamentos = sunshine_api.get_pending_pairings(conexao)
+            except Exception:  # pylint: disable=broad-exception-caught
+                pareamentos = []
+            try:
+                clientes = sunshine_api.get_clients(conexao)
+            except Exception:  # pylint: disable=broad-exception-caught
+                clientes = []
+            entregar_na_tela(
+                concluir,
+                {
+                    "error": None,
+                    "status": status,
+                    "config": config,
+                    "pairings": pareamentos,
+                    "clients": clientes,
+                },
+            )
 
         threading.Thread(target=executar, daemon=True).start()
+
+    def _preencher_config_sunshine(self, config: dict) -> None:
+        self.sunshine_max_bitrate_row.set_text(str(config.get("max_bitrate", "")))
+        self.sunshine_min_fps_row.set_text(str(config.get("minimum_fps_target", "")))
+        self.sunshine_upnp_switch.set_active(config.get("upnp") == "enabled")
+        self.sunshine_origin_row.set_text(str(config.get("origin_web_ui_allowed", "")))
+        self.sunshine_encoder_row.set_text(str(config.get("encoder", "")))
+
+    def _listar_apps_sunshine(self, conexao: Any, nomes: list) -> None:
+        for nome in sorted(nomes, key=str.casefold):
+            linha = Adw.ActionRow(title=nome)
+            botao = Gtk.Button(label=_("Remover"), valign=Gtk.Align.CENTER)
+            botao.add_css_class("destructive-action")
+            botao.connect("clicked", self._remover_app_sunshine, conexao, nome)
+            linha.add_suffix(botao)
+            linha.set_activatable_widget(botao)
+            self.sunshine_apps_group.add(linha)
+            self._linhas_sunshine.append(linha)
+        if not nomes:
+            linha = Adw.ActionRow(title=_("Nenhum app cadastrado"))
+            self.sunshine_apps_group.add(linha)
+            self._linhas_sunshine.append(linha)
+
+    def _remover_app_sunshine(
+        self, _botao: Any, conexao: Any, nome: str
+    ) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        def executar() -> None:
+            try:
+                sunshine_api.delete_app(conexao, nome)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(
+                    lambda: self.add_toast(Adw.Toast.new(str(error)))
+                    or GLib.SOURCE_REMOVE
+                )
+            else:
+                entregar_na_tela(self.testar_sunshine)
+
+        self._confirmar(
+            _("Remover do Sunshine?"),
+            _("{} deixará de aparecer no Moonlight.").format(nome),
+            _("Remover"),
+            lambda: threading.Thread(target=executar, daemon=True).start(),
+        )
+
+    def exportar_sunshine_api(self, *_args: Any) -> None:
+        import threading
+
+        from cartridges.utils import sunshine, sunshine_api
+
+        conexao = self._conexao_sunshine()
+        jogos = [game for game in shared.store if sunshine.is_eligible(game)]
+        self.sunshine_api_sync_button.set_sensitive(False)
+
+        def concluir(resultado: dict) -> bool:
+            self.sunshine_api_sync_button.set_sensitive(True)
+            if (erro := resultado.get("error")) is not None:
+                self.add_toast(Adw.Toast.new(str(erro)))
+            else:
+                self.add_toast(
+                    Adw.Toast.new(
+                        _("{} jogo(s) exportado(s) via API").format(
+                            resultado.get("added", 0)
+                        )
+                    )
+                )
+                self.testar_sunshine()
+            return GLib.SOURCE_REMOVE
+
+        def executar() -> None:
+            adicionados = 0
+            try:
+                existentes = {
+                    app.get("name")
+                    for app in sunshine_api.fetch_apps(conexao)
+                    if isinstance(app, dict)
+                }
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(concluir, {"error": error})
+                return
+            for jogo in jogos:
+                try:
+                    capa = self._capa_sunshine(conexao, jogo)
+                    entrada = sunshine.build_app_entry(jogo, capa)
+                    if entrada["name"] in existentes:
+                        continue
+                    sunshine_api.create_app(conexao, entrada)
+                    adicionados += 1
+                except Exception as error:  # pylint: disable=broad-exception-caught
+                    logging.warning("API export skipped %s: %s", jogo.game_id, error)
+            entregar_na_tela(concluir, {"added": adicionados})
+
+        threading.Thread(target=executar, daemon=True).start()
+
+    @staticmethod
+    def _capa_sunshine(conexao: Any, jogo: Any) -> Any:
+        from pathlib import Path
+
+        from cartridges.utils import sunshine_api
+
+        obter = getattr(jogo, "get_cover_path", None)
+        if not callable(obter):
+            return None
+        try:
+            capa = obter()
+        except Exception:  # pylint: disable=broad-exception-caught
+            return None
+        if capa is None:
+            return None
+        try:
+            dados = Path(str(capa)).read_bytes()
+        except OSError:
+            return None
+        if not dados or len(dados) > 5 * 1024 * 1024:
+            return None
+        try:
+            return sunshine_api.upload_cover(
+                conexao, f"jolven-{jogo.game_id}", dados
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            logging.debug("Cover upload skipped for %s", jogo.game_id)
+            return None
+
+    def aplicar_sunshine_host(self, *_args: Any) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        conexao = self._conexao_sunshine()
+        try:
+            bitrate = int(self.sunshine_max_bitrate_row.get_text().strip() or "0")
+            fps = int(self.sunshine_min_fps_row.get_text().strip() or "0")
+        except ValueError:
+            self.add_toast(Adw.Toast.new(_("Bitrate e FPS precisam ser números")))
+            return
+        if bitrate < 0 or fps < 0:
+            self.add_toast(Adw.Toast.new(_("Bitrate e FPS precisam ser números")))
+            return
+        origem = self.sunshine_origin_row.get_text().strip()
+        if origem and origem not in ("pc", "lan", "wan"):
+            self.add_toast(Adw.Toast.new(_("Origem válida: pc, lan ou wan")))
+            return
+        mudancas = {
+            "max_bitrate": str(bitrate),
+            "minimum_fps_target": str(fps),
+            "upnp": "enabled" if self.sunshine_upnp_switch.get_active() else "disabled",
+        }
+        if origem:
+            mudancas["origin_web_ui_allowed"] = origem
+        codificador = self.sunshine_encoder_row.get_text().strip()
+        if codificador:
+            mudancas["encoder"] = codificador
+
+        def executar() -> None:
+            try:
+                sunshine_api.update_config(conexao, mudancas)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(
+                    lambda: self.add_toast(Adw.Toast.new(str(error)))
+                    or GLib.SOURCE_REMOVE
+                )
+            else:
+                entregar_na_tela(self._oferecer_reinicio)
+
+        def aplicar() -> None:
+            threading.Thread(target=executar, daemon=True).start()
+
+        self._confirmar(
+            _("Aplicar ajustes do host?"),
+            _("A config inteira do Sunshine será regravada."),
+            _("Aplicar"),
+            aplicar,
+        )
+
+    def _oferecer_reinicio(self) -> bool:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        conexao = self._conexao_sunshine()
+
+        def executar() -> None:
+            try:
+                sunshine_api.restart(conexao)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(
+                    lambda: self.add_toast(Adw.Toast.new(str(error)))
+                    or GLib.SOURCE_REMOVE
+                )
+            else:
+                entregar_na_tela(
+                    lambda: self.add_toast(
+                        Adw.Toast.new(_("Ajustes aplicados. Reiniciando…"))
+                    )
+                    or GLib.SOURCE_REMOVE
+                )
+
+        self._confirmar(
+            _("Reiniciar o Sunshine?"),
+            _("Os ajustes do host só valem após reiniciar."),
+            _("Reiniciar"),
+            lambda: threading.Thread(target=executar, daemon=True).start(),
+        )
+        return GLib.SOURCE_REMOVE
+
+    def _listar_pareamentos(self, conexao: Any, pareamentos: list) -> None:
+        for item in sorted(
+            pareamentos, key=lambda p: str(p.get("name", "")).casefold()
+        ):
+            nome = str(item.get("name") or item.get("address") or _("Sem nome"))
+            linha = Adw.ActionRow(
+                title=nome, subtitle=str(item.get("address", ""))
+            )
+            aprovar = Gtk.Button(label=_("Aprovar"), valign=Gtk.Align.CENTER)
+            aprovar.add_css_class("suggested-action")
+            aprovar.connect(
+                "clicked", self._aprovar_pareamento, conexao, item
+            )
+            recusar = Gtk.Button(label=_("Recusar"), valign=Gtk.Align.CENTER)
+            recusar.connect(
+                "clicked", self._recusar_pareamento, conexao, item
+            )
+            linha.add_suffix(aprovar)
+            linha.add_suffix(recusar)
+            self.sunshine_pairings_group.add(linha)
+            self._linhas_sunshine.append(linha)
+        if not pareamentos:
+            linha = Adw.ActionRow(title=_("Nenhum pedido pendente"))
+            self.sunshine_pairings_group.add(linha)
+            self._linhas_sunshine.append(linha)
+
+    def _aprovar_pareamento(
+        self, _botao: Any, conexao: Any, item: dict
+    ) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        entrada = Gtk.Entry(
+            placeholder_text="PIN", max_length=32,
+            input_purpose=Gtk.InputPurpose.PIN,
+        )
+        dialog = Adw.AlertDialog.new(
+            _("Aprovar pareamento?"),
+            _("Digite o PIN mostrado no Moonlight."),
+        )
+        dialog.add_response("cancel", _("Cancelar"))
+        dialog.add_response("ok", _("Aprovar"))
+        dialog.set_default_response("ok")
+        dialog.set_extra_child(entrada)
+
+        def resposta(_dialog: Any, codigo: str) -> None:
+            if codigo != "ok":
+                return
+
+            def executar() -> None:
+                try:
+                    sunshine_api.approve_pairing(
+                        conexao,
+                        str(item.get("id", "")),
+                        entrada.get_text(),
+                        str(item.get("name", "")),
+                    )
+                except Exception as error:  # pylint: disable=broad-exception-caught
+                    entregar_na_tela(
+                        lambda: self.add_toast(Adw.Toast.new(str(error)))
+                        or GLib.SOURCE_REMOVE
+                    )
+                else:
+                    entregar_na_tela(self.testar_sunshine)
+
+            threading.Thread(target=executar, daemon=True).start()
+
+        dialog.connect("response", resposta)
+        dialog.present(self)
+
+    def _recusar_pareamento(
+        self, _botao: Any, conexao: Any, item: dict
+    ) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        def executar() -> None:
+            try:
+                sunshine_api.cancel_pairing(conexao, str(item.get("id", "")))
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(
+                    lambda: self.add_toast(Adw.Toast.new(str(error)))
+                    or GLib.SOURCE_REMOVE
+                )
+            else:
+                entregar_na_tela(self.testar_sunshine)
+
+        threading.Thread(target=executar, daemon=True).start()
+
+    def _listar_clientes(self, conexao: Any, clientes: list) -> None:
+        for item in clientes:
+            nome = str(
+                item.get("name") or item.get("uuid") or _("Sem nome")
+            )
+            linha = Adw.ActionRow(title=nome)
+            botao = Gtk.Button(label=_("Remover"), valign=Gtk.Align.CENTER)
+            botao.add_css_class("destructive-action")
+            botao.connect(
+                "clicked", self._remover_cliente, conexao, item
+            )
+            linha.add_suffix(botao)
+            linha.set_activatable_widget(botao)
+            self.sunshine_clients_group.add(linha)
+            self._linhas_sunshine.append(linha)
+        if not clientes:
+            linha = Adw.ActionRow(title=_("Nenhum cliente pareado"))
+            self.sunshine_clients_group.add(linha)
+            self._linhas_sunshine.append(linha)
+
+    def _remover_cliente(self, _botao: Any, conexao: Any, item: dict) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        def executar() -> None:
+            try:
+                sunshine_api.unpair_client(conexao, str(item.get("uuid", "")))
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(
+                    lambda: self.add_toast(Adw.Toast.new(str(error)))
+                    or GLib.SOURCE_REMOVE
+                )
+            else:
+                entregar_na_tela(self.testar_sunshine)
+
+        self._confirmar(
+            _("Desemparelhar cliente?"),
+            str(item.get("name") or item.get("uuid") or ""),
+            _("Remover"),
+            lambda: threading.Thread(target=executar, daemon=True).start(),
+        )
+
+    def desemparelhar_todos(self, *_args: Any) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        conexao = self._conexao_sunshine()
+
+        def executar() -> None:
+            try:
+                sunshine_api.unpair_all_clients(conexao)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(
+                    lambda: self.add_toast(Adw.Toast.new(str(error)))
+                    or GLib.SOURCE_REMOVE
+                )
+            else:
+                entregar_na_tela(self.testar_sunshine)
+
+        self._confirmar(
+            _("Desemparelhar todos?"),
+            _("Todos os Moonlights precisarão parear de novo."),
+            _("Remover todos"),
+            lambda: threading.Thread(target=executar, daemon=True).start(),
+        )
 
     def abrir_sunshine_web(self, *_args: Any) -> None:
         from cartridges.utils.open_uri import open_uri
@@ -1079,6 +1492,29 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             )
 
         self.app_icon_row.connect("notify::selected", selected_changed)
+
+    def setup_game_overlay_button_row(self) -> None:
+        choices = ("mode", "home", "both")
+        self.game_overlay_button_row.set_model(
+            Gtk.StringList.new(
+                [
+                    _("Button Mode"),
+                    _("Button Home"),
+                    _("Both buttons"),
+                ]
+            )
+        )
+        saved = shared.schema.get_string("game-overlay-button")
+        self.game_overlay_button_row.set_selected(
+            choices.index(saved) if saved in choices else choices.index("both")
+        )
+
+        def selected_changed(widget: Adw.ComboRow, *_args: Any) -> None:
+            selected = widget.get_selected()
+            if selected < len(choices):
+                shared.schema.set_string("game-overlay-button", choices[selected])
+
+        self.game_overlay_button_row.connect("notify::selected", selected_changed)
 
     def choose_folder(
         self, _widget: Any, callback: Callable, callback_data: Optional[str] = None

@@ -78,24 +78,23 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
         subtitle: _("Mostra o card do Xbox Cloud Gaming junto aos launchers");
       }
 
-      Adw.SwitchRow better_xcloud_switch {
-        title: _("Better xCloud");
-        subtitle: _("Baixa e injeta o userscript mais recente diretamente do GitHub");
+      Adw.ActionRow xcloud_account_row {
+        title: _("Conta Xbox");
+        subtitle: _("Não conectado");
         sensitive: bind xbox_cloud_gaming_switch.active;
-      }
-
-      Adw.ActionRow better_xcloud_update_row {
-        title: _("Script Better xCloud");
-        subtitle: _("Nunca baixado");
-        sensitive: bind xbox_cloud_gaming_switch.active;
-        activatable-widget: better_xcloud_update_button;
+        activatable-widget: xcloud_login_button;
 
         [suffix]
-        Button better_xcloud_update_button {
+        Button xcloud_login_button {
           valign: center;
-          icon-name: "view-refresh-symbolic";
-          tooltip-text: _("Baixar agora o script mais recente do GitHub");
+          label: _("Entrar");
         }
+      }
+
+      Adw.SwitchRow xcloud_fullscreen_on_start_switch {
+        title: _("Tela cheia");
+        subtitle: _("Abre a transmissão em tela cheia");
+        sensitive: bind xbox_cloud_gaming_switch.active;
       }
     }
 
@@ -178,6 +177,75 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
     Adw.PreferencesGroup sunshine_apps_group {
       title: _("Apps no Sunshine");
       description: _("Atualizada ao testar a conexão");
+
+      Adw.ActionRow sunshine_api_sync_row {
+        title: _("Exportar biblioteca via API");
+        subtitle: _("Cria os jogos no Sunshine com capa");
+        activatable-widget: sunshine_api_sync_button;
+
+        [suffix]
+        Button sunshine_api_sync_button {
+          valign: center;
+          label: _("Exportar");
+        }
+      }
+    }
+
+    Adw.PreferencesGroup sunshine_host_config_group {
+      title: _("Ajustes do host");
+      description: _("Aplicar grava a config inteira e pede reinício");
+
+      Adw.EntryRow sunshine_max_bitrate_row {
+        title: _("Bitrate máximo (Kbps, 0 = auto)");
+      }
+
+      Adw.EntryRow sunshine_min_fps_row {
+        title: _("FPS mínimo (0 = auto)");
+      }
+
+      Adw.SwitchRow sunshine_upnp_switch {
+        title: _("UPnP");
+        subtitle: _("Abrir portas para a internet");
+      }
+
+      Adw.EntryRow sunshine_origin_row {
+        title: _("Web UI permitida (pc, lan ou wan)");
+      }
+
+      Adw.EntryRow sunshine_encoder_row {
+        title: _("Codificador (auto, nvenc, vaapi, software…)");
+      }
+
+      Adw.ActionRow sunshine_apply_row {
+        title: _("Aplicar ajustes");
+        activatable-widget: sunshine_apply_button;
+
+        [suffix]
+        Button sunshine_apply_button {
+          valign: center;
+          label: _("Aplicar");
+        }
+      }
+    }
+
+    Adw.PreferencesGroup sunshine_pairings_group {
+      title: _("Pareamentos");
+      description: _("Pedidos do Moonlight aguardando PIN");
+    }
+
+    Adw.PreferencesGroup sunshine_clients_group {
+      title: _("Clientes pareados");
+
+      Adw.ActionRow sunshine_unpair_all_row {
+        title: _("Desemparelhar todos");
+        activatable-widget: sunshine_unpair_all_button;
+
+        [suffix]
+        Button sunshine_unpair_all_button {
+          valign: center;
+          label: _("Remover");
+        }
+      }
     }
 
     Adw.PreferencesGroup {
