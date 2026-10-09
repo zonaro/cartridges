@@ -3,26 +3,48 @@ data/io.github.zonaro.Jolven.gschema.xml.in
 data/io.github.zonaro.Jolven.metainfo.xml.in
 
 data/gtk/details-dialog.blp
+data/gtk/fita-wizard.blp
 data/gtk/game.blp
+data/gtk/image-picker.blp
+data/gtk/logo-picker.blp
 data/gtk/preferences.blp
 data/gtk/shortcuts-dialog.blp
+data/gtk/wallpaper-picker.blp
 data/gtk/window.blp
 
 cartridges/main.py
 cartridges/window.py
+cartridges/gamepad_visual.py
 cartridges/details_dialog.py
 cartridges/game.py
+cartridges/onscreen_keyboard.py
 cartridges/preferences.py
+cartridges/xcloud_login.py
+cartridges/botao_tarefas.py
+cartridges/fita_wizard.py
+cartridges/image_picker.py
+cartridges/logo_picker.py
+cartridges/process_session.py
+cartridges/session_history.py
+cartridges/tarefas_janela.py
+cartridges/wallhaven_filter_bar.py
+cartridges/wallpaper_picker.py
+cartridges/zerados_picker.py
 
 cartridges/utils/create_dialog.py
 cartridges/utils/relative_date.py
+cartridges/utils/format_playtime.py
+cartridges/utils/hltb.py
+cartridges/utils/install_size.py
+cartridges/utils/ligacao_zerado.py
+cartridges/utils/updates_checker.py
 
 cartridges/importer/importer.py
 cartridges/importer/source.py
 cartridges/importer/location.py
-cartridges/importer/location.py
 cartridges/importer/bottles_source.py
 cartridges/importer/desktop_source.py
+cartridges/importer/dolphin_source.py
 cartridges/importer/flatpak_source.py
 cartridges/importer/heroic_source.py
 cartridges/importer/itch_source.py
@@ -30,7 +52,9 @@ cartridges/importer/legendary_source.py
 cartridges/importer/lutris_source.py
 cartridges/importer/retroarch_source.py
 cartridges/importer/steam_source.py
+cartridges/importer/twintail_source.py
 cartridges/importer/waydroid_source.py
+cartridges/importer/yuzu_source.py
 
 cartridges/store/managers/sgdb_manager.py
 cartridges/store/managers/thegamesdb_manager.py
