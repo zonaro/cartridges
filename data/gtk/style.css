@@ -11,7 +11,8 @@
   background-color: white;
 }
 
-#details_view_play_button {
+#details_view_play_button,
+#details_view_play_button button {
   color: white;
   background-color: rgba(0, 0, 0, 0.8);
 }
@@ -26,7 +27,8 @@
     background-color: black;
   }
 
-  #details_view_play_button {
+  #details_view_play_button,
+  #details_view_play_button button {
     color: rgba(0, 0, 0, 0.8);
     background-color: white;
   }

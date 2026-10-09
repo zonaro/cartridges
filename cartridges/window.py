@@ -188,7 +188,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
     details_view_spinner: Adw.Spinner = Gtk.Template.Child()
     details_view_title: Gtk.Label = Gtk.Template.Child()
     details_view_blurred_cover: Gtk.Picture = Gtk.Template.Child()
-    details_view_play_button: Gtk.Button = Gtk.Template.Child()
+    details_view_play_button: Adw.SplitButton = Gtk.Template.Child()
     details_view_developer: Gtk.Label = Gtk.Template.Child()
     details_view_metadata: Gtk.Label = Gtk.Template.Child()
     details_view_description: Gtk.Label = Gtk.Template.Child()
@@ -1086,8 +1086,62 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def set_active_game(self, _widget: Any, _pspec: Any, game: Game) -> None:
         self.active_game = game
 
+    def _atualizar_botao_jogar_detalhes(self, game: Game) -> None:
+        """Configura o SplitButton Jogar da tela de detalhes.
+
+        Jogo agrupado (mesmo título em várias fontes) vira botão +
+        dropdown: o clique principal mantém ``app.launch_game`` (última
+        opção jogada ou default via ``agrupamento.primario``) e o
+        dropdown lista as variantes com a ação ``win.launch_via`` (que
+        salva o preferido e lança a variante escolhida). Sem grupo, o
+        menu é removido e o SplitButton se comporta como botão simples.
+        """
+        try:
+            members = agrupamento.membros(game)
+        except Exception:  # pylint: disable=broad-except
+            members = [game]
+        if len(members) < 2:
+            self.details_view_play_button.set_menu_model(None)
+            self.details_view_play_button.set_tooltip_text(_("Play"))
+            return
+        try:
+            primario = agrupamento.primario(members)
+        except Exception:  # pylint: disable=broad-except
+            primario = game
+        vias = Gio.Menu()
+        ordenados = sorted(
+            members, key=lambda m: (m.game_id != primario.game_id, (m.name or "").casefold())
+        )
+        for member in ordenados:
+            try:
+                fonte = self.get_application().get_source_name(member.source)
+            except Exception:  # pylint: disable=broad-except
+                fonte = member.source
+            rotulo = str(fonte or member.source)
+            if member.game_id == primario.game_id:
+                # The variable is the launcher/source name of the default variant
+                rotulo = _("{} (last played)").format(rotulo)
+            item = Gio.MenuItem.new(rotulo, None)
+            item.set_action_and_target_value(
+                "win.launch_via", GLib.Variant("s", member.game_id)
+            )
+            vias.append_item(item)
+        menu = Gio.Menu()
+        # The variable is the section title listing the launchers
+        menu.append_section(_("Jogar via"), vias)
+        self.details_view_play_button.set_menu_model(menu)
+        try:
+            fonte_primario = self.get_application().get_source_name(primario.source)
+        except Exception:  # pylint: disable=broad-except
+            fonte_primario = primario.source
+        self.details_view_play_button.set_tooltip_text(
+            # The variables are the game title and the default launcher name
+            _("Play {} via {}").format(game.name, fonte_primario)
+        )
+
     def show_details_page(self, game: Game) -> None:
         self.active_game = game
+        self._atualizar_botao_jogar_detalhes(game)
 
         self.details_view_cover.set_opacity(int(not game.loading))
         self.details_view_spinner.set_visible(game.loading)
