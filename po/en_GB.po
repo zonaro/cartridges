@@ -24,70 +24,69 @@ msgstr ""
 #: data/io.github.zonaro.Jolven.metainfo.xml.in:10 data/gtk/window.blp:63
 #: data/gtk/window.blp:201
 msgid "Jolven"
-msgstr ""
+msgstr "Jolven"
 
 #: data/io.github.zonaro.Jolven.desktop.in:3
 msgid "Console-style game library"
-msgstr ""
+msgstr "Console-style game library"
 
 #: data/io.github.zonaro.Jolven.desktop.in:4
 #: data/io.github.zonaro.Jolven.metainfo.xml.in:11
 msgid "Turn any Linux PC into a console"
-msgstr ""
+msgstr "Turn any Linux PC into a console"
 
 #. Translators: Leave "jolven" untranslated here.
 #: data/io.github.zonaro.Jolven.desktop.in:11
-#, fuzzy
 msgid "gaming;games;play;jolven;console;gamepad;launch;launcher;steam;lutris;heroic;epic;bottles;itch;legendary;retroarch;"
-msgstr "gaming;games;play;cartridges;launch;launcher;steam;lutris;heroic;epic;bottles;itch;legendary;retroarch;"
+msgstr "gaming;games;play;jolven;console;gamepad;launch;launcher;steam;lutris;heroic;epic;bottles;itch;legendary;retroarch;"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:225
 msgid "Controller button used to open the in-game overlay"
-msgstr ""
+msgstr "Controller button used to open the in-game overlay"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:250
 msgid "Automatically add games to Sunshine"
-msgstr ""
+msgstr "Automatically add games to Sunshine"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:251
 msgid ""
 "When enabled, new and edited games are exported to the Sunshine apps.json "
 "file, except Xbox Cloud Gaming titles."
-msgstr ""
+msgstr "When enabled, new and edited games are exported to the Sunshine apps.json file, except Xbox Cloud Gaming titles."
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:255
 msgid "Sunshine apps.json location"
-msgstr ""
+msgstr "Sunshine apps.json location"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:256
 msgid ""
 "Custom path to the Sunshine apps.json file. Empty means the default "
 "~/.config/sunshine/apps.json."
-msgstr ""
+msgstr "Custom path to the Sunshine apps.json file. Empty means the default ~/.config/sunshine/apps.json."
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:260
 msgid "Sunshine Web UI host"
-msgstr ""
+msgstr "Sunshine Web UI host"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:261
 msgid "Host of the local Sunshine Web UI used for status and app listing."
-msgstr ""
+msgstr "Host of the local Sunshine Web UI used for status and app listing."
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:265
 msgid "Sunshine Web UI port"
-msgstr ""
+msgstr "Sunshine Web UI port"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:266
 msgid "HTTPS port of the local Sunshine Web UI."
-msgstr ""
+msgstr "HTTPS port of the local Sunshine Web UI."
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:270
 msgid "Sunshine Web UI username"
-msgstr ""
+msgstr "Sunshine Web UI username"
 
 #: data/io.github.zonaro.Jolven.gschema.xml.in:271
 msgid "Username created in the Sunshine Web UI. The password is never stored."
-msgstr ""
+msgstr "Username created in the Sunshine Web UI. The password is never stored."
 
 #: data/io.github.zonaro.Jolven.metainfo.xml.in:13
 msgid ""
@@ -98,11 +97,11 @@ msgid ""
 "gaming experience. Jolven is an independent fork originally based on "
 "Cartridges. It does not replace your distribution: your Linux stays your "
 "Linux."
-msgstr ""
+msgstr "Jolven is a gamepad-first gaming interface for Linux. It gathers your games from Steam, Heroic, Lutris, Bottles, emulators, native games and more into one console-style library. Use it as a regular desktop app, or start a dedicated Jolven Session straight from your display manager for a couch gaming experience. Jolven is an independent fork originally based on Cartridges. It does not replace your distribution: your Linux stays your Linux."
 
 #: data/io.github.zonaro.Jolven.metainfo.xml.in:40
 msgid "Jolven library"
-msgstr ""
+msgstr "Jolven library"
 
 #: data/io.github.zonaro.Jolven.metainfo.xml.in:44 data/gtk/window.blp:973
 #: cartridges/details_dialog.py:166
@@ -130,7 +129,7 @@ msgstr "New Cover"
 
 #: data/gtk/details-dialog.blp:60
 msgid "Buscar capa (SteamGridDB, IGDB, TheGamesDB, Wallhaven)"
-msgstr ""
+msgstr "Search cover (SteamGridDB, IGDB, TheGamesDB, Wallhaven)"
 
 #: data/gtk/details-dialog.blp:79
 msgid "Delete Cover"
@@ -169,23 +168,20 @@ msgid "Escolher papel de parede de um arquivo"
 msgstr "Choose wallpaper from a file"
 
 #: data/gtk/details-dialog.blp:185
-#, fuzzy
 msgid "Fundo da biblioteca"
-msgstr "Back up your library"
+msgstr "Library background"
 
 #: data/gtk/details-dialog.blp:192
-#, fuzzy
 msgid "Voltar a escolher o fundo automaticamente"
-msgstr "Automatically choose the logo again"
+msgstr "Automatically choose the background again"
 
 #: data/gtk/details-dialog.blp:204
 msgid "Escolher fundo (SteamGridDB, IGDB, TheGamesDB, Wallhaven)"
-msgstr ""
+msgstr "Choose background (SteamGridDB, IGDB, TheGamesDB, Wallhaven)"
 
 #: data/gtk/details-dialog.blp:215
-#, fuzzy
 msgid "Escolher fundo de um arquivo"
-msgstr "Choose logo from a file"
+msgstr "Choose background from a file"
 
 #: data/gtk/details-dialog.blp:224 data/gtk/preferences.blp:399
 msgid "Iluminação inteligente"
@@ -365,7 +361,7 @@ msgstr "Set up smart lighting"
 
 #: data/gtk/fita-wizard.blp:19
 msgid "Conta de desenvolvedor da Tuya"
-msgstr ""
+msgstr "Tuya developer account"
 
 #: data/gtk/fita-wizard.blp:20
 msgid ""
@@ -373,72 +369,70 @@ msgid ""
 "Tuya vinculada ao app Smart Life. Após uma busca bem-sucedida, as "
 "credenciais são salvas de forma criptografada e não serão solicitadas "
 "novamente."
-msgstr ""
+msgstr "The Access ID and Access Secret come from a Tuya developer account linked to the Smart Life app. After a successful search, the credentials are stored encrypted and won't be asked again."
 
 #: data/gtk/fita-wizard.blp:23
 msgid "Abrir o painel da Tuya"
-msgstr ""
+msgstr "Open the Tuya panel"
 
 #: data/gtk/fita-wizard.blp:29
 msgid "Access ID (Client ID)"
-msgstr ""
+msgstr "Access ID (Client ID)"
 
 #: data/gtk/fita-wizard.blp:33
 msgid "Access Secret (Client Secret)"
-msgstr ""
+msgstr "Access Secret (Client Secret)"
 
 #: data/gtk/fita-wizard.blp:37
 msgid "Região"
-msgstr ""
+msgstr "Region"
 
 #: data/gtk/fita-wizard.blp:41
 msgid "Américas (us)"
-msgstr ""
+msgstr "Americas (us)"
 
 #: data/gtk/fita-wizard.blp:42
 msgid "Europa (eu)"
-msgstr ""
+msgstr "Europe (eu)"
 
 #: data/gtk/fita-wizard.blp:43
 msgid "China (cn)"
-msgstr ""
+msgstr "China (cn)"
 
 #: data/gtk/fita-wizard.blp:44
 msgid "Índia (in)"
-msgstr ""
+msgstr "India (in)"
 
 #: data/gtk/fita-wizard.blp:62
 msgid "Nenhum dispositivo encontrado. Confira as credenciais e a região."
-msgstr ""
+msgstr "No devices found. Check the credentials and region."
 
 #: data/gtk/fita-wizard.blp:70
 msgid "Buscar dispositivos"
-msgstr ""
+msgstr "Search devices"
 
 #: data/gtk/fita-wizard.blp:88
-#, fuzzy
 msgid "Selecione os dispositivos"
-msgstr "Maximum brightness per device"
+msgstr "Select the devices"
 
 #: data/gtk/fita-wizard.blp:89
 msgid ""
 "Ao aplicar, somente os dispositivos marcados são mantidos. Desmarcar um "
 "dispositivo o remove."
-msgstr ""
+msgstr "When applying, only checked devices are kept. Unchecking a device removes it."
 
 #: data/gtk/fita-wizard.blp:94 data/gtk/preferences.blp:238
 #: cartridges/preferences.py:911
 msgid "Aplicar"
-msgstr ""
+msgstr "Apply"
 
 #: data/gtk/fita-wizard.blp:110
-#, fuzzy
 msgid "Buscando os dispositivos…"
-msgstr "Searching for metadata…"
+msgstr "Searching for devices…"
 
 #: data/gtk/fita-wizard.blp:111
 msgid "A busca é feita primeiro na nuvem e depois na rede local."
-msgstr ""
+msgstr "Search happens in the cloud first, then on the local network."
 
 #: data/gtk/game.blp:117 data/gtk/game.blp:126 data/gtk/window.blp:1272
 #: cartridges/window.py:1667
@@ -456,7 +450,7 @@ msgstr "Remove"
 
 #: data/gtk/game.blp:120 data/gtk/game.blp:129 cartridges/window.py:1670
 msgid "Add to Sunshine"
-msgstr ""
+msgstr "Add to Sunshine"
 
 #: data/gtk/game.blp:127 cartridges/window.py:1098 cartridges/window.py:1668
 msgid "Unhide"
@@ -464,27 +458,27 @@ msgstr "Unhide"
 
 #: data/gtk/image-picker.blp:7
 msgid "Escolher imagem"
-msgstr ""
+msgstr "Choose image"
 
 #: data/gtk/image-picker.blp:14
 msgid "Animadas"
-msgstr ""
+msgstr "Animated"
 
 #: data/gtk/image-picker.blp:15
 msgid "Mostrar capas animadas"
-msgstr ""
+msgstr "Show animated covers"
 
 #: data/gtk/image-picker.blp:28 data/gtk/logo-picker.blp:27
 msgid "Buscar jogo…"
-msgstr ""
+msgstr "Search game…"
 
 #: data/gtk/image-picker.blp:67
 msgid "Arquivo"
-msgstr ""
+msgstr "File"
 
 #: data/gtk/image-picker.blp:97
 msgid "Nada por aqui"
-msgstr ""
+msgstr "Nothing here"
 
 #: data/gtk/image-picker.blp:98 data/gtk/logo-picker.blp:54
 #: data/gtk/wallpaper-picker.blp:66 cartridges/image_picker.py:290
@@ -493,30 +487,27 @@ msgstr ""
 #: cartridges/image_picker.py:469 cartridges/logo_picker.py:197
 #: cartridges/wallpaper_picker.py:320
 msgid "Tente buscar por outro nome."
-msgstr ""
+msgstr "Try searching for another name."
 
 #: data/gtk/image-picker.blp:112
-#, fuzzy
 msgid "Escolher arquivo…"
-msgstr "Choose logo from a file"
+msgstr "Choose file…"
 
 #: data/gtk/logo-picker.blp:7
-#, fuzzy
 msgid "Escolher logo"
-msgstr "Choose logo from a file"
+msgstr "Choose logo"
 
 #: data/gtk/logo-picker.blp:14
 msgid "Usar o título"
-msgstr ""
+msgstr "Use the title"
 
 #: data/gtk/logo-picker.blp:15
 msgid "Não usar logo neste jogo"
-msgstr ""
+msgstr "Don't use logo in this game"
 
 #: data/gtk/logo-picker.blp:53 cartridges/logo_picker.py:196
-#, fuzzy
 msgid "Nenhum logo encontrado"
-msgstr "No games found"
+msgstr "No logos found"
 
 #: data/gtk/preferences.blp:9 data/gtk/shortcuts-dialog.blp:6
 msgid "General"
@@ -557,20 +548,20 @@ msgstr "Tracks the length of each play session"
 
 #: data/gtk/preferences.blp:36
 msgid "Atalho global"
-msgstr ""
+msgstr "Global shortcut"
 
 #: data/gtk/preferences.blp:39
 msgid "Abrir com Super+G"
-msgstr ""
+msgstr "Open with Super+G"
 
 #: data/gtk/preferences.blp:40 cartridges/preferences.py:689
 msgid "Verificando…"
-msgstr ""
+msgstr "Checking…"
 
 #: data/gtk/preferences.blp:45 cartridges/preferences.py:1149
 #: cartridges/preferences.py:1167 cartridges/preferences.py:1172
 msgid "Ativar"
-msgstr ""
+msgstr "Enable"
 
 #: data/gtk/preferences.blp:56 cartridges/details_dialog.py:229
 #: cartridges/image_picker.py:648
@@ -587,17 +578,17 @@ msgstr "Save game covers losslessly at the cost of storage"
 
 #: data/gtk/preferences.blp:65
 msgid "Aparência"
-msgstr ""
+msgstr "Appearance"
 
 #: data/gtk/preferences.blp:68
 msgid "Ícone do aplicativo"
-msgstr ""
+msgstr "App icon"
 
 #: data/gtk/preferences.blp:69
 msgid ""
 "Troca o ícone no menu e na grade. Pode ser preciso sair e entrar de novo "
 "para ver a mudança."
-msgstr ""
+msgstr "Change the icon in the menu and grid. You may need to log out and back in to see the change."
 
 #: data/gtk/preferences.blp:74
 msgid "Cloud Gaming"
@@ -614,87 +605,84 @@ msgstr "Shows Xbox Cloud Gaming alongside your launchers"
 
 #: data/gtk/preferences.blp:82
 msgid "Conta Xbox"
-msgstr ""
+msgstr "Xbox account"
 
 #: data/gtk/preferences.blp:83 cartridges/preferences.py:607
 msgid "Não conectado"
-msgstr ""
+msgstr "Not connected"
 
 #: data/gtk/preferences.blp:90 cartridges/preferences.py:609
 msgid "Entrar"
-msgstr ""
+msgstr "Sign in"
 
 #: data/gtk/preferences.blp:95 data/gtk/window.blp:917
 #: cartridges/window.py:2131 cartridges/window.py:2312
 msgid "Tela cheia"
-msgstr ""
+msgstr "Fullscreen"
 
 #: data/gtk/preferences.blp:96
 msgid "Abre a transmissão em tela cheia"
-msgstr ""
+msgstr "Open the stream in fullscreen"
 
 #: data/gtk/preferences.blp:105 data/gtk/window.blp:1408
 msgid "Sunshine"
-msgstr ""
+msgstr "Sunshine"
 
 #: data/gtk/preferences.blp:109
 msgid "Exportar jogos"
-msgstr ""
+msgstr "Export games"
 
 #: data/gtk/preferences.blp:112
-#, fuzzy
 msgid "Adicionar jogos ao Sunshine automaticamente"
-msgstr "Automatically choose the logo again"
+msgstr "Automatically add games to Sunshine"
 
 #: data/gtk/preferences.blp:113
 msgid "Novos jogos entram no apps.json do Sunshine, exceto Xbox Cloud"
-msgstr ""
+msgstr "New games join Sunshine's apps.json, except Xbox Cloud"
 
 #: data/gtk/preferences.blp:117
 msgid "Arquivo apps.json (vazio usa o padrão)"
-msgstr ""
+msgstr "apps.json file (empty uses the default)"
 
 #: data/gtk/preferences.blp:122
-#, fuzzy
 msgid "Sincronizar biblioteca"
-msgstr "Update library"
+msgstr "Sync library"
 
 #: data/gtk/preferences.blp:123
 msgid "Exporta todos os jogos atuais para o Sunshine"
-msgstr ""
+msgstr "Export all current games to Sunshine"
 
 #: data/gtk/preferences.blp:129
 msgid "Sincronizar agora"
-msgstr ""
+msgstr "Sync now"
 
 #: data/gtk/preferences.blp:135
 msgid "Conexão com o Sunshine"
-msgstr ""
+msgstr "Sunshine connection"
 
 #: data/gtk/preferences.blp:138
 msgid "Endereço"
-msgstr ""
+msgstr "Address"
 
 #: data/gtk/preferences.blp:142
 msgid "Porta"
-msgstr ""
+msgstr "Port"
 
 #: data/gtk/preferences.blp:146
 msgid "Usuário"
-msgstr ""
+msgstr "Username"
 
 #: data/gtk/preferences.blp:150
 msgid "Senha (só nesta sessão)"
-msgstr ""
+msgstr "Password (this session only)"
 
 #: data/gtk/preferences.blp:154
 msgid "Estado"
-msgstr ""
+msgstr "Status"
 
 #: data/gtk/preferences.blp:155
-#, fuzzy
 msgid "Não verificado"
-msgstr "Not specified"
+msgstr "Not checked"
 
 #: data/gtk/preferences.blp:161 data/gtk/preferences.blp:491
 msgid "Testar"
@@ -702,101 +690,99 @@ msgstr "Test"
 
 #: data/gtk/preferences.blp:166
 msgid "Abrir a Web UI do Sunshine"
-msgstr ""
+msgstr "Open the Sunshine Web UI"
 
 #: data/gtk/preferences.blp:172
 msgid "Abrir"
-msgstr ""
+msgstr "Open"
 
 #: data/gtk/preferences.blp:177
 msgid "Iniciar o Sunshine"
-msgstr ""
+msgstr "Start Sunshine"
 
 #: data/gtk/preferences.blp:178
 msgid "Inicia o servidor em segundo plano"
-msgstr ""
+msgstr "Starts the server in the background"
 
 #: data/gtk/preferences.blp:184
 msgid "Iniciar"
-msgstr ""
+msgstr "Start"
 
 #: data/gtk/preferences.blp:190
 msgid "Apps no Sunshine"
-msgstr ""
+msgstr "Apps in Sunshine"
 
 #: data/gtk/preferences.blp:191
 msgid "Atualizada ao testar a conexão"
-msgstr ""
+msgstr "Updated when testing the connection"
 
 #: data/gtk/preferences.blp:194
 msgid "Exportar biblioteca via API"
-msgstr ""
+msgstr "Export library via API"
 
 #: data/gtk/preferences.blp:195
 msgid "Cria os jogos no Sunshine com capa"
-msgstr ""
+msgstr "Create the games in Sunshine with cover"
 
 #: data/gtk/preferences.blp:201
 msgid "Exportar"
-msgstr ""
+msgstr "Export"
 
 #: data/gtk/preferences.blp:207
 msgid "Ajustes do host"
-msgstr ""
+msgstr "Host settings"
 
 #: data/gtk/preferences.blp:208
 msgid "Aplicar grava a config inteira e pede reinício"
-msgstr ""
+msgstr "Applying rewrites the whole config and asks for restart"
 
 #: data/gtk/preferences.blp:211
 msgid "Bitrate máximo (Kbps, 0 = auto)"
-msgstr ""
+msgstr "Maximum bitrate (Kbps, 0 = auto)"
 
 #: data/gtk/preferences.blp:215
-#, fuzzy
 msgid "FPS mínimo (0 = auto)"
-msgstr "FPS limit (0 = disabled)"
+msgstr "Minimum FPS (0 = auto)"
 
 #: data/gtk/preferences.blp:219
 msgid "UPnP"
-msgstr ""
+msgstr "UPnP"
 
 #: data/gtk/preferences.blp:220
 msgid "Abrir portas para a internet"
-msgstr ""
+msgstr "Open ports to the internet"
 
 #: data/gtk/preferences.blp:224
 msgid "Web UI permitida (pc, lan ou wan)"
-msgstr ""
+msgstr "Allowed Web UI (pc, lan or wan)"
 
 #: data/gtk/preferences.blp:228
 msgid "Codificador (auto, nvenc, vaapi, software…)"
-msgstr ""
+msgstr "Encoder (auto, nvenc, vaapi, software…)"
 
 #: data/gtk/preferences.blp:232
 msgid "Aplicar ajustes"
-msgstr ""
+msgstr "Apply settings"
 
 #: data/gtk/preferences.blp:244
 msgid "Pareamentos"
-msgstr ""
+msgstr "Pairings"
 
 #: data/gtk/preferences.blp:245
 msgid "Pedidos do Moonlight aguardando PIN"
-msgstr ""
+msgstr "Moonlight requests awaiting PIN"
 
 #: data/gtk/preferences.blp:249
 msgid "Clientes pareados"
-msgstr ""
+msgstr "Paired clients"
 
 #: data/gtk/preferences.blp:252
 msgid "Desemparelhar todos"
-msgstr ""
+msgstr "Unpair all"
 
 #: data/gtk/preferences.blp:258 cartridges/preferences.py:749
 #: cartridges/preferences.py:782 cartridges/preferences.py:1043
 #: cartridges/preferences.py:1076 cartridges/preferences.py:1160
-#, fuzzy
 msgid "Remover"
 msgstr "Remove"
 
@@ -830,7 +816,7 @@ msgstr "Remove All Games"
 
 #: data/gtk/preferences.blp:291
 msgid "Reset App"
-msgstr ""
+msgstr "Reset app"
 
 #: data/gtk/preferences.blp:302
 msgid "Sessão"
@@ -838,7 +824,7 @@ msgstr "Session"
 
 #: data/gtk/preferences.blp:306 data/gtk/window.blp:93 cartridges/main.py:800
 msgid "Jolven Session"
-msgstr ""
+msgstr "Jolven Session"
 
 #: data/gtk/preferences.blp:307
 msgid "Settings used by the dedicated Gamescope session and game launches."
@@ -878,12 +864,12 @@ msgstr "Hide mouse cursor when using a controller"
 
 #: data/gtk/preferences.blp:336
 msgid "Open the in-game overlay with"
-msgstr ""
+msgstr "Open the in-game overlay with"
 
 #: data/gtk/preferences.blp:337
 msgid ""
 "Choose which controller system button opens Jolven while a game is running"
-msgstr ""
+msgstr "Choose which controller system button opens Jolven while a game is running"
 
 #: data/gtk/preferences.blp:342
 msgid "Session devices"
@@ -922,14 +908,14 @@ msgid "Papel de parede"
 msgstr "Wallpaper"
 
 #: data/gtk/preferences.blp:369
-#, fuzzy
 msgid ""
 "Durante a sessão, substitui temporariamente o papel de parede dos outros "
 "monitores por uma imagem relacionada ao jogo. A chave libera Sketchy e NSFW "
 "nos filtros da escolha."
 msgstr ""
 "During the session, temporarily replaces the wallpaper on other monitors "
-"with an image related to the game."
+"with an image related to the game. The key unlocks Sketchy and NSFW in the "
+"filters."
 
 #: data/gtk/preferences.blp:372
 msgid "Trocar o papel de parede dos outros monitores"
@@ -940,29 +926,25 @@ msgid "Chave da API do wallhaven (opcional)"
 msgstr "API key from wallhaven (optional)"
 
 #: data/gtk/preferences.blp:381
-#, fuzzy
 msgid "Restaurar o papel de parede anterior"
-msgstr "Do not change the wallpaper"
+msgstr "Restore the previous wallpaper"
 
 #: data/gtk/preferences.blp:382
-#, fuzzy
 msgid "Devolve o papel de parede de antes da sessão"
-msgstr "Session wallpaper"
+msgstr "Return the pre-session wallpaper"
 
 #: data/gtk/preferences.blp:389
-#, fuzzy
 msgid "Restaurar agora"
-msgstr "Restore"
+msgstr "Restore now"
 
 #: data/gtk/preferences.blp:400
-#, fuzzy
 msgid ""
 "Muda a cor da iluminação inteligente enquanto o Jolven está aberto: a cor do "
 "aplicativo fora do jogo e a cor do jogo durante a sessão. Ao fechar o "
 "aplicativo, a iluminação inteligente volta ao estado anterior."
 msgstr ""
-"Changes the smart lighting color while the Cartridges is open: the app color "
-"outside of the game and the game color during the session. When you close "
+"Changes the smart lighting colour while Jolven is open: the app colour "
+"outside of the game and the game colour during the session. When you close "
 "the app, the smart lighting returns to its previous state."
 
 #: data/gtk/preferences.blp:403
@@ -1103,11 +1085,11 @@ msgstr "RetroArch"
 
 #: data/gtk/preferences.blp:772 cartridges/importer/waydroid_source.py:107
 msgid "Waydroid"
-msgstr ""
+msgstr "Waydroid"
 
 #: data/gtk/preferences.blp:773
 msgid "Android apps installed through Waydroid"
-msgstr ""
+msgstr "Android apps installed through Waydroid"
 
 #: data/gtk/preferences.blp:783 cartridges/importer/yuzu_source.py:112
 msgid "Yuzu"
@@ -1221,24 +1203,23 @@ msgstr "IGDB"
 
 #: data/gtk/preferences.blp:999
 msgid "Client ID"
-msgstr ""
+msgstr "Client ID"
 
 #: data/gtk/preferences.blp:1003
 msgid "Client Secret"
-msgstr ""
+msgstr "Client Secret"
 
 #: data/gtk/preferences.blp:1008
-#, fuzzy
 msgid "Capas e capturas"
-msgstr "Screenshots"
+msgstr "Covers and screenshots"
 
 #: data/gtk/preferences.blp:1011
 msgid "Onde conseguir as chaves"
-msgstr ""
+msgstr "Where to get the keys"
 
 #: data/gtk/preferences.blp:1012
 msgid "Crie um app em api.igdb.com para obter o Client ID e o Secret"
-msgstr ""
+msgstr "Create an app at api.igdb.com to get the Client ID and Secret"
 
 #: data/gtk/shortcuts-dialog.blp:9 data/gtk/window.blp:270
 #: data/gtk/window.blp:326 data/gtk/window.blp:696 data/gtk/window.blp:722
@@ -1287,36 +1268,32 @@ msgid "Remove Game"
 msgstr "Remove Game"
 
 #: data/gtk/wallpaper-picker.blp:7
-#, fuzzy
 msgid "Escolher papel de parede"
-msgstr "Choose wallpaper in wallhaven"
+msgstr "Choose wallpaper"
 
 #: data/gtk/wallpaper-picker.blp:14
 msgid "Não trocar"
-msgstr ""
+msgstr "Don't change"
 
 #: data/gtk/wallpaper-picker.blp:15
-#, fuzzy
 msgid "Não alterar o papel de parede quando este jogo rodar"
-msgstr "Do not change the wallpaper"
+msgstr "Don't change the wallpaper when this game runs"
 
 #: data/gtk/wallpaper-picker.blp:27
-#, fuzzy
 msgid "Buscar no wallhaven…"
-msgstr "Searching for metadata…"
+msgstr "Search on wallhaven…"
 
 #: data/gtk/wallpaper-picker.blp:65 cartridges/wallpaper_picker.py:319
-#, fuzzy
 msgid "Nenhum papel de parede encontrado"
-msgstr "No gamepad connected"
+msgstr "No wallpapers found"
 
 #: data/gtk/wallpaper-picker.blp:194 cartridges/xcloud_login.py:425
 msgid "Voltar"
-msgstr ""
+msgstr "Back"
 
 #: data/gtk/wallpaper-picker.blp:198
 msgid "Usar esta imagem"
-msgstr ""
+msgstr "Use this image"
 
 #: data/gtk/window.blp:6 data/gtk/window.blp:14
 msgid "No Games Found"
@@ -1387,14 +1364,12 @@ msgid "Power"
 msgstr "Power"
 
 #: data/gtk/window.blp:192 cartridges/window.py:452 cartridges/window.py:456
-#, fuzzy
 msgid "Biblioteca"
-msgstr "Update library"
+msgstr "Library"
 
 #: data/gtk/window.blp:225
-#, fuzzy
 msgid "Plataformas"
-msgstr "Platform: {}"
+msgstr "Platforms"
 
 #: data/gtk/window.blp:277 data/gtk/window.blp:703 data/gtk/window.blp:763
 msgid "Jogos Zerados"
@@ -1414,13 +1389,12 @@ msgid "Testar gamepad"
 msgstr "Test gamepad"
 
 #: data/gtk/window.blp:489
-#, fuzzy
 msgid "Voltar ao jogo"
-msgstr "Track play time"
+msgstr "Back to the game"
 
 #: data/gtk/window.blp:500 data/gtk/window.blp:505
 msgid "Abrir o GPU Screen Recorder"
-msgstr ""
+msgstr "Open GPU Screen Recorder"
 
 #: data/gtk/window.blp:515 data/gtk/window.blp:1156 data/gtk/window.blp:1195
 msgid "Onde eu parei"
@@ -1448,7 +1422,7 @@ msgstr "No gamepad connected"
 
 #: data/gtk/window.blp:597 cartridges/window.py:730
 msgid "Layout não identificado"
-msgstr ""
+msgstr "Layout not identified"
 
 #: data/gtk/window.blp:609
 msgid ""
@@ -1475,20 +1449,19 @@ msgstr "Left Analog / Axis 1"
 
 #: data/gtk/window.blp:647
 msgid "LT / eixo 2"
-msgstr ""
+msgstr "LT / axis 2"
 
 #: data/gtk/window.blp:653
 msgid "Analógico direito / eixo 3"
 msgstr "Right analogue / axis 3"
 
 #: data/gtk/window.blp:659
-#, fuzzy
 msgid "Analógico direito / eixo 4"
-msgstr "Right analogue / axis 2"
+msgstr "Right analogue / axis 4"
 
 #: data/gtk/window.blp:665
 msgid "RT / eixo 5"
-msgstr ""
+msgstr "RT / axis 5"
 
 #: data/gtk/window.blp:672
 msgid "Direcional: centralizado"
@@ -1524,16 +1497,15 @@ msgstr "Close Xbox Cloud Gaming"
 
 #: data/gtk/window.blp:910
 msgid "Menu do player"
-msgstr ""
+msgstr "Player menu"
 
 #: data/gtk/window.blp:946
 msgid "Xbox Cloud Gaming indisponível"
 msgstr "Xbox Cloud Gaming unavailable"
 
 #: data/gtk/window.blp:947
-#, fuzzy
 msgid "Não foi possível iniciar a transmissão."
-msgstr "Unable to complete the update"
+msgstr "Couldn't start the stream."
 
 #: data/gtk/window.blp:1021
 msgid "Game Title"
@@ -1597,22 +1569,20 @@ msgid "Show Hidden"
 msgstr "Show Hidden"
 
 #: data/gtk/window.blp:1390
-#, fuzzy
 msgid "Install Jolven Session"
-msgstr "Install Location"
+msgstr "Install Jolven Session"
 
 #: data/gtk/window.blp:1396
 msgid "Uninstall Jolven Session"
-msgstr ""
+msgstr "Uninstall Jolven Session"
 
 #: data/gtk/window.blp:1402
-#, fuzzy
 msgid "Session Menu"
-msgstr "Session devices"
+msgstr "Session menu"
 
 #: data/gtk/window.blp:1410
 msgid "About Jolven"
-msgstr ""
+msgstr "About Jolven"
 
 #: data/gtk/window.blp:1426
 msgid "Search on…"
@@ -1637,7 +1607,7 @@ msgstr "Unknown controller"
 #: cartridges/main.py:348
 #, python-brace-format
 msgid "Jolven — {}"
-msgstr ""
+msgstr "Jolven — {}"
 
 #: cartridges/main.py:465
 msgid "Não foi possível restaurar o backup"
@@ -1666,46 +1636,44 @@ msgstr ""
 
 #: cartridges/main.py:613
 msgid "Sunshine não está instalado"
-msgstr ""
+msgstr "Sunshine is not installed"
 
 #: cartridges/main.py:615
 msgid "Para configurar o streaming, instale o Sunshine via Flatpak (sem sudo)."
-msgstr ""
+msgstr "To set up streaming, install Sunshine via Flatpak (no sudo)."
 
 #: cartridges/main.py:619 cartridges/window.py:1919
-#, fuzzy
 msgid "Agora não"
-msgstr "Not yet"
+msgstr "Not now"
 
 #: cartridges/main.py:620
 msgid "Instalar"
-msgstr ""
+msgstr "Install"
 
 #: cartridges/main.py:628
 msgid "Instalando o Sunshine…"
-msgstr ""
+msgstr "Installing Sunshine…"
 
 #: cartridges/main.py:647
-#, fuzzy
 msgid "Não foi possível instalar o Sunshine"
-msgstr "Unable to restore backup"
+msgstr "Couldn't install Sunshine"
 
 #: cartridges/main.py:651
 msgid "Sunshine instalado!"
-msgstr ""
+msgstr "Sunshine installed!"
 
 #: cartridges/main.py:684
 msgid "This game cannot be added to Sunshine"
-msgstr ""
+msgstr "This game cannot be added to Sunshine"
 
 #: cartridges/main.py:692
 msgid "Could not add to Sunshine"
-msgstr ""
+msgstr "Could not add to Sunshine"
 
 #: cartridges/main.py:694
 #, python-brace-format
 msgid "{} added to Sunshine"
-msgstr ""
+msgstr "{} added to Sunshine"
 
 #: cartridges/main.py:801
 msgid "Choose a session or power action."
@@ -1713,7 +1681,7 @@ msgstr "Choose a session or power action."
 
 #: cartridges/main.py:804
 msgid "Exit Jolven Session"
-msgstr ""
+msgstr "Exit Jolven Session"
 
 #: cartridges/main.py:805
 msgid "Back to Library"
@@ -1744,53 +1712,45 @@ msgid "Could not open the system authorization dialog"
 msgstr "Could not open the system authorization dialog"
 
 #: cartridges/main.py:889
-#, fuzzy
 msgid "Installing Jolven Session…"
-msgstr "Installing Gaming Mode…"
+msgstr "Installing Jolven Session…"
 
 #: cartridges/main.py:891
-#, fuzzy
 msgid "Uninstalling Jolven Session…"
-msgstr "Uninstalling Gaming Mode…"
+msgstr "Uninstalling Jolven Session…"
 
 #: cartridges/main.py:910
-#, fuzzy
 msgid "Jolven Session installed. It will appear at the next login."
-msgstr "Gaming Mode installed. It will appear at the next login."
+msgstr "Jolven Session installed. It will appear at the next login."
 
 #: cartridges/main.py:912
-#, fuzzy
 msgid "Jolven Session uninstalled"
-msgstr "Gaming Mode uninstalled"
+msgstr "Jolven Session uninstalled"
 
 #: cartridges/main.py:916
-#, fuzzy
 msgid "Jolven Session setup was not completed"
-msgstr "Gaming Mode setup was not completed"
+msgstr "Jolven Session setup was not completed"
 
 #: cartridges/window.py:362
 msgid "Left click toggles • Right click shows only this"
-msgstr ""
+msgstr "Left click toggles • Right click shows only this"
 
 #: cartridges/window.py:389
-#, fuzzy
 msgid "Xbox Cloud Gaming — Grátis"
-msgstr "Xbox Cloud Gaming"
+msgstr "Xbox Cloud Gaming — Free"
 
 #: cartridges/window.py:390
-#, fuzzy
 msgid "Xbox Cloud Gaming — Game Pass"
-msgstr "Xbox Cloud Gaming"
+msgstr "Xbox Cloud Gaming — Game Pass"
 
 #: cartridges/window.py:391
-#, fuzzy
 msgid "Xbox Cloud Gaming — Comprados"
-msgstr "Xbox Cloud Gaming"
+msgstr "Xbox Cloud Gaming — Owned"
 
 #: cartridges/window.py:458
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} plataformas"
-msgstr "Platform: {}"
+msgstr "{} platforms"
 
 #: cartridges/window.py:654
 #, python-brace-format
@@ -1808,17 +1768,15 @@ msgstr "Connected: {}"
 
 #: cartridges/window.py:725
 msgid "Controle Xbox"
-msgstr ""
+msgstr "Xbox controller"
 
 #: cartridges/window.py:726
-#, fuzzy
 msgid "Controle PlayStation"
-msgstr "Continue playing"
+msgstr "PlayStation controller"
 
 #: cartridges/window.py:727 cartridges/window.py:728
-#, fuzzy
 msgid "Controle genérico"
-msgstr "Unknown controller"
+msgstr "Generic controller"
 
 #: cartridges/window.py:746
 #, python-brace-format
@@ -1836,9 +1794,9 @@ msgid "Eixo {}: {:.2f}"
 msgstr "Axis {}: {:.2f}"
 
 #: cartridges/window.py:793
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{}: {:.2f}"
-msgstr "Axis {}: {:.2f}"
+msgstr "{}: {:.2f}"
 
 #: cartridges/window.py:805
 msgid "esquerda"
@@ -1988,72 +1946,67 @@ msgid "Desagrupar"
 msgstr "Ungroup"
 
 #: cartridges/window.py:1853
-#, fuzzy
 msgid "Ative o Xbox Cloud Gaming nas preferências"
-msgstr "Close Xbox Cloud Gaming"
+msgstr "Enable Xbox Cloud Gaming in preferences"
 
 #: cartridges/window.py:1875
-#, fuzzy
 msgid "Não foi possível abrir o jogo no Xbox Cloud Gaming"
-msgstr "Unable to authenticate to TheGamesDB"
+msgstr "Couldn't open the game on Xbox Cloud Gaming"
 
 #: cartridges/window.py:1912
-#, fuzzy
 msgid "Dependências do Xbox Cloud Gaming"
-msgstr "Close Xbox Cloud Gaming"
+msgstr "Xbox Cloud Gaming dependencies"
 
 #: cartridges/window.py:1914
 #, python-format
 msgid ""
 "Faltam plugins de streaming do sistema (%s). O Jolven pode instalar sozinho "
 "— o sistema vai pedir sua senha."
-msgstr ""
+msgstr "Missing system streaming plugins (%s). Jolven can install them itself — the system will ask for your password."
 
 #: cartridges/window.py:1920
 msgid "Instalar dependências"
-msgstr ""
+msgstr "Install dependencies"
 
 #: cartridges/window.py:1939
-#, fuzzy
 msgid "Preparando instalação…"
-msgstr "Preparing the restoration…"
+msgstr "Preparing installation…"
 
 #: cartridges/window.py:1945
 msgid "Instalando dependências"
-msgstr ""
+msgstr "Installing dependencies"
 
 #: cartridges/window.py:1946
 msgid "Aguarde — o Jolven vai reiniciar sozinho ao concluir."
-msgstr ""
+msgstr "Hold on — Jolven will restart by itself when done."
 
 #: cartridges/window.py:1971
 msgid "Instalador indisponível. Rode scripts/install-xcloud-deps.sh com sudo."
-msgstr ""
+msgstr "Installer unavailable. Run scripts/install-xcloud-deps.sh with sudo."
 
 #: cartridges/window.py:1994
 msgid "Concluído! Reiniciando o Jolven…"
-msgstr ""
+msgstr "Done! Restarting Jolven…"
 
 #: cartridges/window.py:2026
 msgid "Reinicie o Jolven para concluir."
-msgstr ""
+msgstr "Restart Jolven to finish."
 
 #: cartridges/window.py:2082
-#, fuzzy
 msgid "Vídeo indisponível"
-msgstr "Update available"
+msgstr "Video unavailable"
 
 #: cartridges/window.py:2127
 msgid "Opções da transmissão."
-msgstr ""
+msgstr "Stream options."
 
 #: cartridges/window.py:2131 cartridges/window.py:2312
 msgid "Sair da tela cheia"
-msgstr ""
+msgstr "Exit fullscreen"
 
 #: cartridges/window.py:2133
 msgid "Encerrar transmissão"
-msgstr ""
+msgstr "End stream"
 
 #: cartridges/window.py:2351
 #, python-brace-format
@@ -2094,62 +2047,62 @@ msgstr "{} running"
 msgid ""
 "GPU Screen Recorder não foi encontrado. Instale o aplicativo e tente "
 "novamente."
-msgstr ""
+msgstr "GPU Screen Recorder was not found. Install the app and try again."
 
 #: cartridges/gamepad_visual.py:129
 msgid "Left bumper"
-msgstr ""
+msgstr "Left bumper"
 
 #: cartridges/gamepad_visual.py:130
 msgid "Left trigger"
-msgstr ""
+msgstr "Left trigger"
 
 #: cartridges/gamepad_visual.py:137
 msgid "Right bumper"
-msgstr ""
+msgstr "Right bumper"
 
 #: cartridges/gamepad_visual.py:138
 msgid "Right trigger"
-msgstr ""
+msgstr "Right trigger"
 
 #: cartridges/gamepad_visual.py:184
 #, python-brace-format
 msgid "Center button {}"
-msgstr ""
+msgstr "Centre button {}"
 
 #: cartridges/gamepad_visual.py:199
 msgid "Left stick"
-msgstr ""
+msgstr "Left stick"
 
 #: cartridges/gamepad_visual.py:207
 msgid "Right stick"
-msgstr ""
+msgstr "Right stick"
 
 #: cartridges/gamepad_visual.py:218
 msgid "D-pad up"
-msgstr ""
+msgstr "D-pad up"
 
 #: cartridges/gamepad_visual.py:219
 msgid "D-pad down"
-msgstr ""
+msgstr "D-pad down"
 
 #: cartridges/gamepad_visual.py:220
 msgid "D-pad left"
-msgstr ""
+msgstr "D-pad left"
 
 #: cartridges/gamepad_visual.py:221
 msgid "D-pad right"
-msgstr ""
+msgstr "D-pad right"
 
 #: cartridges/gamepad_visual.py:257
 #, python-brace-format
 msgid "{} thumb"
-msgstr ""
+msgstr "{} thumb"
 
 #: cartridges/gamepad_visual.py:284
 #, python-brace-format
 msgid "Face button {}"
-msgstr ""
+msgstr "Face button {}"
 
 #: cartridges/details_dialog.py:207
 msgid "Apply"
@@ -2228,9 +2181,8 @@ msgid "Não trocar o papel de parede"
 msgstr "Do not change the wallpaper"
 
 #: cartridges/details_dialog.py:487 cartridges/details_dialog.py:547
-#, fuzzy
 msgid "Automático (IGDB, TheGamesDB, wallhaven)"
-msgstr "Automatic (wallhaven)"
+msgstr "Automatic (IGDB, TheGamesDB, wallhaven)"
 
 #: cartridges/details_dialog.py:579 cartridges/details_dialog.py:581
 #: cartridges/preferences.py:1295
@@ -2314,47 +2266,47 @@ msgstr "{} removed"
 
 #: cartridges/onscreen_keyboard.py:76
 msgid "Faces and emotions"
-msgstr ""
+msgstr "Faces and emotions"
 
 #: cartridges/onscreen_keyboard.py:97
 msgid "Gestures and people"
-msgstr ""
+msgstr "Gestures and people"
 
 #: cartridges/onscreen_keyboard.py:118
 msgid "Animals and nature"
-msgstr ""
+msgstr "Animals and nature"
 
 #: cartridges/onscreen_keyboard.py:139
 msgid "Food and drinks"
-msgstr ""
+msgstr "Food and drinks"
 
 #: cartridges/onscreen_keyboard.py:160
 msgid "Objects and activities"
-msgstr ""
+msgstr "Objects and activities"
 
 #: cartridges/onscreen_keyboard.py:258
 msgid "Letters"
-msgstr ""
+msgstr "Letters"
 
 #: cartridges/onscreen_keyboard.py:259
 msgid "Numbers"
-msgstr ""
+msgstr "Numbers"
 
 #: cartridges/onscreen_keyboard.py:260
 msgid "Symbols"
-msgstr ""
+msgstr "Symbols"
 
 #: cartridges/onscreen_keyboard.py:261
 msgid "Emojis"
-msgstr ""
+msgstr "Emojis"
 
 #: cartridges/onscreen_keyboard.py:366
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: cartridges/onscreen_keyboard.py:368
 msgid "Caps"
-msgstr ""
+msgstr "Caps"
 
 #: cartridges/onscreen_keyboard.py:370
 msgid "Backspace"
@@ -2374,16 +2326,15 @@ msgstr "Done"
 
 #: cartridges/onscreen_keyboard.py:381
 msgid "Move cursor left"
-msgstr ""
+msgstr "Move cursor left"
 
 #: cartridges/onscreen_keyboard.py:385
 msgid "Move cursor right"
-msgstr ""
+msgstr "Move cursor right"
 
 #: cartridges/onscreen_keyboard.py:532
-#, fuzzy
 msgid "Type with the controller"
-msgstr "Choose characters with the controller."
+msgstr "Type with the controller"
 
 #: cartridges/preferences.py:238
 msgid "All games removed"
@@ -2414,13 +2365,13 @@ msgstr ""
 "page of TheGamesDB{}."
 
 #: cartridges/preferences.py:441
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "As credenciais permitem buscar capas e capturas de tela. Consulte a {}página "
 "da API do IGDB{}."
 msgstr ""
-"The key allows you to search for details, screenshots and images. See {}API "
-"page of TheGamesDB{}."
+"The credentials allow searching for covers and screenshots. See the {}IGDB "
+"API page{}."
 
 #: cartridges/preferences.py:455
 msgid "Buscando metadados…"
@@ -2441,212 +2392,197 @@ msgid "Metadados atualizados"
 msgstr "Updated metadata"
 
 #: cartridges/preferences.py:607
-#, fuzzy
 msgid "Conectado"
-msgstr "Connected: {}"
+msgstr "Connected"
 
 #: cartridges/preferences.py:609
 msgid "Sair"
-msgstr ""
+msgstr "Exit"
 
 #: cartridges/preferences.py:625
 #, python-brace-format
 msgid "{} jogo(s) sincronizado(s) com o Sunshine"
-msgstr ""
+msgstr "{} game(s) synced with Sunshine"
 
 #: cartridges/preferences.py:632
-#, fuzzy
 msgid "Não foi possível sincronizar"
-msgstr "Unable to restore"
+msgstr "Couldn't sync"
 
 #: cartridges/preferences.py:695
-#, fuzzy
 msgid "Não foi possível conectar"
-msgstr "Unable to export"
+msgstr "Couldn't connect"
 
 #: cartridges/preferences.py:699
-#, fuzzy
 msgid "desconhecida"
-msgstr "Unknown controller"
+msgstr "unknown"
 
 #: cartridges/preferences.py:702
 #, python-brace-format
 msgid "Sunshine {} · {} app(s)"
-msgstr ""
+msgstr "Sunshine {} · {} app(s)"
 
 #: cartridges/preferences.py:757
-#, fuzzy
 msgid "Nenhum app cadastrado"
-msgstr "No gamepad connected"
+msgstr "No registered apps"
 
 #: cartridges/preferences.py:780
 msgid "Remover do Sunshine?"
-msgstr ""
+msgstr "Remove from Sunshine?"
 
 #: cartridges/preferences.py:781
 #, python-brace-format
 msgid "{} deixará de aparecer no Moonlight."
-msgstr ""
+msgstr "{} will no longer appear in Moonlight."
 
 #: cartridges/preferences.py:802
 #, python-brace-format
 msgid "{} jogo(s) exportado(s) via API"
-msgstr ""
+msgstr "{} game(s) exported via API"
 
 #: cartridges/preferences.py:874 cartridges/preferences.py:877
 msgid "Bitrate e FPS precisam ser números"
-msgstr ""
+msgstr "Bitrate and FPS must be numbers"
 
 #: cartridges/preferences.py:881
 msgid "Origem válida: pc, lan ou wan"
-msgstr ""
+msgstr "Valid origin: pc, lan or wan"
 
 #: cartridges/preferences.py:909
 msgid "Aplicar ajustes do host?"
-msgstr ""
+msgstr "Apply host settings?"
 
 #: cartridges/preferences.py:910
 msgid "A config inteira do Sunshine será regravada."
-msgstr ""
+msgstr "The whole Sunshine config will be rewritten."
 
 #: cartridges/preferences.py:933
 msgid "Ajustes aplicados. Reiniciando…"
-msgstr ""
+msgstr "Settings applied. Restarting…"
 
 #: cartridges/preferences.py:939
 msgid "Reiniciar o Sunshine?"
-msgstr ""
+msgstr "Restart Sunshine?"
 
 #: cartridges/preferences.py:940
 msgid "Os ajustes do host só valem após reiniciar."
-msgstr ""
+msgstr "Host settings only apply after restarting."
 
 #: cartridges/preferences.py:941
 msgid "Reiniciar"
-msgstr ""
+msgstr "Restart"
 
 #: cartridges/preferences.py:950 cartridges/preferences.py:1040
-#, fuzzy
 msgid "Sem nome"
-msgstr "No news"
+msgstr "No name"
 
 #: cartridges/preferences.py:954 cartridges/preferences.py:988
 msgid "Aprovar"
-msgstr ""
+msgstr "Approve"
 
 #: cartridges/preferences.py:959
 msgid "Recusar"
-msgstr ""
+msgstr "Decline"
 
 #: cartridges/preferences.py:968
 msgid "Nenhum pedido pendente"
-msgstr ""
+msgstr "No pending requests"
 
 #: cartridges/preferences.py:984
 msgid "Aprovar pareamento?"
-msgstr ""
+msgstr "Approve pairing?"
 
 #: cartridges/preferences.py:985
 msgid "Digite o PIN mostrado no Moonlight."
-msgstr ""
+msgstr "Type the PIN shown in Moonlight."
 
 #: cartridges/preferences.py:1053
-#, fuzzy
 msgid "Nenhum cliente pareado"
-msgstr "No games found"
+msgstr "No paired clients"
 
 #: cartridges/preferences.py:1074
 msgid "Desemparelhar cliente?"
-msgstr ""
+msgstr "Unpair client?"
 
 #: cartridges/preferences.py:1099
 msgid "Desemparelhar todos?"
-msgstr ""
+msgstr "Unpair all?"
 
 #: cartridges/preferences.py:1100
 msgid "Todos os Moonlights precisarão parear de novo."
-msgstr ""
+msgstr "All Moonlights will need to pair again."
 
 #: cartridges/preferences.py:1101
-#, fuzzy
 msgid "Remover todos"
-msgstr "Remove"
+msgstr "Remove all"
 
 #: cartridges/preferences.py:1113
-#, fuzzy
 msgid "Porta inválida"
-msgstr "Invalid backup"
+msgstr "Invalid port"
 
 #: cartridges/preferences.py:1127
 msgid "O Sunshine já está rodando"
-msgstr ""
+msgstr "Sunshine is already running"
 
 #: cartridges/preferences.py:1129
 msgid "Iniciando o Sunshine…"
-msgstr ""
+msgstr "Starting Sunshine…"
 
 #: cartridges/preferences.py:1146
 msgid ""
 "Sem suporte neste ambiente. No GNOME: Configurações > Teclado > Atalhos "
 "personalizados."
-msgstr ""
+msgstr "Not supported in this environment. On GNOME: Settings > Keyboard > Custom Shortcuts."
 
 #: cartridges/preferences.py:1156
 #, python-brace-format
 msgid "Ativo no {} — Super+G abre o Jolven de qualquer lugar"
-msgstr ""
+msgstr "Active on {} — Super+G opens Jolven from anywhere"
 
 #: cartridges/preferences.py:1163
 #, python-brace-format
 msgid "Super+G está com {} — ativar move para o Jolven ({})"
-msgstr ""
+msgstr "Super+G is with {} — enabling moves it to Jolven ({})"
 
 #: cartridges/preferences.py:1170
 #, python-brace-format
 msgid "Abre o Jolven de qualquer lugar ({})"
-msgstr ""
+msgstr "Open Jolven from anywhere ({})"
 
 #: cartridges/preferences.py:1177
 msgid "Aplicando…"
-msgstr ""
+msgstr "Applying…"
 
 #: cartridges/preferences.py:1196
 msgid "Atalho Super+G ativo"
-msgstr ""
+msgstr "Super+G shortcut enabled"
 
 #: cartridges/preferences.py:1198
 msgid "Atalho Super+G removido"
-msgstr ""
+msgstr "Super+G shortcut removed"
 
 #: cartridges/preferences.py:1204
-#, fuzzy
 msgid "Não foi possível configurar o atalho"
-msgstr "Unable to complete the update"
+msgstr "Couldn't set up the shortcut"
 
 #: cartridges/preferences.py:1206
-#, fuzzy
 msgid "Verifique as permissões do ambiente e tente novamente."
-msgstr "Check the connection and try again."
+msgstr "Check the environment permissions and try again."
 
 #: cartridges/preferences.py:1225
-#, fuzzy
 msgid "Há um papel de parede de sessão a devolver"
-msgstr "Session wallpaper"
+msgstr "There is a session wallpaper to return"
 
 #: cartridges/preferences.py:1227
-#, fuzzy
 msgid "Nenhum papel de parede de sessão a devolver"
-msgstr "Session wallpaper"
+msgstr "No session wallpaper to return"
 
 #: cartridges/preferences.py:1238
-#, fuzzy
 msgid "Não foi possível devolver o papel de parede"
-msgstr "Do not change the wallpaper"
+msgstr "Couldn't return the wallpaper"
 
 #: cartridges/preferences.py:1241
-#, fuzzy
 msgid "Papel de parede restaurado"
-msgstr "Wallpaper"
+msgstr "Wallpaper restored"
 
 #: cartridges/preferences.py:1316
 msgid "Salvar"
@@ -2683,32 +2619,31 @@ msgstr "System default"
 
 #: cartridges/preferences.py:1494
 msgid "Jolven D-pad (padrão)"
-msgstr ""
+msgstr "Jolven D-pad (default)"
 
 #: cartridges/preferences.py:1495
 msgid "Jolven Portal"
-msgstr ""
+msgstr "Jolven Portal"
 
 #: cartridges/preferences.py:1510
 msgid "Ícone atualizado. Saia e entre de novo se o menu não mudar."
-msgstr ""
+msgstr "Icon updated. Log out and back in if the menu doesn't change."
 
 #: cartridges/preferences.py:1521
 msgid "Button Mode"
-msgstr ""
+msgstr "Button Mode"
 
 #: cartridges/preferences.py:1522
 msgid "Button Home"
-msgstr ""
+msgstr "Button Home"
 
 #: cartridges/preferences.py:1523
 msgid "Both buttons"
-msgstr ""
+msgstr "Both buttons"
 
 #: cartridges/preferences.py:1575
-#, fuzzy
 msgid "Backup do Jolven"
-msgstr "Cartridges backup"
+msgstr "Jolven backup"
 
 #: cartridges/preferences.py:1592
 msgid "Exportando backup…"
@@ -2752,9 +2687,8 @@ msgid "Backup inválido"
 msgstr "Invalid backup"
 
 #: cartridges/preferences.py:1674
-#, fuzzy
 msgid "O arquivo não é um backup válido do Jolven."
-msgstr "The file is not a valid backup of Cartridges."
+msgstr "The file is not a valid Jolven backup."
 
 #: cartridges/preferences.py:1682
 msgid "Não foi possível restaurar"
@@ -2786,433 +2720,403 @@ msgstr "Set Location"
 
 #: cartridges/xcloud_login.py:347 cartridges/xcloud_login.py:377
 msgid "Entrar com a conta Xbox"
-msgstr ""
+msgstr "Sign in with your Xbox account"
 
 #: cartridges/xcloud_login.py:378
 msgid "Conecte sua conta Microsoft para jogar no Xbox Cloud Gaming."
-msgstr ""
+msgstr "Connect your Microsoft account to play on Xbox Cloud Gaming."
 
 #: cartridges/xcloud_login.py:388
-#, fuzzy
 msgid "Usar código de dispositivo"
-msgstr "Adjust brightness for each device"
+msgstr "Use device code"
 
 #: cartridges/xcloud_login.py:396
-#, fuzzy
 msgid "Entrar pelo navegador"
-msgstr "Open in browser"
+msgstr "Sign in with the browser"
 
 #: cartridges/xcloud_login.py:422
-#, fuzzy
 msgid "Abrir site"
-msgstr "Open wizard"
+msgstr "Open site"
 
 #: cartridges/xcloud_login.py:423
 msgid "Copiar código"
-msgstr ""
+msgstr "Copy code"
 
 #: cartridges/xcloud_login.py:424
-#, fuzzy
 msgid "Ou entrar pelo navegador"
-msgstr "Open in browser"
+msgstr "Or sign in with the browser"
 
 #: cartridges/xcloud_login.py:428
-#, fuzzy
 msgid "Aguardando autorização…"
-msgstr "Waiting for entry…"
+msgstr "Waiting for authorisation…"
 
 #: cartridges/xcloud_login.py:467
 msgid "Código ainda não gerado. Aguarde…"
-msgstr ""
+msgstr "Code not generated yet. Hold on…"
 
 #: cartridges/xcloud_login.py:498
 msgid "Entrando…"
-msgstr ""
+msgstr "Signing in…"
 
 #: cartridges/xcloud_login.py:505
-#, fuzzy
 msgid "Não foi possível entrar"
-msgstr "Unable to restore"
+msgstr "Couldn't sign in"
 
 #: cartridges/xcloud_login.py:506
-#, fuzzy
 msgid "Confira a conexão e tente de novo."
 msgstr "Check the connection and try again."
 
 #: cartridges/xcloud_login.py:510
-#, fuzzy
 msgid "Tentar de novo"
 msgstr "Try again"
 
 #: cartridges/xcloud_login.py:511
 msgid "Escolher outro método"
-msgstr ""
+msgstr "Choose another method"
 
 #: cartridges/xcloud_login.py:552
 #, python-format
 msgid "Acesse %s no seu navegador e informe o código abaixo:"
-msgstr ""
+msgstr "Open %s in your browser and enter the code below:"
 
 #: cartridges/xcloud_login.py:573
 msgid "Entrar pela Microsoft"
-msgstr ""
+msgstr "Sign in with Microsoft"
 
 #: cartridges/botao_tarefas.py:71 cartridges/tarefas_janela.py:53
 msgid "Tarefas em andamento"
-msgstr ""
+msgstr "Tasks in progress"
 
 #: cartridges/fita_wizard.py:246
 msgid "Não encontrado na rede. Verifique se o dispositivo está ligado."
-msgstr ""
+msgstr "Not found on the network. Check the device is on."
 
 #: cartridges/image_picker.py:105
 msgid "Escolher capa"
-msgstr ""
+msgstr "Choose cover"
 
 #: cartridges/image_picker.py:105
 msgid "Escolher fundo"
-msgstr ""
+msgstr "Choose background"
 
 #: cartridges/image_picker.py:215 cartridges/logo_picker.py:138
 #: cartridges/wallpaper_picker.py:268
 msgid "Digite o nome de um jogo"
-msgstr ""
+msgstr "Type a game's name"
 
 #: cartridges/image_picker.py:249 cartridges/image_picker.py:335
 #: cartridges/image_picker.py:382 cartridges/logo_picker.py:142
 msgid "Chave da API não configurada"
-msgstr ""
+msgstr "API key not configured"
 
 #: cartridges/image_picker.py:250 cartridges/logo_picker.py:143
 msgid "Configure a chave da API do SteamGridDB nas Preferências."
-msgstr ""
+msgstr "Set the SteamGridDB API key in Preferences."
 
 #: cartridges/image_picker.py:271 cartridges/image_picker.py:401
 #: cartridges/logo_picker.py:173
-#, fuzzy
 msgid "Chave da API inválida"
-msgstr "API key"
+msgstr "Invalid API key"
 
 #: cartridges/image_picker.py:272 cartridges/logo_picker.py:174
-#, fuzzy
 msgid "Verifique a chave da API do SteamGridDB nas Preferências."
-msgstr "Check the API key and the available monthly allowance."
+msgstr "Check the SteamGridDB API key in Preferences."
 
 #: cartridges/image_picker.py:280 cartridges/image_picker.py:459
 #: cartridges/logo_picker.py:182 cartridges/wallpaper_picker.py:310
-#, fuzzy
 msgid "Não foi possível concluir a busca"
-msgstr "Unable to complete the update"
+msgstr "Couldn't finish the search"
 
 #: cartridges/image_picker.py:289 cartridges/image_picker.py:344
 #: cartridges/image_picker.py:353 cartridges/image_picker.py:410
 #: cartridges/image_picker.py:419 cartridges/image_picker.py:468
-#, fuzzy
 msgid "Nenhuma imagem encontrada"
-msgstr "No games found"
+msgstr "No images found"
 
 #: cartridges/image_picker.py:336
 msgid "Configure o Client ID e o Secret do IGDB nas Preferências."
-msgstr ""
+msgstr "Set the IGDB Client ID and Secret in Preferences."
 
 #: cartridges/image_picker.py:383
 msgid "Configure a chave da API do TheGamesDB nas Preferências."
-msgstr ""
+msgstr "Set the TheGamesDB API key in Preferences."
 
 #: cartridges/image_picker.py:402
-#, fuzzy
 msgid "Verifique a chave da API do TheGamesDB nas Preferências."
-msgstr "Check the API key and the available monthly allowance."
+msgstr "Check the TheGamesDB API key in Preferences."
 
 #: cartridges/image_picker.py:492 cartridges/logo_picker.py:233
 #: cartridges/wallpaper_picker.py:369
-#, fuzzy
 msgid "Não foi possível carregar as pré-visualizações"
-msgstr "Unable to load news."
+msgstr "Couldn't load the previews"
 
 #: cartridges/image_picker.py:493 cartridges/image_picker.py:610
 #: cartridges/image_picker.py:634 cartridges/logo_picker.py:234
 #: cartridges/logo_picker.py:345 cartridges/logo_picker.py:368
 #: cartridges/wallpaper_picker.py:370 cartridges/wallpaper_picker.py:451
 #: cartridges/wallpaper_picker.py:622
-#, fuzzy
 msgid "Tente novamente."
-msgstr "Try again"
+msgstr "Try again."
 
 #: cartridges/image_picker.py:563
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Mostrando imagens de: {}"
-msgstr "Metadata and images"
+msgstr "Showing images of: {}"
 
 #: cartridges/image_picker.py:609 cartridges/image_picker.py:633
 #: cartridges/wallpaper_picker.py:450
-#, fuzzy
 msgid "Não foi possível baixar a imagem"
-msgstr "Unable to update news"
+msgstr "Couldn't download the image"
 
 #: cartridges/logo_picker.py:344 cartridges/logo_picker.py:367
-#, fuzzy
 msgid "Não foi possível baixar o logo"
-msgstr "Unable to export"
+msgstr "Couldn't download the logo"
 
 #. The variables are the game's title and the session length.
 #: cartridges/process_session.py:341
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} played for {}"
-msgstr "Last played: {}"
+msgstr "{} played for {}"
 
 #: cartridges/session_history.py:107
 msgid "nenhuma sessão"
-msgstr ""
+msgstr "no sessions"
 
 #: cartridges/session_history.py:311
-#, fuzzy
 msgid "Histórico de sessões"
-msgstr "View session history"
+msgstr "Session history"
 
 #: cartridges/session_history.py:407
 msgid "Mostrar mais sessões"
-msgstr ""
+msgstr "Show more sessions"
 
 #: cartridges/session_history.py:432
 msgid "Semana"
-msgstr ""
+msgstr "Week"
 
 #: cartridges/session_history.py:433
 msgid "Mês"
-msgstr ""
+msgstr "Month"
 
 #: cartridges/session_history.py:434
 msgid "Todo o período"
-msgstr ""
+msgstr "All time"
 
 #: cartridges/session_history.py:464
 #, python-brace-format
 msgid "{} no período"
-msgstr ""
+msgstr "{} in the period"
 
 #: cartridges/session_history.py:489
 msgid "Nenhuma sessão registrada."
-msgstr ""
+msgstr "No sessions recorded."
 
 #. As variáveis são os tempos jogados nos últimos 7 e 30 dias
 #: cartridges/session_history.py:495
 #, python-brace-format
 msgid "Últimos 7 dias: {} · últimos 30 dias: {}"
-msgstr ""
+msgstr "Last 7 days: {} · last 30 days: {}"
 
 #. As variáveis são a hora em que a sessão terminou e sua duração
 #: cartridges/session_history.py:520
 #, python-brace-format
 msgid "Terminou às {} · {}"
-msgstr ""
+msgstr "Ended at {} · {}"
 
 #: cartridges/session_history.py:528
 msgid "Excluir esta sessão"
-msgstr ""
+msgstr "Delete this session"
 
 #: cartridges/session_history.py:539
 msgid "Excluir esta sessão?"
-msgstr ""
+msgstr "Delete this session?"
 
 #: cartridges/session_history.py:542
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Tem certeza que deseja excluir a sessão de {}, em {}? O tempo será "
 "descontado do total do jogo. Esta ação é irreversível."
 msgstr ""
-"Are you sure you want to delete this game? This action is irreversible."
+"Are you sure you want to delete the session of {}, on {}? The time will be "
+"deducted from the game total. This action is irreversible."
 
 #: cartridges/tarefas_janela.py:61
 msgid "Nenhuma tarefa em andamento"
-msgstr ""
+msgstr "No tasks in progress"
 
 #. As variáveis são quantos itens foram feitos e quantos há no total
 #: cartridges/tarefas_janela.py:158
 #, python-brace-format
 msgid "{} de {}"
-msgstr ""
+msgstr "{} of {}"
 
 #: cartridges/wallhaven_filter_bar.py:51
 msgid "Relevância"
-msgstr ""
+msgstr "Relevance"
 
 #: cartridges/wallhaven_filter_bar.py:52
 msgid "Adicionadas recentemente"
-msgstr ""
+msgstr "Recently added"
 
 #: cartridges/wallhaven_filter_bar.py:53
 msgid "Mais vistas"
-msgstr ""
+msgstr "Most viewed"
 
 #: cartridges/wallhaven_filter_bar.py:54
 msgid "Mais favoritadas"
-msgstr ""
+msgstr "Most favourited"
 
 #: cartridges/wallhaven_filter_bar.py:55
 msgid "Em alta no toplist"
-msgstr ""
+msgstr "Trending in toplist"
 
 #: cartridges/wallhaven_filter_bar.py:56
 msgid "Aleatórias"
-msgstr ""
+msgstr "Random"
 
 #: cartridges/wallhaven_filter_bar.py:57
 msgid "Em alta"
-msgstr ""
+msgstr "Trending"
 
 #: cartridges/wallhaven_filter_bar.py:64
 msgid "Último dia"
-msgstr ""
+msgstr "Last day"
 
 #: cartridges/wallhaven_filter_bar.py:65
 msgid "Últimos 3 dias"
-msgstr ""
+msgstr "Last 3 days"
 
 #: cartridges/wallhaven_filter_bar.py:66
 msgid "Última semana"
-msgstr ""
+msgstr "Last week"
 
 #: cartridges/wallhaven_filter_bar.py:67
 msgid "Último mês"
-msgstr ""
+msgstr "Last month"
 
 #: cartridges/wallhaven_filter_bar.py:68
 msgid "Últimos 3 meses"
-msgstr ""
+msgstr "Last 3 months"
 
 #: cartridges/wallhaven_filter_bar.py:69
 msgid "Últimos 6 meses"
-msgstr ""
+msgstr "Last 6 months"
 
 #: cartridges/wallhaven_filter_bar.py:70
 msgid "Último ano"
-msgstr ""
+msgstr "Last year"
 
 #: cartridges/wallhaven_filter_bar.py:101
-#, fuzzy
 msgid "Geral"
 msgstr "General"
 
 #: cartridges/wallhaven_filter_bar.py:101
 msgid "Anime"
-msgstr ""
+msgstr "Anime"
 
 #: cartridges/wallhaven_filter_bar.py:101
 msgid "Pessoas"
-msgstr ""
+msgstr "People"
 
 #: cartridges/wallhaven_filter_bar.py:117
 msgid "Exige a chave da API (Preferências → Sessão)"
-msgstr ""
+msgstr "Requires the API key (Preferences → Session)"
 
 #: cartridges/wallhaven_filter_bar.py:123
-#, fuzzy
 msgid "Ordenação"
-msgstr "Authentication"
+msgstr "Sorting"
 
 #: cartridges/wallhaven_filter_bar.py:136
 msgid "Período do toplist"
-msgstr ""
+msgstr "Toplist period"
 
 #: cartridges/wallhaven_filter_bar.py:150
 msgid "Cor:"
-msgstr ""
+msgstr "Colour:"
 
 #: cartridges/wallhaven_filter_bar.py:152
-#, fuzzy
 msgid "Todas"
-msgstr "Today"
+msgstr "All"
 
 #: cartridges/wallhaven_filter_bar.py:153
 msgid "Qualquer cor"
-msgstr ""
+msgstr "Any colour"
 
 #: cartridges/wallhaven_filter_bar.py:218
 msgid "Decrescente (clique para inverter)"
-msgstr ""
+msgstr "Descending (click to reverse)"
 
 #: cartridges/wallhaven_filter_bar.py:220
 msgid "Crescente (clique para inverter)"
-msgstr ""
+msgstr "Ascending (click to reverse)"
 
 #: cartridges/wallpaper_picker.py:464 cartridges/wallpaper_picker.py:504
-#, fuzzy
 msgid "Não foi possível abrir a imagem"
-msgstr "Unable to update news"
+msgstr "Couldn't open the image"
 
 #: cartridges/wallpaper_picker.py:465 cartridges/wallpaper_picker.py:505
-#, fuzzy
 msgid "Tente outra imagem."
-msgstr "Try another filter."
+msgstr "Try another image."
 
 #: cartridges/wallpaper_picker.py:556
 msgid "Arraste para escolher a faixa da imagem"
-msgstr ""
+msgstr "Drag to choose the image band"
 
 #: cartridges/wallpaper_picker.py:558
-#, fuzzy
 msgid "Arraste para escolher a altura da imagem"
-msgstr "Return to choosing the color from the cover"
+msgstr "Drag to choose the image height"
 
 #: cartridges/wallpaper_picker.py:622
-#, fuzzy
 msgid "Não foi possível salvar a imagem"
-msgstr "Unable to update news"
+msgstr "Couldn't save the image"
 
 #: cartridges/zerados_picker.py:54
-#, fuzzy
 msgid "Nunca jogado"
-msgstr "No completed games"
+msgstr "Never played"
 
 #. As variáveis são o tempo de jogo e a data da última vez jogado
 #: cartridges/zerados_picker.py:56
 #, python-brace-format
 msgid "{} · Jogado por último: {}"
-msgstr ""
+msgstr "{} · Last played: {}"
 
 #: cartridges/zerados_picker.py:62
-#, fuzzy
 msgid "Já está em Jogos Zerados"
-msgstr "Completed Games"
+msgstr "Already in Finished Games"
 
 #: cartridges/zerados_picker.py:63
-#, fuzzy
 msgid "Já está na biblioteca"
-msgstr "Status of this game in the library"
+msgstr "Already in the library"
 
 #: cartridges/zerados_picker.py:83
 msgid "Buscar na Steam"
-msgstr ""
+msgstr "Search on Steam"
 
 #: cartridges/zerados_picker.py:123
-#, fuzzy
 msgid "Nenhum jogo disponível"
-msgstr "No completed games"
+msgstr "No games available"
 
 #: cartridges/zerados_picker.py:124
 msgid "Busque um jogo na Steam para adicioná-lo."
-msgstr ""
+msgstr "Search for a game on Steam to add it."
 
 #: cartridges/zerados_picker.py:211
-#, fuzzy
 msgid "Nenhum jogo encontrado na Steam."
-msgstr "No games found"
+msgstr "No games found on Steam."
 
 #: cartridges/zerados_picker.py:214
-#, fuzzy
 msgid "Não foi possível concluir a busca na Steam."
-msgstr "Unable to complete the update"
+msgstr "Couldn't finish the search on Steam."
 
 #: cartridges/zerados_picker.py:238
 #, python-brace-format
 msgid "ID na Steam: {}"
-msgstr ""
+msgstr "Steam ID: {}"
 
 #: cartridges/zerados_picker.py:240
 #, python-brace-format
 msgid "Adicionar “{}” sem dados da Steam"
-msgstr ""
+msgstr "Add “{}” without Steam data"
 
 #: cartridges/utils/create_dialog.py:35 cartridges/importer/importer.py:367
 msgid "Dismiss"
@@ -3244,59 +3148,58 @@ msgstr "Last Year"
 
 #: cartridges/utils/format_playtime.py:28
 msgid "menos de 1 min"
-msgstr ""
+msgstr "less than 1 min"
 
 #: cartridges/utils/format_playtime.py:31
 #, python-brace-format
 msgid "{} min"
-msgstr ""
+msgstr "{} min"
 
 #: cartridges/utils/format_playtime.py:35
 msgid "1 hora"
-msgstr ""
+msgstr "1 hour"
 
 #: cartridges/utils/format_playtime.py:37
 #, python-brace-format
 msgid "{} horas"
-msgstr ""
+msgstr "{} hours"
 
 #. Under six minutes is a rounding artefact, not an estimate. Showing
 #. "0 h" would read as "no data", which is a different claim.
 #: cartridges/utils/hltb.py:214
 msgid "< 0,1 h"
-msgstr ""
+msgstr "< 0.1 h"
 
 #. The variable is a number of hours, e.g. "16" or "22,5"
 #: cartridges/utils/hltb.py:218
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} h"
-msgstr "{} hidden"
+msgstr "{} h"
 
 #: cartridges/utils/install_size.py:294
-#, fuzzy
 msgid "Tamanho em disco"
-msgstr "Size"
+msgstr "Disk size"
 
 #: cartridges/utils/ligacao_zerado.py:149
 #, python-brace-format
 msgid "Os dados de {} em Jogos Zerados foram transferidos para a biblioteca"
-msgstr ""
+msgstr "Data for {} in Finished Games was moved to the library"
 
 #. The variable is the game's name
 #: cartridges/utils/updates_checker.py:195
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Atualização para {} disponível"
-msgstr "Update available"
+msgstr "Update for {} available"
 
 #: cartridges/utils/updates_checker.py:197
 msgid " e "
-msgstr ""
+msgstr " and "
 
 #. The variable is a list of game names
 #: cartridges/utils/updates_checker.py:199
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Atualizações para {} disponíveis"
-msgstr "Update available"
+msgstr "Updates for {} available"
 
 #: cartridges/importer/importer.py:318
 msgid "Importing Games…"
