@@ -10,6 +10,20 @@ class ControllerAction(Enum):
     SEARCH = "search"
     MAIN_MENU = "main-menu"
     GUIDE = "guide"
+    HOME = "home"
+
+
+class ControllerLayout(Enum):
+    XBOX = "xbox"
+    PLAYSTATION = "playstation"
+    GENERIC = "generic"
+
+
+# Some controllers expose their central system button as Linux ``BTN_MODE``;
+# others expose it as ``KEY_HOMEPAGE``. Keep both codes explicit because the
+# session overlay preference lets the user choose either event or both.
+BUTTON_MODE = 316
+BUTTON_HOME = 172
 
 
 # Linux input button roles used by libmanette/SDL mappings. These describe
@@ -20,7 +34,8 @@ _BUTTON_ACTIONS = {
     307: ControllerAction.SEARCH,  # Y / north face button on Xbox pads
     308: ControllerAction.GAME_MENU,  # X / west face button on Xbox pads
     315: ControllerAction.MAIN_MENU,  # start/menu
-    316: ControllerAction.GUIDE,  # home/guide
+    BUTTON_MODE: ControllerAction.GUIDE,
+    BUTTON_HOME: ControllerAction.HOME,
 }
 
 
@@ -35,7 +50,8 @@ _BUTTON_NAMES = {
     311: "RB",
     314: "View",
     315: "Menu",
-    316: "Guide",
+    BUTTON_MODE: "Mode",
+    BUTTON_HOME: "Home",
     317: "L3",
     318: "R3",
 }
@@ -44,6 +60,60 @@ _TRIGGER_BUTTONS = {
     312: "LT",
     313: "RT",
 }
+
+
+# Labels for the face and system buttons in the PlayStation layout, using the
+# same Linux input codes as ``_BUTTON_NAMES``. Triggers appear here too because
+# a DualShock/DualSense exposes them as L2/R2.
+_PLAYSTATION_BUTTON_NAMES = {
+    304: "Circle",
+    305: "Cross",
+    307: "Triangle",
+    308: "Square",
+    310: "L1",
+    311: "R1",
+    312: "L2",
+    313: "R2",
+    314: "Share",
+    315: "Options",
+    316: "PS",
+    BUTTON_HOME: "Home",
+    317: "L3",
+    318: "R3",
+}
+
+_XBOX_KEYWORDS = ("xbox", "x-box", "microsoft")
+_PLAYSTATION_KEYWORDS = (
+    "sony",
+    "playstation",
+    "ps3",
+    "ps4",
+    "ps5",
+    "dualshock",
+    "dualsense",
+)
+
+
+def detect_controller_layout(name: str | None) -> ControllerLayout:
+    """Guess the physical button layout from a controller's reported name.
+
+    Detection is intentionally conservative and case-insensitive: anything
+    that does not clearly identify an Xbox or PlayStation family device falls
+    back to the generic layout.
+    """
+    normalized = (name or "").lower()
+    if any(keyword in normalized for keyword in _XBOX_KEYWORDS):
+        return ControllerLayout.XBOX
+    if any(keyword in normalized for keyword in _PLAYSTATION_KEYWORDS):
+        return ControllerLayout.PLAYSTATION
+    return ControllerLayout.GENERIC
+
+
+def labels_for_layout(layout: ControllerLayout) -> dict[int, str]:
+    """Return the display labels keyed by Linux input button code."""
+    if layout is ControllerLayout.PLAYSTATION:
+        return dict(_PLAYSTATION_BUTTON_NAMES)
+    return dict(_BUTTON_NAMES)
 
 
 def action_for_button(button: int) -> ControllerAction | None:
@@ -57,6 +127,17 @@ def name_for_button(button: int) -> str:
 def trigger_for_button(button: int) -> str | None:
     """Return a trigger name for digital full-press events."""
     return _TRIGGER_BUTTONS.get(button)
+
+
+def opens_game_overlay(button: int, preference: str) -> bool:
+    """Whether *button* matches the configured game-overlay system button."""
+    if preference == "both":
+        return button in (BUTTON_MODE, BUTTON_HOME)
+    if preference == "mode":
+        return button == BUTTON_MODE
+    if preference == "home":
+        return button == BUTTON_HOME
+    return False
 
 
 # libmanette hat encoding used by ``gamepad_hat_axis``: the event carries a
