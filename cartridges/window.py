@@ -732,10 +732,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def on_open_gamepad_test_action(self, *_args: Any) -> None:
         if not self.gamepad_test_active:
             self.navigation_view.push(self.gamepad_test_page)
+
     def close_gamepad_test(self) -> None:
         if self.gamepad_test_active:
             self.navigation_view.pop()
-
 
     def set_gamepad_devices(self, names: list[str]) -> None:
         self.gamepad_test_device_label.set_label(
@@ -2387,8 +2387,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
         from cartridges.xcloud_native import input as xinput
 
         mapping = {
-            304: xinput.BTN_B,
-            305: xinput.BTN_A,
+            304: xinput.BTN_A,
+            305: xinput.BTN_B,
             307: xinput.BTN_Y,
             308: xinput.BTN_X,
             310: xinput.BTN_LEFT_SHOULDER,

@@ -7,8 +7,8 @@ from cartridges.controller import (
     ControllerLayout,
     action_for_button,
     detect_controller_layout,
-    is_tester_exit_chord,
     hat_direction,
+    is_tester_exit_chord,
     labels_for_layout,
     name_for_button,
     opens_game_overlay,
@@ -19,8 +19,8 @@ from cartridges.controller import (
 
 class ControllerTests(unittest.TestCase):
     def test_semantic_buttons(self):
-        self.assertEqual(action_for_button(304), ControllerAction.BACK)
-        self.assertEqual(action_for_button(305), ControllerAction.CONFIRM)
+        self.assertEqual(action_for_button(304), ControllerAction.CONFIRM)
+        self.assertEqual(action_for_button(305), ControllerAction.BACK)
         self.assertEqual(action_for_button(307), ControllerAction.SEARCH)
         self.assertEqual(action_for_button(308), ControllerAction.GAME_MENU)
         self.assertEqual(action_for_button(315), ControllerAction.MAIN_MENU)
@@ -31,8 +31,8 @@ class ControllerTests(unittest.TestCase):
         self.assertIsNone(action_for_button(999))
 
     def test_xbox_names_are_available_to_the_tester(self):
-        self.assertEqual(name_for_button(304), "B")
-        self.assertEqual(name_for_button(305), "A")
+        self.assertEqual(name_for_button(304), "A")
+        self.assertEqual(name_for_button(305), "B")
         self.assertEqual(name_for_button(307), "Y")
         self.assertEqual(name_for_button(308), "X")
         self.assertEqual(name_for_button(999), "Button 999")
@@ -116,14 +116,14 @@ class ControllerTests(unittest.TestCase):
             labels_for_layout(ControllerLayout.XBOX),
         )
         labels = labels_for_layout(ControllerLayout.GENERIC)
-        self.assertEqual(labels[305], "A")
+        self.assertEqual(labels[305], "B")
         self.assertEqual(labels[BUTTON_MODE], "Mode")
         self.assertEqual(labels[BUTTON_HOME], "Home")
 
     def test_playstation_labels(self):
         labels = labels_for_layout(ControllerLayout.PLAYSTATION)
-        self.assertEqual(labels[304], "Circle")
-        self.assertEqual(labels[305], "Cross")
+        self.assertEqual(labels[304], "Cross")
+        self.assertEqual(labels[305], "Circle")
         self.assertEqual(labels[307], "Triangle")
         self.assertEqual(labels[308], "Square")
         self.assertEqual(labels[310], "L1")
@@ -140,6 +140,7 @@ class ControllerTests(unittest.TestCase):
     def test_labels_for_layout_returns_fresh_dict(self):
         first = labels_for_layout(ControllerLayout.XBOX)
         first[304] = "mutated"
+        self.assertEqual(labels_for_layout(ControllerLayout.XBOX)[304], "A")
 
     def test_tester_exit_chord_needs_view_and_menu(self):
         self.assertTrue(is_tester_exit_chord({314, 315}))
@@ -147,7 +148,6 @@ class ControllerTests(unittest.TestCase):
         self.assertFalse(is_tester_exit_chord({314}))
         self.assertFalse(is_tester_exit_chord({315}))
         self.assertFalse(is_tester_exit_chord(set()))
-        self.assertEqual(labels_for_layout(ControllerLayout.XBOX)[304], "B")
 
 
 if __name__ == "__main__":

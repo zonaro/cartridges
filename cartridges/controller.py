@@ -24,6 +24,7 @@ class ControllerLayout(Enum):
 # session overlay preference lets the user choose either event or both.
 BUTTON_MODE = 316
 BUTTON_HOME = 172
+
 # Leaving the gamepad tester requires holding both View (select) and Menu
 # (start) at once, so a lone B press only lights up without leaving the page.
 BUTTON_VIEW = 314
@@ -31,12 +32,11 @@ BUTTON_MENU = 315
 TESTER_EXIT_BUTTONS = frozenset({BUTTON_VIEW, BUTTON_MENU})
 
 
-
 # Linux input button roles used by libmanette/SDL mappings. These describe
 # physical roles, not Xbox-specific labels.
 _BUTTON_ACTIONS = {
-    304: ControllerAction.BACK,
-    305: ControllerAction.CONFIRM,
+    304: ControllerAction.CONFIRM,  # A / south face button on Xbox pads
+    305: ControllerAction.BACK,  # B / east face button on Xbox pads
     307: ControllerAction.SEARCH,  # Y / north face button on Xbox pads
     308: ControllerAction.GAME_MENU,  # X / west face button on Xbox pads
     BUTTON_MENU: ControllerAction.MAIN_MENU,  # start/menu
@@ -48,8 +48,8 @@ _BUTTON_ACTIONS = {
 # Names follow the Xbox layout shown by the UI.  Unknown codes are still
 # exposed by the tester so unusual controllers can be diagnosed.
 _BUTTON_NAMES = {
-    304: "B",
-    305: "A",
+    304: "A",
+    305: "B",
     307: "Y",
     308: "X",
     310: "LB",
@@ -72,8 +72,8 @@ _TRIGGER_BUTTONS = {
 # same Linux input codes as ``_BUTTON_NAMES``. Triggers appear here too because
 # a DualShock/DualSense exposes them as L2/R2.
 _PLAYSTATION_BUTTON_NAMES = {
-    304: "Circle",
-    305: "Cross",
+    304: "Cross",
+    305: "Circle",
     307: "Triangle",
     308: "Square",
     310: "L1",
@@ -134,10 +134,10 @@ def trigger_for_button(button: int) -> str | None:
     """Return a trigger name for digital full-press events."""
     return _TRIGGER_BUTTONS.get(button)
 
+
 def is_tester_exit_chord(pressed: set[int]) -> bool:
     """Whether the held buttons include View + Menu to leave the tester."""
     return TESTER_EXIT_BUTTONS <= pressed
-
 
 
 def opens_game_overlay(button: int, preference: str) -> bool:
