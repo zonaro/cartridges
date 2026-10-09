@@ -528,6 +528,9 @@ class CartridgesApplication(Adw.Application):
         about = Adw.AboutDialog.new_from_appdata(
             shared.PREFIX + "/" + shared.APP_ID + ".metainfo.xml", shared.VERSION
         )
+        # A versão exibida é sempre a da compilação (YY.DDD.HHMM, Fixes #6),
+        # não o release mais recente do metainfo.xml.
+        about.set_version(shared.VERSION)
         about.set_developers(
             (
                 "Jolven contributors https://github.com/zonaro/jolven",

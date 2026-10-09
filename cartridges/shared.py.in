@@ -56,7 +56,32 @@ def _detect_prefix() -> "Path | None":
 _DETECTED_PREFIX = _detect_prefix()
 
 APP_ID = "@APP_ID@"
-VERSION = "@VERSION@"
+_SETUP_VERSION = "@VERSION@"
+# Versão exibida no app (Fixes #6): gerada pela data de compilação no formato
+# YY.DDD.HHMM (ano 2 dígitos, dia do ano, hora+minuto 24h). `version.py` é
+# regenerado a cada `meson compile` via custom_target e tem precedência sobre
+# o valor congelado no `meson setup`. Fallback valida o setup e, em árvore
+# sem build (ex: testes a partir do fonte), usa a data atual para nunca
+# exibir "@VERSION@".
+VERSION = _SETUP_VERSION
+try:
+    from cartridges.version import BUILD_VERSION as _BUILD_VERSION
+
+    import re as _re
+
+    if isinstance(_BUILD_VERSION, str) and _re.match(
+        r"^\d{2}\.\d{3}\.\d{4}$", _BUILD_VERSION.strip()
+    ):
+        VERSION = _BUILD_VERSION.strip()
+except Exception:
+    pass
+if not isinstance(VERSION, str) or VERSION.startswith("@"):
+    try:
+        from datetime import datetime as _dt
+
+        VERSION = _dt.now().strftime("%y.%j.%H%M")
+    except Exception:
+        VERSION = _SETUP_VERSION
 # Raiz do GResource (ex: /page/redclaw/Cartridges), e NÃO caminho de disco:
 # Gtk.Template(resource_path=...) e new_from_resource() exigem o caminho do
 # recurso registrado, que independe de onde a árvore foi instalada. O prefix
