@@ -134,6 +134,16 @@ inspirada no LutrisToSunshine, por escrita direta no `apps.json`
   sem executável são sempre ignorados.
 - Sem rede, sem auth e sem segredos: falha é não fatal (toast/log) e
   nunca impede o uso da biblioteca local.
+- A página Sunshine nas Preferências (item Sunshine no menu do
+  aplicativo) centraliza exportação e diagnóstico: além do grupo de
+  exportação, há conexão com a Web UI local (`sunshine-host`,
+  `sunshine-port`, `sunshine-username` em GSettings; senha só em
+  memória, nunca persistida nem logada), teste que exibe versão e
+  quantidade de apps via `GET /api/apps` + `GET /api/config` com Basic
+  auth e sem header `Origin` (isento de CSRF), lista somente-leitura
+  dos apps e abertura da Web UI. `POST /api/config`, PIN e clientes
+  ficam para uma v2 (config exige GET→merge→POST completo + restart;
+  índice de app é racy pois a lista reordena por nome).
 - Flatpak: o Jolven confinado não enxerga o `~/.config` do host; nesse
   caso aponte `sunshine-apps-path` para um caminho acessível.
 

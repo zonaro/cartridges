@@ -246,6 +246,24 @@
       <summary>Sunshine apps.json location</summary>
       <description>Custom path to the Sunshine apps.json file. Empty means the default ~/.config/sunshine/apps.json.</description>
     </key>
+    <key name="sunshine-host" type="s">
+      <default>"localhost"</default>
+      <summary>Sunshine Web UI host</summary>
+      <description>Host of the local Sunshine Web UI used for status and app listing.</description>
+    </key>
+    <key name="sunshine-port" type="i">
+      <default>47990</default>
+      <summary>Sunshine Web UI port</summary>
+      <description>HTTPS port of the local Sunshine Web UI.</description>
+    </key>
+    <key name="sunshine-username" type="s">
+      <default>""</default>
+      <summary>Sunshine Web UI username</summary>
+      <description>Username created in the Sunshine Web UI. The password is never stored.</description>
+    </key>
+    <key name="disabled-source-filters" type="as">
+      <default>[]</default>
+    </key>
     <key name="app-icon" type="s">
       <choices>
         <choice value="jolven-dpad" />

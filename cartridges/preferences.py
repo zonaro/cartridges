@@ -85,6 +85,15 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     sunshine_sync_all_row: Adw.ActionRow = Gtk.Template.Child()
     sunshine_sync_all_button: Gtk.Button = Gtk.Template.Child()
 
+    sunshine_host_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_port_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_username_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_password_row: Adw.EntryRow = Gtk.Template.Child()
+    sunshine_status_row: Adw.ActionRow = Gtk.Template.Child()
+    sunshine_test_button: Gtk.Button = Gtk.Template.Child()
+    sunshine_web_button: Gtk.Button = Gtk.Template.Child()
+    sunshine_apps_group: Adw.PreferencesGroup = Gtk.Template.Child()
+
     auto_import_switch: Adw.SwitchRow = Gtk.Template.Child()
     remove_missing_switch: Adw.SwitchRow = Gtk.Template.Child()
 
@@ -293,6 +302,36 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         )
         self.sunshine_apps_path_row.connect("changed", sunshine_apps_path_changed)
         self.sunshine_sync_all_button.connect("clicked", self.sincronizar_sunshine)
+
+        # Sunshine remoto (a senha vive só nesta sessão: nunca é salva)
+        def sunshine_host_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "sunshine-host", self.sunshine_host_row.get_text().strip()
+            )
+
+        def sunshine_port_changed(*_args: Any) -> None:
+            try:
+                porta = int(self.sunshine_port_row.get_text().strip())
+            except ValueError:
+                return
+            if 1 <= porta <= 65535:
+                shared.schema.set_int("sunshine-port", porta)
+
+        def sunshine_username_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "sunshine-username", self.sunshine_username_row.get_text().strip()
+            )
+
+        self.sunshine_host_row.set_text(shared.schema.get_string("sunshine-host"))
+        self.sunshine_host_row.connect("changed", sunshine_host_changed)
+        self.sunshine_port_row.set_text(str(shared.schema.get_int("sunshine-port")))
+        self.sunshine_port_row.connect("changed", sunshine_port_changed)
+        self.sunshine_username_row.set_text(
+            shared.schema.get_string("sunshine-username")
+        )
+        self.sunshine_username_row.connect("changed", sunshine_username_changed)
+        self.sunshine_test_button.connect("clicked", self.testar_sunshine)
+        self.sunshine_web_button.connect("clicked", self.abrir_sunshine_web)
 
         self.sgdb_key_group.set_description(
             _(
@@ -593,6 +632,73 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 entregar_na_tela(concluir, resultado)
 
         threading.Thread(target=executar, daemon=True).start()
+
+    def _conexao_sunshine(self) -> Any:
+        from cartridges.utils import sunshine_api
+
+        try:
+            porta = int(self.sunshine_port_row.get_text().strip())
+        except ValueError:
+            porta = 0
+        return sunshine_api.SunshineConnection(
+            host=self.sunshine_host_row.get_text().strip() or "localhost",
+            port=porta,
+            username=self.sunshine_username_row.get_text().strip(),
+            password=self.sunshine_password_row.get_text(),
+        )
+
+    def testar_sunshine(self, *_args: Any) -> None:
+        import threading
+
+        from cartridges.utils import sunshine_api
+
+        conexao = self._conexao_sunshine()
+        self.sunshine_test_button.set_sensitive(False)
+        self.sunshine_status_row.set_subtitle(_("Verificando…"))
+
+        def concluir(resultado: Any) -> bool:
+            self.sunshine_test_button.set_sensitive(True)
+            if isinstance(resultado, Exception):
+                self.sunshine_status_row.set_subtitle(_("Não foi possível conectar"))
+                self.add_toast(Adw.Toast.new(str(resultado)))
+                return GLib.SOURCE_REMOVE
+            versao = resultado.version or _("desconhecida")
+            total = len(resultado.app_names)
+            self.sunshine_status_row.set_subtitle(
+                _("Sunshine {} · {} app(s)").format(versao, total)
+            )
+            while (filho := self.sunshine_apps_group.get_first_child()) is not None:
+                self.sunshine_apps_group.remove(filho)
+            if not resultado.app_names:
+                self.sunshine_apps_group.add(
+                    Adw.ActionRow(title=_("Nenhum app cadastrado"))
+                )
+            for nome in sorted(resultado.app_names, key=str.casefold):
+                self.sunshine_apps_group.add(Adw.ActionRow(title=nome))
+            return GLib.SOURCE_REMOVE
+
+        def executar() -> None:
+            try:
+                resultado = sunshine_api.probe(conexao)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                entregar_na_tela(concluir, error)
+            else:
+                entregar_na_tela(concluir, resultado)
+
+        threading.Thread(target=executar, daemon=True).start()
+
+    def abrir_sunshine_web(self, *_args: Any) -> None:
+        from cartridges.utils.open_uri import open_uri
+
+        try:
+            porta = int(self.sunshine_port_row.get_text().strip())
+        except ValueError:
+            porta = 0
+        if not 1 <= porta <= 65535:
+            self.add_toast(Adw.Toast.new(_("Porta inválida")))
+            return
+        host = self.sunshine_host_row.get_text().strip() or "localhost"
+        open_uri(f"https://{host}:{porta}/", parent=self)
 
     def atualizar_atalho_global(self) -> None:
         try:

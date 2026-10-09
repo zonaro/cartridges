@@ -365,6 +365,7 @@ class CartridgesApplication(Adw.Application):
                 ("quit", ("<primary>q",)),
                 ("about",),
                 ("preferences", ("<primary>comma",)),
+                ("sunshine",),
                 ("launch_game",),
                 ("hide_game",),
                 ("edit_game",),
@@ -575,6 +576,9 @@ class CartridgesApplication(Adw.Application):
         win.present(shared.win)
 
         return win
+
+    def on_sunshine_action(self, *_args: Any) -> None:
+        self.on_preferences_action(page_name="sunshine")
 
     def on_launch_game_action(self, *_args: Any) -> None:
         shared.win.launch_library_game(shared.win.active_game)

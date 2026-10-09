@@ -99,8 +99,15 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
       }
     }
 
+  }
+
+  Adw.PreferencesPage sunshine_page {
+    name: "sunshine";
+    title: _("Sunshine");
+    icon-name: "network-workgroup-symbolic";
+
     Adw.PreferencesGroup sunshine_group {
-      title: _("Sunshine");
+      title: _("Exportar jogos");
 
       Adw.SwitchRow sunshine_auto_sync_switch {
         title: _("Adicionar jogos ao Sunshine automaticamente");
@@ -123,6 +130,54 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
           label: _("Sincronizar agora");
         }
       }
+    }
+
+    Adw.PreferencesGroup sunshine_connection_group {
+      title: _("Conexão com o Sunshine");
+
+      Adw.EntryRow sunshine_host_row {
+        title: _("Endereço");
+      }
+
+      Adw.EntryRow sunshine_port_row {
+        title: _("Porta");
+      }
+
+      Adw.EntryRow sunshine_username_row {
+        title: _("Usuário");
+      }
+
+      Adw.EntryRow sunshine_password_row {
+        title: _("Senha (só nesta sessão)");
+      }
+
+      Adw.ActionRow sunshine_status_row {
+        title: _("Estado");
+        subtitle: _("Não verificado");
+        activatable-widget: sunshine_test_button;
+
+        [suffix]
+        Button sunshine_test_button {
+          valign: center;
+          label: _("Testar");
+        }
+      }
+
+      Adw.ActionRow sunshine_web_row {
+        title: _("Abrir a Web UI do Sunshine");
+        activatable-widget: sunshine_web_button;
+
+        [suffix]
+        Button sunshine_web_button {
+          valign: center;
+          label: _("Abrir");
+        }
+      }
+    }
+
+    Adw.PreferencesGroup sunshine_apps_group {
+      title: _("Apps no Sunshine");
+      description: _("Atualizada ao testar a conexão");
     }
 
     Adw.PreferencesGroup {
