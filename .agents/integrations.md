@@ -165,6 +165,16 @@ testes):
   `name`); recusar usa `DELETE /api/pin`.
 - Clientes: `GET /api/clients/list`, desemparelhar um (`POST
   /api/clients/unpair` com `uuid`) ou todos (com confirmação).
+
+### Instalação do Sunshine pelo Jolven
+
+O item Sunshine no menu do aplicativo funciona como porta de entrada:
+se `sunshine` (nativo) ou o Flatpak `dev.lizardbyte.app.Sunshine`
+existirem, abre a página de configurações; senão, um diálogo oferece
+instalar via Flatpak user a partir do Flathub (sem sudo), com toast de
+progresso e abertura da página ao concluir. O caminho padrão do
+`apps.json` prefere o catálogo existente (nativo, depois Flatpak) e,
+sem nenhum, segue o tipo de instalação detectado.
 - Flatpak: o Jolven confinado não enxerga o `~/.config` do host; nesse
   caso aponte `sunshine-apps-path` para um caminho acessível.
 

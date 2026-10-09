@@ -2093,3 +2093,27 @@ msgstr ""
 #: cartridges/preferences.py:948
 msgid "Sem nome"
 msgstr ""
+
+#: cartridges/main.py:613
+msgid "Sunshine não está instalado"
+msgstr ""
+
+#: cartridges/main.py
+msgid "Para configurar o streaming, instale o Sunshine via Flatpak (sem sudo)."
+msgstr ""
+
+#: cartridges/main.py:619
+msgid "Agora não"
+msgstr ""
+
+#: cartridges/main.py:628
+msgid "Instalando o Sunshine…"
+msgstr ""
+
+#: cartridges/main.py:647
+msgid "Não foi possível instalar o Sunshine"
+msgstr ""
+
+#: cartridges/main.py:651
+msgid "Sunshine instalado!"
+msgstr ""

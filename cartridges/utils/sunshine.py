@@ -38,6 +38,8 @@ from __future__ import annotations
 import json
 import logging
 import os
+import shutil
+import subprocess
 import tempfile
 import threading
 
@@ -63,17 +65,102 @@ FLATPAK_APPS_PATH = (
     / ".var/app/dev.lizardbyte.app.Sunshine/config/sunshine/apps.json"
 )
 
+SUNSHINE_FLATPAK_ID = "dev.lizardbyte.app.Sunshine"
+SUNSHINE_FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
+
+
+def _flatpak_app_dirs() -> list[Path]:
+    home = Path.home()
+    return [
+        home / ".local/share/flatpak/app" / SUNSHINE_FLATPAK_ID,
+        Path("/var/lib/flatpak/app") / SUNSHINE_FLATPAK_ID,
+    ]
+
+
+def installation_type() -> str:
+    """Tell how Sunshine is installed: ``native``, ``flatpak`` or ``""``."""
+    if shutil.which("sunshine"):
+        return "native"
+    try:
+        if any(path.is_dir() for path in _flatpak_app_dirs()):
+            return "flatpak"
+    except OSError:
+        pass
+    return ""
+
+
+def is_installed() -> bool:
+    """Tell whether Sunshine is available on this machine."""
+    return bool(installation_type())
+
+
+def install_flatpak() -> None:
+    """Install Sunshine from Flathub for the current user (no sudo).
+
+    Adds the user Flathub remote when missing and installs the app.
+    Raises :class:`SunshineError` with a short message on any failure.
+    """
+    flatpak = shutil.which("flatpak")
+    if not flatpak:
+        raise SunshineError("Flatpak is not available")
+    steps = (
+        [
+            flatpak,
+            "remote-add",
+            "--user",
+            "--if-not-exists",
+            "flathub",
+            SUNSHINE_FLATHUB_URL,
+        ],
+        [flatpak, "install", "--user", "-y", "flathub", SUNSHINE_FLATPAK_ID],
+    )
+    for command in steps:
+        try:
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=600,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise SunshineError(f"Sunshine install failed: {error}") from error
+        if result.returncode != 0:
+            raise SunshineError("Sunshine install did not complete")
+    if not is_installed():
+        raise SunshineError("Sunshine install did not complete")
+    logging.debug("Sunshine Flatpak install finished")
+
 
 def resolve_apps_path(custom: str = "") -> Path:
     """Return the apps.json path to use.
 
-    A non-blank ``custom`` path (user setting) always wins. Otherwise the
-    native Sunshine location ``~/.config/sunshine/apps.json`` is used.
+    A non-blank ``custom`` path (user setting) always wins. Otherwise
+    the existing catalog wins (native first, then Flatpak); when
+    neither exists, the default follows the detected installation.
     """
     cleaned = (custom or "").strip()
     if cleaned:
         return Path(cleaned).expanduser()
-    return Path.home() / ".config" / CONFIG_DIRNAME / APPS_FILENAME
+    native = Path.home() / ".config" / CONFIG_DIRNAME / APPS_FILENAME
+    flatpak = (
+        Path.home()
+        / ".var/app"
+        / SUNSHINE_FLATPAK_ID
+        / "config"
+        / CONFIG_DIRNAME
+        / APPS_FILENAME
+    )
+    try:
+        if native.exists():
+            return native
+        if flatpak.exists():
+            return flatpak
+    except OSError:
+        pass
+    if installation_type() == "flatpak":
+        return flatpak
+    return native
 
 
 def _str_attr(game: Any, name: str, default: str = "") -> str:

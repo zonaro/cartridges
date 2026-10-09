@@ -12,13 +12,17 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+from unittest.mock import patch
 
 from cartridges.utils.sunshine import (
     SunshineError,
     add_game,
     build_app_entry,
     build_command,
+    install_flatpak,
+    installation_type,
     is_eligible,
+    is_installed,
     read_catalog,
     resolve_apps_path,
     sync_library,
@@ -211,6 +215,112 @@ class SyncTests(unittest.TestCase):
         self.assertEqual(entry["image-path"], "/cover.png")
         self.assertTrue(entry["auto-detach"])
         self.assertEqual(entry["exit-timeout"], 5)
+
+
+class InstallationTests(unittest.TestCase):
+    def test_native_binary_wins(self) -> None:
+        with patch(
+            "cartridges.utils.sunshine.shutil.which",
+            side_effect=lambda name: "/usr/bin/sunshine" if name == "sunshine" else None,
+        ):
+            self.assertEqual(installation_type(), "native")
+            self.assertTrue(is_installed())
+
+    def test_flatpak_detected_without_binary(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / ".local/share/flatpak/app/dev.lizardbyte.app.Sunshine").mkdir(
+                parents=True
+            )
+            with (
+                patch("cartridges.utils.sunshine.shutil.which", return_value=None),
+                patch("pathlib.Path.home", return_value=home),
+            ):
+                self.assertEqual(installation_type(), "flatpak")
+                self.assertTrue(is_installed())
+
+    def test_missing_everywhere(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with (
+                patch("cartridges.utils.sunshine.shutil.which", return_value=None),
+                patch("pathlib.Path.home", return_value=Path(tmp)),
+            ):
+                self.assertEqual(installation_type(), "")
+                self.assertFalse(is_installed())
+
+    def test_resolve_prefers_existing_catalog(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            native = home / ".config/sunshine/apps.json"
+            flatpak = (
+                home / ".var/app/dev.lizardbyte.app.Sunshine/config/sunshine/apps.json"
+            )
+            with (
+                patch("cartridges.utils.sunshine.shutil.which", return_value=None),
+                patch("pathlib.Path.home", return_value=home),
+            ):
+                self.assertEqual(resolve_apps_path().name, "apps.json")
+                flatpak.parent.mkdir(parents=True)
+                flatpak.write_text("{}", encoding="utf-8")
+                self.assertEqual(resolve_apps_path(), flatpak)
+                native.parent.mkdir(parents=True, exist_ok=True)
+                native.write_text("{}", encoding="utf-8")
+                self.assertEqual(resolve_apps_path(), native)
+
+    def test_install_needs_flatpak_binary(self) -> None:
+        with patch(
+            "cartridges.utils.sunshine.shutil.which", return_value=None
+        ):
+            with self.assertRaises(SunshineError):
+                install_flatpak()
+
+    def test_install_runs_remote_add_then_install(self) -> None:
+        import subprocess
+
+        calls = []
+
+        def fake_run(command: list, **kwargs: Any) -> SimpleNamespace:
+            calls.append(command)
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+        with (
+            patch(
+                "cartridges.utils.sunshine.shutil.which",
+                return_value="/usr/bin/flatpak",
+            ),
+            patch(
+                "cartridges.utils.sunshine.subprocess.run", side_effect=fake_run
+            ),
+            patch(
+                "cartridges.utils.sunshine.is_installed", return_value=True
+            ),
+        ):
+            install_flatpak()
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0][:3], ["/usr/bin/flatpak", "remote-add", "--user"])
+        self.assertIn("dev.lizardbyte.app.Sunshine", calls[1])
+
+    def test_install_failure_raises(self) -> None:
+        def fake_run(command: list, **kwargs: Any) -> SimpleNamespace:
+            return SimpleNamespace(returncode=1, stdout="", stderr="nope")
+
+        with (
+            patch(
+                "cartridges.utils.sunshine.shutil.which",
+                return_value="/usr/bin/flatpak",
+            ),
+            patch(
+                "cartridges.utils.sunshine.subprocess.run", side_effect=fake_run
+            ),
+        ):
+            with self.assertRaises(SunshineError):
+                install_flatpak()
 
 
 if __name__ == "__main__":

@@ -2205,3 +2205,27 @@ msgstr "Porta inválida"
 #: cartridges/preferences.py:948
 msgid "Sem nome"
 msgstr "Sem nome"
+
+#: cartridges/main.py:613
+msgid "Sunshine não está instalado"
+msgstr "Sunshine não está instalado"
+
+#: cartridges/main.py
+msgid "Para configurar o streaming, instale o Sunshine via Flatpak (sem sudo)."
+msgstr "Para configurar o streaming, instale o Sunshine via Flatpak (sem sudo)."
+
+#: cartridges/main.py:619
+msgid "Agora não"
+msgstr "Agora não"
+
+#: cartridges/main.py:628
+msgid "Instalando o Sunshine…"
+msgstr "Instalando o Sunshine…"
+
+#: cartridges/main.py:647
+msgid "Não foi possível instalar o Sunshine"
+msgstr "Não foi possível instalar o Sunshine"
+
+#: cartridges/main.py:651
+msgid "Sunshine instalado!"
+msgstr "Sunshine instalado!"

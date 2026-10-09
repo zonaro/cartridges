@@ -24,6 +24,7 @@ import os
 import shlex
 import subprocess
 import sys
+import threading
 from time import time
 from typing import Any, Optional
 from urllib.parse import quote
@@ -581,7 +582,59 @@ class CartridgesApplication(Adw.Application):
         return win
 
     def on_sunshine_action(self, *_args: Any) -> None:
-        self.on_preferences_action(page_name="sunshine")
+        from cartridges.utils import sunshine
+
+        if sunshine.is_installed():
+            self.on_preferences_action(page_name="sunshine")
+            return
+        if getattr(self, "_sunshine_installing", False):
+            return
+        dialog = Adw.AlertDialog.new(
+            _("Sunshine não está instalado"),
+            _(
+                "Para configurar o streaming, instale o Sunshine via "
+                "Flatpak (sem sudo)."
+            ),
+        )
+        dialog.add_response("cancel", _("Agora não"))
+        dialog.add_response("install", _("Instalar"))
+        dialog.set_default_response("install")
+
+        def resposta(_dialog: Any, codigo: str) -> None:
+            if codigo != "install":
+                return
+            self._sunshine_installing = True
+            shared.win.toast_queue.add(
+                Adw.Toast.new(_("Instalando o Sunshine…"))
+            )
+
+            def executar() -> None:
+                try:
+                    sunshine.install_flatpak()
+                except Exception as error:  # pylint: disable=broad-exception-caught
+                    message = str(error)
+                else:
+                    message = ""
+                GLib.idle_add(concluir, message)
+
+            threading.Thread(target=executar, daemon=True).start()
+
+        def concluir(mensagem: str) -> bool:
+            self._sunshine_installing = False
+            if mensagem:
+                logging.error("Sunshine install failed: %s", mensagem)
+                shared.win.toast_queue.add(
+                    Adw.Toast.new(_("Não foi possível instalar o Sunshine"))
+                )
+            else:
+                shared.win.toast_queue.add(
+                    Adw.Toast.new(_("Sunshine instalado!"))
+                )
+                self.on_preferences_action(page_name="sunshine")
+            return GLib.SOURCE_REMOVE
+
+        dialog.connect("response", resposta)
+        dialog.present(shared.win)
 
     def on_launch_game_action(self, *_args: Any) -> None:
         shared.win.launch_library_game(shared.win.active_game)
