@@ -89,7 +89,10 @@ class SunshineStatus:
 
 
 def _request(
-    connection: SunshineConnection, method: str, path: str
+    connection: SunshineConnection,
+    method: str,
+    path: str,
+    payload: dict[str, Any] | None = None,
 ) -> requests.Response:
     if not 1 <= connection.port <= 65535:
         raise SunshineApiError("invalid Sunshine port")
@@ -105,6 +108,7 @@ def _request(
             auth=auth,
             verify=False,
             timeout=TIMEOUT,
+            json=payload,
         )
     except RequestException as error:
         raise SunshineApiError("Sunshine is not reachable") from error
@@ -159,3 +163,166 @@ def probe(connection: SunshineConnection) -> SunshineStatus:
         platform=config.get("platform", ""),
         apps=apps,
     )
+
+
+def update_config(
+    connection: SunshineConnection, changes: dict[str, str]
+) -> dict[str, str]:
+    """Merge ``changes`` into the live config and save it whole.
+
+    Sunshine replaces the entire file on ``POST /api/config``, so the
+    current config is always read first. Values are sent as strings.
+    Applying most keys requires :func:`restart` afterwards.
+    """
+    config = fetch_config(connection)
+    for key, value in changes.items():
+        if key.strip():
+            config[key.strip()] = str(value)
+    _as_json(
+        _request(connection, "POST", "/api/config", config), "config save"
+    )
+    logging.debug("Sunshine config updated with %d keys", len(changes))
+    return config
+
+
+def restart(connection: SunshineConnection) -> None:
+    """Ask a running Sunshine to restart itself."""
+    _request(connection, "POST", "/api/restart")
+    logging.debug("Sunshine restart requested")
+
+
+def resolve_app_index(
+    connection: SunshineConnection, name: str
+) -> int | None:
+    """Return the live index of the app called ``name``, if any.
+
+    Indices shift whenever Sunshine re-sorts by name, so they are
+    always resolved fresh instead of being stored.
+    """
+    for index, app in enumerate(fetch_apps(connection)):
+        if app.get("name") == name:
+            return index
+    return None
+
+
+def create_app(
+    connection: SunshineConnection, entry: dict[str, Any]
+) -> dict[str, Any]:
+    """Create a Sunshine app (``index:-1``), returning the saved payload."""
+    payload = dict(entry)
+    payload["index"] = -1
+    if not str(payload.get("name", "")).strip():
+        raise SunshineApiError("Sunshine entry needs a non-empty name")
+    if not str(payload.get("cmd", "")).strip():
+        raise SunshineApiError("Sunshine entry needs a command")
+    saved = _as_json(
+        _request(connection, "POST", "/api/apps", payload), "app save"
+    )
+    logging.debug("Sunshine app created: %s", payload.get("name"))
+    return saved if isinstance(saved, dict) else {}
+
+
+def delete_app(connection: SunshineConnection, name: str) -> None:
+    """Delete the app called ``name`` (no-op when absent)."""
+    index = resolve_app_index(connection, name)
+    if index is None:
+        return
+    _request(connection, "DELETE", f"/api/apps/{index}")
+    logging.debug("Sunshine app deleted: %s", name)
+
+
+def upload_cover(
+    connection: SunshineConnection, key: str, png_bytes: bytes
+) -> str:
+    """Upload a PNG cover, returning the server-side path to reference.
+
+    ``key`` becomes ``covers/<key>.png`` on the server; the returned
+    ``path`` is what ``image-path`` must point to.
+    """
+    import base64
+
+    clean = "".join(
+        ch for ch in (key or "").strip() if ch.isalnum() or ch in "-_"
+    )
+    if not clean:
+        raise SunshineApiError("cover needs a key")
+    if not png_bytes:
+        raise SunshineApiError("cover is empty")
+    payload = _as_json(
+        _request(
+            connection,
+            "POST",
+            "/api/covers/upload",
+            {"key": clean, "data": base64.b64encode(png_bytes).decode()},
+        ),
+        "cover upload",
+    )
+    path = payload.get("path", "") if isinstance(payload, dict) else ""
+    if not isinstance(path, str) or not path:
+        raise SunshineApiError("cover upload returned no path")
+    return path
+
+
+def get_pending_pairings(connection: SunshineConnection) -> list[dict[str, Any]]:
+    """List Moonlight pairing requests waiting for PIN approval."""
+    payload = _as_json(_request(connection, "GET", "/api/pin"), "pairings")
+    pairings = payload.get("pairings", []) if isinstance(payload, dict) else []
+    if not isinstance(pairings, list):
+        raise SunshineApiError("unexpected pairings from Sunshine")
+    return [p for p in pairings if isinstance(p, dict)]
+
+
+def approve_pairing(
+    connection: SunshineConnection, pairing_id: str, pin: str, name: str
+) -> None:
+    """Approve a pending Moonlight pairing with the PIN shown on it."""
+    if not (pairing_id or "").strip():
+        raise SunshineApiError("pairing needs an id")
+    if not (pin or "").strip():
+        raise SunshineApiError("pairing needs the PIN from the client")
+    _request(
+        connection,
+        "POST",
+        "/api/pin",
+        {
+            "pairing_id": pairing_id.strip(),
+            "pin": pin.strip(),
+            "name": (name or "").strip(),
+        },
+    )
+    logging.debug("Sunshine pairing approved for %s", name or pairing_id)
+
+
+def cancel_pairing(connection: SunshineConnection, pairing_id: str) -> None:
+    """Refuse a pending Moonlight pairing request."""
+    if not (pairing_id or "").strip():
+        raise SunshineApiError("pairing needs an id")
+    _request(
+        connection, "DELETE", "/api/pin", {"pairing_id": pairing_id.strip()}
+    )
+    logging.debug("Sunshine pairing cancelled: %s", pairing_id)
+
+
+def get_clients(connection: SunshineConnection) -> list[dict[str, Any]]:
+    """List paired Moonlight clients."""
+    payload = _as_json(_request(connection, "GET", "/api/clients/list"), "clients")
+    clients = (
+        payload.get("named_certs", []) if isinstance(payload, dict) else []
+    )
+    if not isinstance(clients, list):
+        raise SunshineApiError("unexpected clients from Sunshine")
+    return [c for c in clients if isinstance(c, dict)]
+
+
+def unpair_client(connection: SunshineConnection, uuid: str) -> None:
+    """Remove one paired Moonlight client by its uuid."""
+    if not (uuid or "").strip():
+        raise SunshineApiError("client needs a uuid")
+    _request(connection, "POST", "/api/clients/unpair", {"uuid": uuid.strip()})
+    logging.debug("Sunshine client unpaired")
+
+
+def unpair_all_clients(connection: SunshineConnection) -> None:
+    """Remove every paired Moonlight client."""
+    _request(connection, "POST", "/api/clients/unpair-all")
+    logging.debug("All Sunshine clients unpaired")
