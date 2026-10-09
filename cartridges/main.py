@@ -49,6 +49,7 @@ from cartridges.controller import (
     ControllerAction,
     action_for_button,
     hat_direction,
+    is_tester_exit_chord,
     opens_game_overlay,
     stick_direction,
     trigger_for_button,
@@ -160,8 +161,10 @@ class CartridgesApplication(Adw.Application):
         if shared.win.xcloud_input_active:
             return
         if shared.win.gamepad_test_active:
-            if action_for_button(button) == ControllerAction.BACK:
-                shared.win.gamepad_back()
+            self._tester_chord.add(button)
+            if is_tester_exit_chord(self._tester_chord):
+                self._tester_chord.clear()
+                shared.win.close_gamepad_test()
             return
 
         if (
@@ -191,6 +194,7 @@ class CartridgesApplication(Adw.Application):
     def gamepad_button_released(self, _device, event) -> None:
         button = event.get_button()[1]
         logging.debug("Gamepad: %s released", button)
+        self._tester_chord.discard(button)
         if trigger := trigger_for_button(button):
             shared.win.update_gamepad_trigger(trigger, False)
             return
@@ -259,6 +263,7 @@ class CartridgesApplication(Adw.Application):
         shared.store = Store()
         shared.runtime = RuntimeContext.detect(sys.argv, os.environ)
         self._gamepad_devices = {}
+        self._tester_chord: set[int] = set()
         flags = (
             Gio.ApplicationFlags.NON_UNIQUE
             if shared.runtime.is_nested

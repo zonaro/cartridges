@@ -7,6 +7,7 @@ from cartridges.controller import (
     ControllerLayout,
     action_for_button,
     detect_controller_layout,
+    is_tester_exit_chord,
     hat_direction,
     labels_for_layout,
     name_for_button,
@@ -139,6 +140,13 @@ class ControllerTests(unittest.TestCase):
     def test_labels_for_layout_returns_fresh_dict(self):
         first = labels_for_layout(ControllerLayout.XBOX)
         first[304] = "mutated"
+
+    def test_tester_exit_chord_needs_view_and_menu(self):
+        self.assertTrue(is_tester_exit_chord({314, 315}))
+        self.assertTrue(is_tester_exit_chord({304, 314, 315}))
+        self.assertFalse(is_tester_exit_chord({314}))
+        self.assertFalse(is_tester_exit_chord({315}))
+        self.assertFalse(is_tester_exit_chord(set()))
         self.assertEqual(labels_for_layout(ControllerLayout.XBOX)[304], "B")
 
 

@@ -732,6 +732,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
     def on_open_gamepad_test_action(self, *_args: Any) -> None:
         if not self.gamepad_test_active:
             self.navigation_view.push(self.gamepad_test_page)
+    def close_gamepad_test(self) -> None:
+        if self.gamepad_test_active:
+            self.navigation_view.pop()
+
 
     def set_gamepad_devices(self, names: list[str]) -> None:
         self.gamepad_test_device_label.set_label(

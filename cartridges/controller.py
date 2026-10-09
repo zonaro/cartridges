@@ -24,6 +24,12 @@ class ControllerLayout(Enum):
 # session overlay preference lets the user choose either event or both.
 BUTTON_MODE = 316
 BUTTON_HOME = 172
+# Leaving the gamepad tester requires holding both View (select) and Menu
+# (start) at once, so a lone B press only lights up without leaving the page.
+BUTTON_VIEW = 314
+BUTTON_MENU = 315
+TESTER_EXIT_BUTTONS = frozenset({BUTTON_VIEW, BUTTON_MENU})
+
 
 
 # Linux input button roles used by libmanette/SDL mappings. These describe
@@ -33,7 +39,7 @@ _BUTTON_ACTIONS = {
     305: ControllerAction.CONFIRM,
     307: ControllerAction.SEARCH,  # Y / north face button on Xbox pads
     308: ControllerAction.GAME_MENU,  # X / west face button on Xbox pads
-    315: ControllerAction.MAIN_MENU,  # start/menu
+    BUTTON_MENU: ControllerAction.MAIN_MENU,  # start/menu
     BUTTON_MODE: ControllerAction.GUIDE,
     BUTTON_HOME: ControllerAction.HOME,
 }
@@ -48,8 +54,8 @@ _BUTTON_NAMES = {
     308: "X",
     310: "LB",
     311: "RB",
-    314: "View",
-    315: "Menu",
+    BUTTON_VIEW: "View",
+    BUTTON_MENU: "Menu",
     BUTTON_MODE: "Mode",
     BUTTON_HOME: "Home",
     317: "L3",
@@ -127,6 +133,11 @@ def name_for_button(button: int) -> str:
 def trigger_for_button(button: int) -> str | None:
     """Return a trigger name for digital full-press events."""
     return _TRIGGER_BUTTONS.get(button)
+
+def is_tester_exit_chord(pressed: set[int]) -> bool:
+    """Whether the held buttons include View + Menu to leave the tester."""
+    return TESTER_EXIT_BUTTONS <= pressed
+
 
 
 def opens_game_overlay(button: int, preference: str) -> bool:
