@@ -188,7 +188,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
     details_view_spinner: Adw.Spinner = Gtk.Template.Child()
     details_view_title: Gtk.Label = Gtk.Template.Child()
     details_view_blurred_cover: Gtk.Picture = Gtk.Template.Child()
-    details_view_play_button: Adw.SplitButton = Gtk.Template.Child()
+    details_view_play_button: Gtk.Button = Gtk.Template.Child()
+    details_view_play_menu_button: Gtk.MenuButton = Gtk.Template.Child()
     details_view_developer: Gtk.Label = Gtk.Template.Child()
     details_view_metadata: Gtk.Label = Gtk.Template.Child()
     details_view_description: Gtk.Label = Gtk.Template.Child()
@@ -1087,22 +1088,20 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.active_game = game
 
     def _atualizar_botao_jogar_detalhes(self, game: Game) -> None:
-        """Configura o SplitButton Jogar da tela de detalhes.
+        """Mostra a seta de launchers ao lado do Jogar se o jogo é agrupado.
 
-        Jogo agrupado (mesmo título em várias fontes) vira botão +
-        dropdown: o clique principal mantém ``app.launch_game`` (última
-        opção jogada ou default via ``agrupamento.primario``) e o
-        dropdown lista as variantes com a ação ``win.launch_via`` (que
-        salva o preferido e lança a variante escolhida). Sem grupo, o
-        menu é removido e o SplitButton se comporta como botão simples.
+        Sem grupo, a seta fica oculta e o botão Jogar é exatamente o de
+        antes (``app.launch_game`` lança o primário: preferido ou último
+        jogado). Com grupo, a seta abre as variantes via ``win.launch_via``,
+        que salva o preferido e lança a variante escolhida.
         """
         try:
             members = agrupamento.membros(game)
         except Exception:  # pylint: disable=broad-except
             members = [game]
         if len(members) < 2:
-            self.details_view_play_button.set_menu_model(None)
-            self.details_view_play_button.set_tooltip_text(_("Play"))
+            self.details_view_play_menu_button.set_visible(False)
+            self.details_view_play_menu_button.set_menu_model(None)
             return
         try:
             primario = agrupamento.primario(members)
@@ -1129,15 +1128,8 @@ class CartridgesWindow(Adw.ApplicationWindow):
         menu = Gio.Menu()
         # The variable is the section title listing the launchers
         menu.append_section(_("Jogar via"), vias)
-        self.details_view_play_button.set_menu_model(menu)
-        try:
-            fonte_primario = self.get_application().get_source_name(primario.source)
-        except Exception:  # pylint: disable=broad-except
-            fonte_primario = primario.source
-        self.details_view_play_button.set_tooltip_text(
-            # The variables are the game title and the default launcher name
-            _("Play {} via {}").format(game.name, fonte_primario)
-        )
+        self.details_view_play_menu_button.set_menu_model(menu)
+        self.details_view_play_menu_button.set_visible(True)
 
     def show_details_page(self, game: Game) -> None:
         self.active_game = game

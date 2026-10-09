@@ -1261,17 +1261,35 @@ Adw.NavigationPage details_page {
               vexpand: true;
               valign: center;
 
-              Adw.SplitButton details_view_play_button {
-                name: "details_view_play_button";
-                action-name: "app.launch_game";
-                label: _("Play");
+              Box {
                 halign: start;
                 margin-top: 24;
+                spacing: 6;
 
-                styles [
-                  "opaque",
-                  "pill",
-                ]
+                Button details_view_play_button {
+                  name: "details_view_play_button";
+                  action-name: "app.launch_game";
+                  label: _("Play");
+                  halign: start;
+
+                  styles [
+                    "opaque",
+                    "pill",
+                  ]
+                }
+
+                MenuButton details_view_play_menu_button {
+                  icon-name: "pan-down-symbolic";
+                  halign: start;
+                  valign: center;
+                  visible: false;
+                  tooltip-text: _("Jogar via…");
+
+                  styles [
+                    "raised",
+                    "circular",
+                  ]
+                }
               }
 
               Box details_view_toolbar_buttons {
