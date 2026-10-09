@@ -1,6 +1,10 @@
 import unittest
 
-from cartridges.launchers import resolve_steam_command, resolve_twintail_command
+from cartridges.launchers import (
+    is_twintail_command,
+    resolve_steam_command,
+    resolve_twintail_command,
+)
 
 
 class LauncherTests(unittest.TestCase):
@@ -40,7 +44,7 @@ class TwintailCommandTests(unittest.TestCase):
         )
         self.assertEqual(
             command,
-            "twintaillauncher --install 01a0bab3-0732-78d0-bc0f-cf1137d5a516",
+            "twintaillauncher --install=01a0bab3-0732-78d0-bc0f-cf1137d5a516",
         )
 
     def test_flatpak_fallback_without_host_binary(self):
@@ -52,7 +56,7 @@ class TwintailCommandTests(unittest.TestCase):
         self.assertEqual(
             command,
             "flatpak run app.twintaillauncher.ttl "
-            "--install 01a0bab3-0732-78d0-bc0f-cf1137d5a516",
+            "--install=01a0bab3-0732-78d0-bc0f-cf1137d5a516",
         )
 
     def test_no_backend_keeps_host_form(self):
@@ -62,8 +66,25 @@ class TwintailCommandTests(unittest.TestCase):
                 find_program=lambda _name: None,
                 has_flatpak=lambda _app_id: False,
             ),
-            "twintaillauncher --install some-id",
+            "twintaillauncher --install=some-id",
         )
+
+    def test_is_twintail_command(self):
+        self.assertTrue(
+            is_twintail_command("twintaillauncher --install=some-id")
+        )
+        self.assertTrue(
+            is_twintail_command(
+                "twintaillauncher --install some-id"
+            )
+        )
+        self.assertTrue(
+            is_twintail_command(
+                "flatpak run app.twintaillauncher.ttl --install=some-id"
+            )
+        )
+        self.assertFalse(is_twintail_command("legendary launch AppName"))
+        self.assertFalse(is_twintail_command(""))
 
 
 if __name__ == "__main__":

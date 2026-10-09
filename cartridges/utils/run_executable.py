@@ -21,12 +21,17 @@ import logging
 import os
 import re
 import subprocess
+import time
 from shlex import quote
 from shutil import which
 
 from cartridges import shared
 from cartridges.game_launch import build_game_command
-from cartridges.launchers import resolve_steam_command
+from cartridges.launchers import (
+    TWINTAIL_FLATPAK_ID,
+    is_twintail_command,
+    resolve_steam_command,
+)
 
 
 _AUMID_CHARS = re.compile(r"[\w.!+\-]+")
@@ -48,6 +53,55 @@ def _available_program(name: str):
     except (OSError, subprocess.TimeoutExpired):
         return None
     return result.stdout.strip() or None
+
+
+def _terminate_existing_twintail(timeout: float = 2.0) -> None:
+    """Terminate running TwinTail instances so the launch argv is honored.
+
+    TwinTail's single-instance plugin discards ``--install=<id>`` when an
+    instance is already running and only shows/focuses its window (upstream
+    issues #274/#280). The flag is only honored on a cold start, so a stale
+    background/tray instance makes every Jolven launch "open the launcher
+    underneath" without starting the game (jolven #17).
+
+    Best effort and non-fatal: failures are logged, never raised.
+    """
+    in_flatpak = os.getenv("FLATPAK_ID") == shared.APP_ID
+    prefix: tuple[str, ...] = (
+        ("flatpak-spawn", "--host") if in_flatpak else ()
+    )
+
+    def _run(*args: str) -> None:
+        try:
+            subprocess.run(
+                (*prefix, *args),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+                timeout=5,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            logging.debug("TwinTail pre-launch cleanup %s: %s", args, error)
+
+    # Native binary (exact name match only) and Flatpak instance.
+    _run("pkill", "-x", "twintaillauncher")
+    _run("flatpak", "kill", TWINTAIL_FLATPAK_ID)
+
+    deadline = time.monotonic() + max(0.0, timeout)
+    while time.monotonic() < deadline:
+        try:
+            result = subprocess.run(
+                (*prefix, "pgrep", "-x", "twintaillauncher"),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+                timeout=2,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            break
+        if result.returncode != 0:
+            break
+        time.sleep(0.1)
 
 
 def aumid_from_command(executable: str) -> str:
@@ -82,6 +136,8 @@ def run_executable(
         if shared.runtime.is_game_mode and os.name == "posix"
         else executable
     )
+    if is_twintail_command(resolved_executable):
+        _terminate_existing_twintail()
     command, integrations = build_game_command(
         resolved_executable,
         use_gamemode=use_gamemode,
