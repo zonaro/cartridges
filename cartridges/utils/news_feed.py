@@ -17,7 +17,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Read the repack site's RSS feed as *news*: everything that is not a digest.
+"""Read repack and giveaway RSS feeds as *news*: everything that is not a digest.
 
 One document, two readers with opposite appetites.
 :mod:`cartridges.utils.updates_feed` wants the periodic *Updates Digest* posts,
@@ -31,14 +31,22 @@ spoiler markup that reads as noise, and every game it names is already surfaced
 on that game's own details page. Conversely a news post is never handed to the
 update matcher, which would happily mistake a repack announcement for a patch.
 
+The page aggregates three sources into one list (see ``NEWS_FEEDS``): the
+repack feed above plus the GamerPower "all giveaways" feed and the FreeToKeep
+"everything free to keep" feed. The GamerPower sub-feeds (pc/steam/xbox/...) overlap
+with its ``/rss/giveaways`` aggregate, so only the aggregate is polled. Each
+post carries its source label so the row can show where it came from.
+
 Only the parts of an ``<item>`` that a list row can show are kept: title, link,
-publication date, and a short plain-text excerpt cut out of the HTML summary.
+publication date, source and a short plain-text excerpt cut out of the HTML summary.
 """
 
 import logging
 import re
 from dataclasses import dataclass
 from html.parser import HTMLParser
+
+import requests
 
 # pylint: disable=protected-access
 # The digest reader owns the feed's transport and its date/title conventions;
@@ -55,10 +63,29 @@ from cartridges.utils.updates_feed import (
     parse_xml,
 )
 
-# WordPress serves the short summary in <description> and the full post body in
-# this RSS extension element. The summary is preferred: it is already an
-# excerpt, so it needs far less trimming than the full body.
+# The GamerPower "all giveaways" aggregate. The per-platform/per-type
+# sub-feeds (pc, steam, xbox, playstation, nintendo, mobile, games, loot)
+# overlap with it, so only this one is polled to avoid duplicates.
+GAMERPOWER_FEED_URL = "https://www.gamerpower.com/rss/giveaways"
+
+# FreeToKeep "everything free to keep" aggregate. The per-store feeds
+# (/feed/steam.xml, /feed/epic.xml, ...) overlap with it, so only the
+# combined feed is polled. The JSON API (/api/v1/...) is out of scope.
+FREETOKEEP_FEED_URL = "https://freetokeep.gg/feed.xml"
+
+# (source label, feed url) polled by fetch_all_news, in order. Source labels
+# are proper nouns shown verbatim in the UI, never translated.
+NEWS_FEEDS: tuple[tuple[str, str], ...] = (
+    ("FitGirl", FEED_URL),
+    ("GamerPower", GAMERPOWER_FEED_URL),
+    ("FreeToKeep", FREETOKEEP_FEED_URL),
+)
+
+_SOURCE_BY_URL = {url: source for source, url in NEWS_FEEDS}
+
 _CONTENT_NS = "{http://purl.org/rss/1.0/modules/content/}encoded"
+
+_MEDIA_NS = "{http://search.yahoo.com/mrss/}"
 
 # Hard ceiling on the excerpt. Rows are expanders that show the whole text, so
 # this is not a display choice — it is a sanity guard for the case where a post
@@ -95,6 +122,8 @@ class NewsPost:
     url: str  # the post's own page, or "" when the link is missing
     summary: str  # plain-text excerpt, possibly ""
     category: str  # first <category>, or "" — shown as a tag on the row
+    source: str = ""  # feed label from NEWS_FEEDS, shown before date/category
+    image: str = ""  # thumbnail URL from enclosure/media:content, or ""
 
 
 class _TextExtractor(HTMLParser):
@@ -154,7 +183,35 @@ def summarize(fragment: str, max_chars: int = _SUMMARY_MAX_CHARS) -> str:
     return (head[:cut] if cut > 0 else text[:max_chars]).rstrip(",;:.") + "…"
 
 
-def parse_news(xml_text: str) -> list[NewsPost]:
+def _post_image(item: object) -> str:
+    """Return the item's thumbnail URL, or "" when it has none usable.
+
+    FreeToKeep serves it as ``<enclosure url type="image/...">`` and
+    GamerPower as ``<media:content url>``. The value is scheme-checked like
+    every other URL out of the feed; the bytes themselves are only trusted
+    after the loader decodes them as an image.
+    """
+    find = getattr(item, "find", None)
+    if not callable(find):
+        return ""
+    enclosure = find("enclosure")
+    if enclosure is not None:
+        claimed = (enclosure.get("type") or "").strip().lower()
+        if not claimed or claimed.startswith("image/"):
+            image = _safe_url(enclosure.get("url"))
+            if image:
+                return image
+    media = find(f"{_MEDIA_NS}content")
+    if media is not None:
+        claimed = (media.get("type") or "").strip().lower()
+        if not claimed or claimed.startswith("image/"):
+            image = _safe_url(media.get("url"))
+            if image:
+                return image
+    return ""
+
+
+def parse_news(xml_text: str, source: str = "") -> list[NewsPost]:
     """Parse a feed document into readable posts, newest first.
 
     Update digests are skipped — see this module's docstring — as are items with
@@ -168,7 +225,7 @@ def parse_news(xml_text: str) -> list[NewsPost]:
     seen: set[str] = set()
     for item in root.iter("item"):
         if len(posts) >= _MAX_POSTS:
-            logging.warning("Repack feed carried more than %d posts", _MAX_POSTS)
+            logging.warning("News feed carried more than %d posts", _MAX_POSTS)
             break
 
         title = _WHITESPACE_RE.sub(" ", (item.findtext("title") or "")).strip()
@@ -204,20 +261,64 @@ def parse_news(xml_text: str) -> list[NewsPost]:
                 url=link,
                 summary=summary,
                 category=category,
+                source=source,
+                image=_post_image(item),
             )
         )
 
     posts.sort(key=lambda post: post.timestamp, reverse=True)
-    logging.debug("Repack feed yielded %d news posts", len(posts))
+    logging.debug("News feed yielded %d news posts", len(posts))
     return posts
 
 
 def fetch_news(
     url: str = FEED_URL, timeout: float = 15, max_bytes: int = _MAX_FEED_BYTES
 ) -> list[NewsPost]:
-    """Download and parse the feed into readable posts.
+    """Download and parse one feed into readable posts.
 
     :raises requests.RequestException: on any network/HTTP failure — the caller
         treats a failed poll as "nothing new", never as an error worth a dialog.
     """
-    return parse_news(fetch_feed_text(url, timeout, max_bytes))
+    return parse_news(
+        fetch_feed_text(url, timeout, max_bytes),
+        source=_SOURCE_BY_URL.get(url, ""),
+    )
+
+
+def fetch_all_news(
+    timeout: float = 15, max_bytes: int = _MAX_FEED_BYTES
+) -> list[NewsPost]:
+    """Download every feed in NEWS_FEEDS and merge the posts, newest first.
+
+    A feed that fails (network, HTTP, oversized) is skipped with a log line;
+    it never sinks the other feeds. Identifiers repeated across feeds resolve
+    to the newest post. The merged list is capped at _MAX_POSTS.
+    """
+    merged: dict[str, NewsPost] = {}
+    failures = 0
+    for source, url in NEWS_FEEDS:
+        try:
+            posts = fetch_news(url, timeout, max_bytes)
+        except requests.RequestException as error:
+            failures += 1
+            logging.info("News feed poll failed for %s: %s", source, error)
+            continue
+        except Exception:  # pylint: disable=broad-exception-caught
+            failures += 1
+            logging.warning(
+                "Unexpected error polling news feed %s", source, exc_info=True
+            )
+            continue
+        for post in posts:
+            previous = merged.get(post.identifier)
+            if previous is None or post.timestamp > previous.timestamp:
+                merged[post.identifier] = post
+
+    result = sorted(merged.values(), key=lambda post: post.timestamp, reverse=True)
+    if len(result) > _MAX_POSTS:
+        logging.warning("News feeds carried more than %d posts", _MAX_POSTS)
+        del result[_MAX_POSTS:]
+    logging.debug(
+        "News feeds yielded %d posts (%d feeds failed)", len(result), failures
+    )
+    return result

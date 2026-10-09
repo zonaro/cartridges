@@ -17,11 +17,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Watch the repack feed for readable posts and drive the header-bar badge.
+"""Watch the news feeds for readable posts and drive the header-bar badge.
 
 Same shape as :class:`~cartridges.utils.updates_checker.UpdatesChecker` — a
 worker thread does the network, everything that touches the UI is bounced back
-onto the main thread with ``GLib.idle_add`` — but the two watch the feed for
+onto the main thread with ``GLib.idle_add`` — but the two watch feeds for
 opposite things and share nothing but the download helper. This one holds the
 posts it fetched so opening the Novidades page is instant and re-opening it
 costs no request.
@@ -48,7 +48,7 @@ import requests
 from gi.repository import GLib, GObject
 
 from cartridges import shared
-from cartridges.utils.news_feed import NewsPost, fetch_news
+from cartridges.utils.news_feed import NewsPost, fetch_all_news
 
 # Hours between background polls. 0 turns the recurring poll (and with it the
 # badge) off; the page still fetches on demand when opened.
@@ -161,14 +161,14 @@ class NewsChecker(GObject.Object):
     def _poll_thread(self) -> None:
         posts: Optional[list[NewsPost]] = None
         try:
-            posts = fetch_news()
+            posts = fetch_all_news()
         except requests.RequestException as error:
             # A failed poll is a non-event: the cached posts (if any) stay up
             # and the badge does not change. Info level because a flaky network
             # is expected, not exceptional.
-            logging.info("Repack news feed poll failed: %s", error)
+            logging.info("News feed poll failed: %s", error)
         except Exception:  # pylint: disable=broad-exception-caught
-            logging.warning("Unexpected error polling repack news feed", exc_info=True)
+            logging.warning("Unexpected error polling news feeds", exc_info=True)
         finally:
             GLib.idle_add(self._apply, posts)
 

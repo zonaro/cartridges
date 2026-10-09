@@ -57,7 +57,12 @@ jogo. Não considere dados raspados estáveis para migrações ou identidade.
 
 O catálogo xCloud usa feeds públicos de catálogo/Game Pass e cria variantes
 como gratuito, Game Pass e adquirido. O jogo abre em WebKit quando disponível;
-sem WebKit, a biblioteca local continua operacional.
+sem WebKit, a biblioteca local continua operacional. O catálogo JSON é
+persistido em cache versionado com TTL de 24 h (`xcloud_catalog.py`):
+boot e habilitação instalam do cache e só buscam rede quando obsoleto ou via
+botão Atualizar (forçado); sem rede e sem cache, o erro é reportado sem
+derrubar a biblioteca. Rede e escrita de capas/JSON rodam fora da thread GTK;
+a UI recebe resultados via `entregar_na_tela`.
 
 Better xCloud é um userscript remoto obtido da versão mais recente no GitHub,
 armazenado em cache e injetado na página. Isso é execução de código remoto e deve
@@ -85,8 +90,16 @@ erro parcial.
 ## Feed de atualizações e notícias
 
 Há consumo opcional de RSS do FitGirl para avisos de atualização por jogo e
-notícias. Por ser conteúdo remoto não confiável e potencialmente sensível a
-políticas locais:
+notícias. A página Novidades agrega três fontes em uma lista
+(`cartridges/utils/news_feed.py:NEWS_FEEDS`): FitGirl, GamerPower
+(`https://www.gamerpower.com/rss/giveaways`, agregado "all" — os sub-feeds
+por plataforma/tipo sobrepõem-se a ele e não são consultados) e FreeToKeep
+(`https://freetokeep.gg/feed.xml`, agregado geral — os feeds por loja
+sobrepõem-se a ele; a API JSON segue fora de escopo). Cada post carrega o
+rótulo da fonte, exibido no subtítulo da linha. O poll busca cada feed com
+falha isolada (um feed fora não esvazia a página nem derruba os outros),
+deduplica por guid/link entre feeds e ordena por pubDate. Por ser conteúdo
+remoto não confiável e potencialmente sensível a políticas locais:
 
 - mantenha o acompanhamento opt-in por jogo;
 - aceite apenas HTTPS e URLs seguras;

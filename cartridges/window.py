@@ -48,6 +48,11 @@ from cartridges.zerados_picker import ZeradosPicker
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango
 
 
+_NEWS_THUMB_SIZE = 64
+_NEWS_THUMB_BYTES = 2 * 1024 * 1024
+_NEWS_THUMB_CACHE_MAX = 200
+
+
 def can_edit_notes(game: Game) -> bool:
     if game.zerado:
         return False
@@ -353,6 +358,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.known_source_filters = set()
         self.source_rows = {}
 
+        self._news_thumb_cache: dict[str, Gdk.Texture] = {}
+        self._news_thumb_pending: dict[str, list[Gtk.Picture]] = {}
+
         self.game_mode_home_page.set_visible(shared.runtime.is_game_mode)
         if not shared.runtime.is_game_mode:
             # The landing page is the template's initial navigation root.
@@ -588,6 +596,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
             _("Conectado: {}").format(", ".join(names))
             if names
             else _("Nenhum gamepad conectado")
+        )
         layout = (
             detect_controller_layout(names[0]).value if names else "generic"
         )
@@ -607,7 +616,6 @@ class CartridgesWindow(Adw.ApplicationWindow):
                 self._gamepad_visual.set_layout(layout)
             except Exception:
                 logging.exception("Could not apply the gamepad layout")
-        )
 
     def update_gamepad_button(self, button: int, pressed: bool) -> None:
         name = name_for_button(button)
@@ -629,12 +637,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
         if pressed:
             label.add_css_class("active")
         else:
+            label.remove_css_class("active")
         if self._gamepad_visual is not None:
             try:
                 self._gamepad_visual.set_button_pressed(button, pressed)
             except Exception:
                 logging.exception("Could not update the gamepad visual")
-            label.remove_css_class("active")
 
     def update_gamepad_axis(self, axis: int, value: float) -> None:
         self.gamepad_test_event_label.set_label(
@@ -642,12 +650,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
         )
         label = getattr(self, f"gamepad_test_axis_{axis}", None)
         if label is not None:
+            label.set_label(f"{value:+.2f}")
         if self._gamepad_visual is not None:
             try:
                 self._gamepad_visual.set_axis(axis, value)
             except Exception:
                 logging.exception("Could not update the gamepad visual")
-            label.set_label(f"{value:+.2f}")
 
     def update_gamepad_trigger(self, trigger: str, pressed: bool) -> None:
         """Reflect digital trigger events in the trigger axis rows."""
@@ -656,12 +664,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
         getattr(self, f"gamepad_test_axis_{axis}").set_label(f"{value:.2f}")
         self.gamepad_test_event_label.set_label(
             _("{}: {:.2f}").format(trigger, value)
+        )
         if self._gamepad_visual is not None:
             try:
                 self._gamepad_visual.set_trigger(trigger, pressed)
             except Exception:
                 logging.exception("Could not update the gamepad visual")
-        )
 
     def update_gamepad_hat(self, axis: int, value: int) -> None:
         directions = {
@@ -680,12 +688,12 @@ class CartridgesWindow(Adw.ApplicationWindow):
         )
         self.gamepad_test_event_label.set_label(
             _("Direcional: {}").format(direction)
+        )
         if self._gamepad_visual is not None:
             try:
                 self._gamepad_visual.set_hat(axis, value)
             except Exception:
                 logging.exception("Could not update the gamepad visual")
-        )
 
     def gamepad_search(self) -> None:
         page = self.navigation_view.get_visible_page()
@@ -1341,6 +1349,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
         if subtitle := " · ".join(
             part
             for part in (
+                post.source,
                 relative_date(post.timestamp) if post.timestamp else "",
                 post.category,
             )
@@ -1348,9 +1357,57 @@ class CartridgesWindow(Adw.ApplicationWindow):
         ):
             row.set_subtitle(subtitle)
             row.set_subtitle_lines(0)
+        if post.image:
+            thumbnail = Gtk.Picture(
+                width_request=_NEWS_THUMB_SIZE,
+                height_request=_NEWS_THUMB_SIZE,
+                content_fit=Gtk.ContentFit.COVER,
+                valign=Gtk.Align.CENTER,
+            )
+            thumbnail.add_css_class("card")
+            row.add_prefix(thumbnail)
+            self._queue_news_thumbnail(thumbnail, post.image)
         for child in children:
             row.add_row(child)
         return row
+
+    def _queue_news_thumbnail(self, picture: Gtk.Picture, url: str) -> None:
+        """Paint `picture` with the cached thumbnail, or download it off-thread."""
+        if cached := self._news_thumb_cache.get(url):
+            picture.set_paintable(cached)
+            return
+        pending = self._news_thumb_pending.setdefault(url, [])
+        pending.append(picture)
+        if len(pending) > 1:
+            return
+        threading.Thread(
+            target=self._fetch_news_thumbnail, args=(url,), daemon=True
+        ).start()
+
+    def _fetch_news_thumbnail(self, url: str) -> None:
+        data: Optional[bytes] = None
+        try:
+            data = download_bytes(url, timeout=10, max_bytes=_NEWS_THUMB_BYTES)
+        except Exception:  # pylint: disable=broad-exception-caught
+            logging.debug("News thumbnail failed to download: %s", url)
+        GLib.idle_add(self._apply_news_thumbnail, url, data)
+
+    def _apply_news_thumbnail(self, url: str, data: Optional[bytes]) -> bool:
+        """Decode downloaded bytes and paint every row still waiting for `url`."""
+        pictures = self._news_thumb_pending.pop(url, [])
+        if data:
+            try:
+                texture = Gdk.Texture.new_from_bytes(GLib.Bytes.new(data))
+            except GLib.Error:
+                texture = None
+            if texture is not None:
+                if len(self._news_thumb_cache) >= _NEWS_THUMB_CACHE_MAX:
+                    self._news_thumb_cache.clear()
+                self._news_thumb_cache[url] = texture
+                for picture in pictures:
+                    if picture.get_parent() is not None:
+                        picture.set_paintable(texture)
+        return False
 
     @staticmethod
     def build_news_summary_row(text: str) -> Gtk.ListBoxRow:
