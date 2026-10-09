@@ -81,3 +81,5 @@ if host_machine.system() == 'linux'
     install_dir: get_option('libexecdir'),
   )
 endif
+    'gamepad_visual.py',
+    'gpu_screen_recorder.py',

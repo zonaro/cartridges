@@ -58,3 +58,4 @@ cartridges/importer/yuzu_source.py
 
 cartridges/store/managers/sgdb_manager.py
 cartridges/store/managers/thegamesdb_manager.py
+cartridges/gamepad_visual.py
