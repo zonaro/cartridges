@@ -484,7 +484,7 @@ class DetailsDialog(Adw.Dialog):
             {
                 "manual": _("Escolhido manualmente"),
                 "none": _("Não trocar o papel de parede"),
-            }.get(choice, _("Automático (wallhaven)"))
+            }.get(choice, _("Automático (IGDB, TheGamesDB, wallhaven)"))
         )
         self.wallpaper_button_reset.set_visible(choice != "auto")
 

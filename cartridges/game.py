@@ -254,7 +254,8 @@ class Game(Gtk.Box):
 
     def launch(self) -> None:
         if self.base_source == "xcloud":
-            if not shared.win.open_xcloud_game(self.executable):
+            started = shared.win.launch_xcloud_game(self)
+            if not started:
                 return
             self.last_played = int(time())
             self.save()

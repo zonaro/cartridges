@@ -23,6 +23,12 @@ import json
 import logging
 from typing import NamedTuple, Optional
 
+import gi
+
+try:
+    gi.require_version("Secret", "1")
+except Exception:
+    pass
 from gi.repository import Secret
 
 _SCHEMA = Secret.Schema.new(

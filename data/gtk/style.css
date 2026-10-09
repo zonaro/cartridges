@@ -90,12 +90,6 @@
   background-color: alpha(var(--accent-bg-color, #3584e4), 0.22);
 }
 
-.better-xcloud-icon {
-  background: #107c10;
-  border-radius: 9999px;
-  padding: 3px;
-}
-
 .game-mode button {
   min-height: 44px;
 }

@@ -30,6 +30,7 @@ class ConfigurationTests(unittest.TestCase):
         self.assertEqual(defaults["game-mode-monitor"], '""')
         self.assertEqual(defaults["game-mode-audio-output"], '""')
         self.assertEqual(defaults["game-mode-audio-input"], '""')
+        self.assertEqual(defaults["game-overlay-button"], '"both"')
         self.assertEqual(defaults["thegamesdb-key"], '""')
         self.assertEqual(defaults["thegamesdb"], "false")
 

@@ -481,13 +481,37 @@ def _apagar_imagens(game_id: str, manter: str = "") -> None:
             arquivo.unlink(missing_ok=True)
 
 
+def _guardar_auto(game: "Game", url: str) -> Optional[tuple[Path, Posicoes]]:
+    """Baixa ``url`` como a parede automática de ``game`` e grava o sidecar.
+
+    Devolve ``(arquivo, posicoes)`` ou ``None`` quando o download falhou. Uma
+    busca automática que dá certo fica em disco: a sessão seguinte do mesmo
+    jogo não toca a rede.
+    """
+    try:
+        conteudo = download_bytes(str(url), timeout=30)
+        sufixo = Path(urlparse(str(url)).path).suffix.lower()
+        if sufixo not in IMAGE_SUFFIXES:
+            sufixo = ".jpg"
+        destino = shared.wallpapers_dir / f"{game.game_id}{sufixo}"
+        shared.wallpapers_dir.mkdir(parents=True, exist_ok=True)
+        _apagar_imagens(game.game_id, manter=destino.name)
+        destino.write_bytes(conteudo)
+    except Exception as erro:  # pylint: disable=broad-except
+        logging.info("Não foi possível baixar a parede do jogo: %s", erro)
+        return None
+    _gravar_sidecar(game.game_id, game.name, destino.name, Posicoes(), travado=False)
+    return destino, Posicoes()
+
+
 def _fonte(
     game: "Game", largura: int, altura: int, formato: str
 ) -> Optional[tuple[Path, Posicoes]]:
     """A imagem de partida deste jogo e a faixa dela, baixando se precisar.
 
-    ``largura`` x ``altura`` é o mínimo que os cortes precisam, e ``formato`` é
-    por onde a busca começa — o da grade da tela de escolha.
+    Desce os degraus IGDB → TheGamesDB (fanart) → wallhaven. ``largura`` x
+    ``altura`` é o mínimo que os cortes precisam, e ``formato`` é por onde a
+    busca do wallhaven começa — o da grade da tela de escolha.
 
     ``None`` quando o jogo está marcado para não trocar a parede, ou quando
     não sobrou nem busca nem capa.
@@ -509,44 +533,31 @@ def _fonte(
     if (arquivo := _arquivo_do_sidecar(dados)) and dados.get("name") == game.name:
         return arquivo, posicoes
 
-    if achado := melhor_para(game.name, largura, altura, formato):
+    # O IGDB resolve pelo nome e entrega screenshots em 1080p, já associadas
+    # ao jogo certo pelo match confiante — sem chave, devolve None em silêncio
+    # e o próximo degrau tenta.
+    try:
+        from cartridges.utils.igdb import screenshot_para
+    except ImportError as erro:
+        logging.info("Cliente IGDB indisponível: %s", erro)
+    else:
         try:
-            conteudo = download_bytes(str(achado["path"]), timeout=30)
-            sufixo = Path(str(achado["path"])).suffix.lower()
-            if sufixo not in IMAGE_SUFFIXES:
-                sufixo = ".jpg"
-            destino = shared.wallpapers_dir / f"{game.game_id}{sufixo}"
-            shared.wallpapers_dir.mkdir(parents=True, exist_ok=True)
-            _apagar_imagens(game.game_id, manter=destino.name)
-            destino.write_bytes(conteudo)
+            if url := screenshot_para(game.name):
+                if achado := _guardar_auto(game, url):
+                    return achado
         except Exception as erro:  # pylint: disable=broad-except
-            logging.info("Não foi possível baixar a parede do jogo: %s", erro)
-        else:
-            _gravar_sidecar(
-                game.game_id, game.name, destino.name, Posicoes(), travado=False
-            )
-            return destino, Posicoes()
+            logging.info("Parede via IGDB falhou (%s): %s", game.name, erro)
 
-    # TheGamesDB fanart is the artwork fallback when Wallhaven has no useful
-    # result (or is unavailable). It is already associated with the exact game
-    # selected during metadata lookup, so no second fuzzy search is needed.
+    # A fanart do TheGamesDB já vem associada ao jogo exato da busca de
+    # metadados, então não precisa de segunda busca difusa.
     for url in game.tgdb_fanart or []:
-        try:
-            conteudo = download_bytes(str(url), timeout=30)
-            sufixo = Path(urlparse(str(url)).path).suffix.lower()
-            if sufixo not in IMAGE_SUFFIXES:
-                sufixo = ".jpg"
-            destino = shared.wallpapers_dir / f"{game.game_id}{sufixo}"
-            shared.wallpapers_dir.mkdir(parents=True, exist_ok=True)
-            _apagar_imagens(game.game_id, manter=destino.name)
-            destino.write_bytes(conteudo)
-        except Exception as erro:  # pylint: disable=broad-except
-            logging.info("Não foi possível baixar a fanart do TheGamesDB: %s", erro)
-            continue
-        _gravar_sidecar(
-            game.game_id, game.name, destino.name, Posicoes(), travado=False
-        )
-        return destino, Posicoes()
+        if achado := _guardar_auto(game, str(url)):
+            return achado
+
+    if achado_w := melhor_para(game.name, largura, altura, formato):
+        if caminho := achado_w.get("path"):
+            if baixado := _guardar_auto(game, str(caminho)):
+                return baixado
 
     # Último degrau: a capa. Não fica guardada como fonte — ela já está em
     # `covers`, e uma cópia aqui envelheceria sozinha quando a capa mudasse.

@@ -192,7 +192,9 @@ Adw.StatusPage zerados_notice_empty {
         title: _("Biblioteca");
 
         Adw.OverlaySplitView overlay_split_view {
-          sidebar-width-fraction: .2;
+          sidebar-width-fraction: .36;
+          min-sidebar-width: 340;
+          max-sidebar-width: 460;
 
           [sidebar]
           Adw.NavigationPage sidebar_navigation_page {
@@ -206,6 +208,20 @@ Adw.StatusPage zerados_notice_empty {
                   icon-name: "sidebar-show-symbolic";
                   action-name: "win.show_sidebar";
                   tooltip-text: _("Toggle Sidebar");
+                }
+
+                [end]
+                Adw.Spinner xcloud_refresh_spinner {
+                  visible: false;
+                  width-request: 16;
+                  height-request: 16;
+                }
+
+                [end]
+                Button xcloud_refresh_button {
+                  icon-name: "view-refresh-symbolic";
+                  tooltip-text: _("Atualizar catálogo Xbox Cloud");
+                  visible: false;
                 }
               }
 
@@ -479,14 +495,34 @@ Adw.StatusPage zerados_notice_empty {
             ]
           }
 
-          Button session_blocker_button {
-            label: _("Já terminei de jogar");
+          Box {
             halign: center;
+            spacing: 12;
 
-            styles [
-              "suggested-action",
-              "pill",
-            ]
+            Button session_return_button {
+              label: _("Voltar ao jogo");
+              height-request: 52;
+
+              styles [
+                "suggested-action",
+                "pill",
+              ]
+            }
+
+            Button gpu_screen_recorder_button {
+              icon-name: "media-record-symbolic";
+              tooltip-text: _("Abrir o GPU Screen Recorder");
+              width-request: 52;
+              height-request: 52;
+
+              accessibility {
+                label: _("Abrir o GPU Screen Recorder");
+              }
+
+              styles [
+                "circular",
+              ]
+            }
           }
 
           MenuButton session_blocker_notes_button {
@@ -517,6 +553,16 @@ Adw.StatusPage zerados_notice_empty {
                 }
               }
             };
+          }
+
+          Button session_blocker_button {
+            label: _("Já terminei de jogar");
+            halign: center;
+
+            styles [
+              "flat",
+              "destructive-action",
+            ]
           }
         }
       }
@@ -559,6 +605,18 @@ Adw.NavigationPage gamepad_test_page {
             wrap: true;
             justify: center;
             styles ["dim-label"]
+          }
+
+          Label gamepad_test_layout_label {
+            label: _("Layout não identificado");
+            wrap: true;
+            justify: center;
+            styles ["caption", "dim-label"]
+          }
+
+          Box gamepad_visual_slot {
+            hexpand: true;
+            styles ["gamepad-visual-slot"]
           }
 
           Label {
@@ -844,7 +902,7 @@ Adw.NavigationPage news_page {
   }
 }
 
-Adw.NavigationPage xcloud_page {
+Adw.NavigationPage xcloud_player_page {
   title: _("Xbox Cloud Gaming");
   tag: "xcloud";
 
@@ -861,17 +919,17 @@ Adw.NavigationPage xcloud_page {
       }
 
       [end]
+      Button xcloud_menu_button {
+        icon-name: "open-menu-symbolic";
+        tooltip-text: _("Menu do player");
+        action-name: "win.xcloud_player_menu";
+      }
+
+      [end]
       Button xcloud_fullscreen_button {
         icon-name: "view-fullscreen-symbolic";
         tooltip-text: _("Tela cheia");
         action-name: "win.toggle_xcloud_fullscreen";
-      }
-
-      [end]
-      Button xcloud_reload_button {
-        icon-name: "view-refresh-symbolic";
-        tooltip-text: _("Recarregar");
-        action-name: "win.reload_xcloud";
       }
     }
 
@@ -900,9 +958,19 @@ Adw.NavigationPage xcloud_page {
         visible: false;
         icon-name: "network-error-symbolic";
         title: _("Xbox Cloud Gaming indisponível");
-        description: _("Instale o WebKitGTK para navegar no xCloud dentro do Jolven.");
+        description: _("Não foi possível iniciar a transmissão.");
         vexpand: true;
         valign: center;
+
+        Button xcloud_retry_button {
+          label: _("Tentar novamente");
+          halign: center;
+
+          styles [
+            "pill",
+            "suggested-action",
+          ]
+        }
       }
     }
 
@@ -1378,15 +1446,3 @@ menu search {
     item (_("HowLongToBeat"), "app.hltb_search")
   }
 }
-          Label gamepad_test_layout_label {
-            label: _("Layout não identificado");
-            wrap: true;
-            justify: center;
-            styles ["caption", "dim-label"]
-          }
-
-          Box gamepad_visual_slot {
-            hexpand: true;
-            styles ["gamepad-visual-slot"]
-          }
-

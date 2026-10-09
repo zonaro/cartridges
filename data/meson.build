@@ -105,4 +105,11 @@ if get_option('prefix') in ['/usr', '/usr/local']
     # root for an otherwise user-local application update.
     install_dir: '/usr/share/polkit-1/actions',
   )
+  configure_file(
+    input: 'io.github.zonaro.Jolven.XCloudDeps.policy.in',
+    output: app_id + '.XCloudDeps.policy',
+    configuration: conf,
+    install: true,
+    install_dir: '/usr/share/polkit-1/actions',
+  )
 endif

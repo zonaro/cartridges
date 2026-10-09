@@ -49,6 +49,7 @@ from cartridges.controller import (
     ControllerAction,
     action_for_button,
     hat_direction,
+    opens_game_overlay,
     stick_direction,
     trigger_for_button,
 )
@@ -149,13 +150,28 @@ class CartridgesApplication(Adw.Application):
     def gamepad_button_pressed(self, _device, event) -> None:
         logging.debug("Gamepad: %s pressed", (button := event.get_button()[1]))
 
+        if shared.win.xcloud_input_active and action_for_button(button) == ControllerAction.GUIDE:
+            shared.win.show_xcloud_player_menu()
+            return
         if trigger := trigger_for_button(button):
             shared.win.update_gamepad_trigger(trigger, True)
             return
         shared.win.update_gamepad_button(button, True)
+        if shared.win.xcloud_input_active:
+            return
         if shared.win.gamepad_test_active:
             if action_for_button(button) == ControllerAction.BACK:
                 shared.win.gamepad_back()
+            return
+
+        if (
+            shared.runtime.is_game_mode
+            and shared.win.session_game is not None
+            and opens_game_overlay(
+                button, shared.schema.get_string("game-overlay-button")
+            )
+        ):
+            shared.win.open_game_overlay()
             return
 
         match action_for_button(button):
@@ -186,6 +202,9 @@ class CartridgesApplication(Adw.Application):
 
         shared.win.update_gamepad_hat(hat[1], hat[2])
 
+        if shared.win.xcloud_input_active:
+            return
+
         if hat_direction(hat[1], hat[2]) is not None:
             self.navigate(hat[1] + hat[2])
 
@@ -196,6 +215,8 @@ class CartridgesApplication(Adw.Application):
             return
         axis, value = absolute[1], absolute[2]
         shared.win.update_gamepad_axis(axis, value)
+        if shared.win.xcloud_input_active:
+            return
         if axis not in (0, 1):
             return
         previous = getattr(self, "_gamepad_axis", {}).get(axis, 0)
@@ -385,11 +406,10 @@ class CartridgesApplication(Adw.Application):
                 ("show_hidden", ("<primary>h",), shared.win),
                 ("show_zerados", (), shared.win),
                 ("show_news", (), shared.win),
-                ("open_xcloud", (), shared.win),
                 ("close_xcloud", (), shared.win),
-                ("reload_xcloud", (), shared.win),
                 ("toggle_xcloud_fullscreen", ("F11",), shared.win),
                 ("xcloud_escape", (), shared.win),
+                ("xcloud_player_menu", (), shared.win),
                 ("go_to_parent", ("<alt>Up",), shared.win),
                 ("go_home", ("<alt>Home",), shared.win),
                 ("toggle_search", ("<primary>f",), shared.win),

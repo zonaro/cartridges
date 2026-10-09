@@ -18,6 +18,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 from time import time
 from typing import Any, Callable, Iterable, Optional
 
@@ -34,9 +35,12 @@ SIGL_URL = "https://catalog.gamepass.com/sigls/v2"
 PRODUCTS_URL = "https://displaycatalog.mp.microsoft.com/v7.0/products"
 PLAY_URL = "https://www.xbox.com/play/launch/{product_id}"
 BATCH_SIZE = 50
+CATALOG_CACHE_FILE = "xcloud_catalog.json"
+CATALOG_TTL = 86400
+CACHE_VERSION = 1
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+    "(KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
 )
 
 _cover_pool = ThreadPoolExecutor(max_workers=6, thread_name_prefix="xcloud-cover")
@@ -206,8 +210,165 @@ def fetch_catalog() -> list[CloudGame]:
     return sorted(unique.values(), key=lambda game: game.name.casefold())
 
 
-def sync_async(on_complete: Optional[Callable[[int], None]] = None) -> bool:
-    """Atualiza a fonte em segundo plano. Retorna False se já houver sync."""
+def catalog_cache_path(base: Optional[Path] = None) -> Path:
+    """Caminho do JSON de cache; ``base`` isola o cache nos testes."""
+    if base is None:
+        from cartridges import shared
+
+        base = shared.cache_dir / "jolven"
+    return Path(base) / CATALOG_CACHE_FILE
+
+
+def _resolve_cache_path(path: Optional[Path]) -> Path:
+    return Path(path) if path is not None else catalog_cache_path()
+
+
+def _game_to_dict(game: CloudGame) -> dict[str, Any]:
+    return {
+        "product_id": game.product_id,
+        "name": game.name,
+        "developer": game.developer,
+        "publisher": game.publisher,
+        "description": game.description,
+        "cover_url": game.cover_url,
+        "is_free": game.is_free,
+    }
+
+
+def _game_from_dict(data: Any) -> Optional[CloudGame]:
+    if not isinstance(data, dict):
+        return None
+    product_id = data.get("product_id")
+    name = data.get("name")
+    if not isinstance(product_id, str) or not product_id:
+        return None
+    if not isinstance(name, str) or not name.strip():
+        return None
+    return CloudGame(
+        product_id=product_id.upper(),
+        name=name.strip(),
+        developer=_text(data.get("developer")),
+        publisher=_text(data.get("publisher")),
+        description=_text(data.get("description")),
+        cover_url=_text(data.get("cover_url")),
+        is_free=bool(data.get("is_free", False)),
+    )
+
+
+def _read_cache(path: Optional[Path] = None) -> Optional[dict[str, Any]]:
+    try:
+        raw = json.loads(
+            _resolve_cache_path(path).read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+    if raw.get("version") != CACHE_VERSION:
+        return None
+    if not isinstance(raw.get("games"), list):
+        return None
+    return raw
+
+
+def load_cached_catalog(path: Optional[Path] = None) -> list[CloudGame]:
+    """Devolve o catálogo persistido, ignorando cache ausente ou incompatível."""
+    raw = _read_cache(path)
+    if raw is None:
+        return []
+    games = [
+        game
+        for entry in raw["games"]
+        if (game := _game_from_dict(entry)) is not None
+    ]
+    return sorted(games, key=lambda game: game.name.casefold())
+
+
+def save_cached_catalog(
+    games: list[CloudGame],
+    path: Optional[Path] = None,
+    *,
+    now: Optional[float] = None,
+) -> bool:
+    """Grava o catálogo de forma atômica. Ignora lista vazia para não apagar cache."""
+    if not games:
+        return False
+    cache_path = _resolve_cache_path(path)
+    payload = {
+        "version": CACHE_VERSION,
+        "fetched_at": time() if now is None else now,
+        "games": [_game_to_dict(game) for game in games],
+    }
+    temporary = cache_path.with_name(cache_path.name + ".tmp")
+    try:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary.write_text(
+            json.dumps(payload, ensure_ascii=False), encoding="utf-8"
+        )
+        temporary.replace(cache_path)
+    except OSError as error:
+        logging.warning(
+            "Não foi possível gravar o cache do catálogo xCloud: %s", error
+        )
+        temporary.unlink(missing_ok=True)
+        return False
+    return True
+
+
+def cache_is_fresh(
+    path: Optional[Path] = None,
+    *,
+    ttl: float = CATALOG_TTL,
+    now: Optional[float] = None,
+) -> bool:
+    """True quando o cache existe, tem versão suportada e está dentro do TTL."""
+    raw = _read_cache(path)
+    if raw is None:
+        return False
+    fetched_at = raw.get("fetched_at")
+    if isinstance(fetched_at, bool) or not isinstance(fetched_at, (int, float)):
+        return False
+    return ((time() if now is None else now) - fetched_at) < ttl
+
+
+def get_catalog(
+    path: Optional[Path] = None,
+    *,
+    force: bool = False,
+    fetcher: Callable[[], list[CloudGame]] = fetch_catalog,
+    now: Optional[float] = None,
+) -> list[CloudGame]:
+    """Cache-first: usa cache fresco, senão busca e recai no cache ao falhar."""
+    if not force and cache_is_fresh(path, now=now):
+        cached = load_cached_catalog(path)
+        if cached:
+            logging.info("Catálogo xCloud do cache local (%d jogos)", len(cached))
+            return cached
+    try:
+        games = fetcher()
+    except Exception as error:  # integração opcional: degrada para o cache
+        cached = load_cached_catalog(path)
+        if cached:
+            logging.warning(
+                "Catálogo xCloud indisponível, usando cache local: %s", error
+            )
+            return cached
+        raise
+    if games:
+        save_cached_catalog(games, path, now=now)
+    return games
+
+
+def sync_async(
+    on_complete: Optional[Callable[[int], None]] = None,
+    on_error: Optional[Callable[[Exception], None]] = None,
+    force: bool = False,
+) -> bool:
+    """Atualiza a fonte em segundo plano. Retorna False se já houver sync.
+
+    ``force=True`` ignora o TTL para o refresh manual; sem cache e sem rede,
+    ``on_error`` é chamado na thread principal.
+    """
     global _sync_running
     if _sync_running:
         return False
@@ -215,9 +376,13 @@ def sync_async(on_complete: Optional[Callable[[int], None]] = None) -> bool:
 
     def work() -> None:
         try:
-            games = fetch_catalog()
-        except Exception as error:  # rede/catálogo indisponível: mantém o cache
+            games = get_catalog(force=force)
+        except Exception as error:  # sem cache e sem rede: nada a atualizar
             logging.warning("Não foi possível atualizar o catálogo xCloud: %s", error)
+            if on_error is not None:
+                from cartridges.utils.na_tela import entregar_na_tela
+
+                entregar_na_tela(_notify_error, on_error, error)
             _finish_sync()
             return
 
@@ -227,6 +392,16 @@ def sync_async(on_complete: Optional[Callable[[int], None]] = None) -> bool:
 
     threading.Thread(target=work, daemon=True, name="xcloud-catalog").start()
     return True
+
+
+def _notify_error(
+    on_error: Callable[[Exception], None], error: Exception
+) -> bool:
+    try:
+        on_error(error)
+    except Exception:  # pylint: disable=broad-exception-caught
+        logging.debug("Callback de erro do catálogo xCloud falhou", exc_info=True)
+    return False
 
 
 def _finish_sync() -> bool:
@@ -250,7 +425,7 @@ def _install_catalog(
 
     def install_one(item: CloudGame) -> None:
         nonlocal added
-        existing = shared.store.get(item.game_id)
+        existing = shared.store.source_games.get(SOURCE_ID, {}).get(item.game_id)
         changed = False
         if existing is None:
             existing = Game(
@@ -290,7 +465,12 @@ def _install_catalog(
             changed = True
 
         if changed:
-            shared.store.managers[FileManager].main(existing, {})
+            # Escrita JSON fora da thread GTK (FileManager é AsyncManager):
+            # o json.dump roda no worker do Gio.Task, sem congelar a grade.
+            # Relates to #13
+            shared.store.managers[FileManager].process_game(
+                existing, {}, lambda *_: None
+            )
         # Mesmo quando nada mudou, um item carregado com a integração
         # desativada ainda precisa entrar na grade depois que ela é ligada.
         if changed or existing.get_parent() is None:
@@ -377,12 +557,17 @@ def _cover_downloaded(game_id: str, future) -> None:
         return
     if not contents:
         return
-    from gi.repository import GLib
+    # O pool já é worker: persiste aqui e só encosta no GTK para trocar a capa.
+    path = _persist_cover(game_id, contents)
+    if path is None:
+        return
+    from cartridges.utils.na_tela import entregar_na_tela
 
-    GLib.idle_add(_save_cover, game_id, contents)
+    entregar_na_tela(_apply_cover, game_id, path)
 
 
-def _save_cover(game_id: str, contents: bytes) -> bool:
+def _persist_cover(game_id: str, contents: bytes):
+    """Grava os bytes da capa de forma atômica; roda fora da thread GTK."""
     from cartridges import shared
 
     shared.covers_dir.mkdir(parents=True, exist_ok=True)
@@ -391,10 +576,25 @@ def _save_cover(game_id: str, contents: bytes) -> bool:
     try:
         temporary.write_bytes(contents)
         temporary.replace(path)
-        game = shared.store.get(game_id)
-        if game is not None and game.game_cover is not None:
-            game.game_cover.new_cover(path)
     except OSError as error:
         logging.debug("Não foi possível salvar capa do xCloud %s: %s", game_id, error)
         temporary.unlink(missing_ok=True)
+        return None
+    return path
+
+
+def _apply_cover(game_id: str, path) -> bool:
+    """Troca a capa do tile; roda na thread principal via entregar_na_tela."""
+    from cartridges import shared
+
+    game = shared.store.source_games.get(SOURCE_ID, {}).get(game_id)
+    if game is not None and game.game_cover is not None:
+        game.game_cover.new_cover(path)
     return False
+
+
+def _save_cover(game_id: str, contents: bytes) -> bool:
+    path = _persist_cover(game_id, contents)
+    if path is None:
+        return False
+    return _apply_cover(game_id, path)

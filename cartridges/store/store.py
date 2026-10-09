@@ -48,6 +48,7 @@ class Store:
         self.source_games = {}
         self.new_game_ids = set()
         self.duplicate_game_ids = set()
+        self.revision = 0
 
     def __contains__(self, obj: object) -> bool:
         """Check if the game is present in the store with the `in` keyword"""
@@ -148,6 +149,7 @@ class Store:
 
     def excluir(self, game: Game, apagar_sessoes: bool = True) -> None:
         self.source_games.get(game.base_source, {}).pop(game.game_id, None)
+        self.revision += 1
         self.cleanup_game(game, apagar_sessoes=apagar_sessoes)
 
     def add_game(
@@ -208,6 +210,7 @@ class Store:
         if not game.base_source in self.source_games:
             self.source_games[game.base_source] = {}
         self.source_games[game.base_source][game.game_id] = game
+        self.revision += 1
 
         # Run the pipeline for the game
         if not run_pipeline:

@@ -1,0 +1,164 @@
+#!/usr/bin/bash
+# Privileged helper invoked by pkexec. It accepts only the fixed operation below.
+# Instala os plugins GStreamer do WebRTC (ICE/libnice) para o Xbox Cloud Gaming.
+set -euo pipefail
+
+readonly action="${1:-}"
+
+if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
+    printf 'This helper must be run through pkexec or sudo.\n' >&2
+    exit 77
+fi
+if [[ "$action" != install-xcloud-deps ]]; then
+    printf 'Usage: jolven-xcloud-deps install-xcloud-deps\n' >&2
+    exit 64
+fi
+
+# shellcheck disable=SC1091
+. /etc/os-release
+distro_id="${ID:-unknown}"
+like="${ID_LIKE:-}"
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+verified_ok() {
+    # gst-inspect pode não estar no PATH do root em alguns sistemas.
+    local inspect=""
+    if have gst-inspect-1.0; then
+        inspect="$(command -v gst-inspect-1.0)"
+    elif [[ -x /usr/bin/gst-inspect-1.0 ]]; then
+        inspect=/usr/bin/gst-inspect-1.0
+    else
+        # Sem inspetor não dá para verificar; confia no gerenciador de pacotes.
+        return 0
+    fi
+    local element
+    for element in webrtcbin nicesrc nicesink sctpenc sctpdec rtph264depay h264parse rtpopusdepay opusdec videoconvert audioconvert appsink autoaudiosink; do
+        "$inspect" "$element" >/dev/null 2>&1 || return 1
+    done
+    for element in vah264dec nvh264dec avdec_h264 openh264dec; do
+        if "$inspect" "$element" >/dev/null 2>&1; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+if verified_ok; then
+    printf 'WebRTC GStreamer plugins already present.\n'
+    exit 0
+fi
+
+install_dnf() {
+    # Apenas pacotes desta lista fechada; ignora nomes desconhecidos no repo.
+    # libnice-gstreamer1 é o provedor do nicesrc (ICE) no Fedora.
+    local -a candidates=(
+        libnice-gstreamer1
+        gstreamer1-plugins-bad-free
+        gstreamer1-plugins-bad-freeworld
+        gstreamer1-plugins-bad-free-extras
+        gstreamer1-plugin-openh264
+    )
+    local -a wanted=()
+    local package
+    printf 'Verificando pacotes do sistema (pode levar um minuto)...\n'
+    for package in "${candidates[@]}"; do
+        if rpm -q "$package" >/dev/null 2>&1; then
+            continue
+        fi
+        printf 'Procurando %s nos repositórios...\n' "$package"
+        if dnf -q list available "$package" >/dev/null 2>&1; then
+            wanted+=("$package")
+        fi
+    done
+    if ((${#wanted[@]} == 0)); then
+        printf 'No installable WebRTC plugin package found in dnf repos.\n' >&2
+        return 69
+    fi
+    printf 'Instalando: %s (o download pode demorar)...\n' "${wanted[*]}"
+    dnf install --assumeyes "${wanted[@]}"
+}
+
+install_pacman() {
+    local -a wanted=()
+    local package
+    printf 'Verificando pacotes do sistema...\n'
+    for package in gst-plugins-bad gst-plugin-openh264; do
+        if pacman -Q "$package" >/dev/null 2>&1; then
+            continue
+        fi
+        wanted+=("$package")
+    done
+    if ((${#wanted[@]} == 0)); then
+        printf 'WebRTC GStreamer plugins already present.\n'
+        return 0
+    fi
+    pacman -S --needed --noconfirm "${wanted[@]}"
+}
+
+install_apt() {
+    local -a wanted=()
+    local package
+    printf 'Verificando pacotes do sistema...\n'
+    for package in gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly; do
+        if dpkg -s "$package" >/dev/null 2>&1; then
+            continue
+        fi
+        wanted+=("$package")
+    done
+    if ((${#wanted[@]} == 0)); then
+        printf 'WebRTC GStreamer plugins already present.\n'
+        return 0
+    fi
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install --assume-yes "${wanted[@]}"
+}
+
+status=69
+# Os instaladores retornam não-zero em falha; sem o +e o `set -e` abortaria
+# antes de registrar o código para a mensagem final.
+set +e
+if have dnf || [[ "$distro_id" == fedora || "$like" == *rhel* || "$like" == *fedora* ]]; then
+    if have dnf; then
+        install_dnf
+        status=$?
+    else
+        printf 'dnf not found on this Fedora/RHEL-like system.\n' >&2
+    fi
+elif have pacman || [[ "$distro_id" == arch || "$like" == *arch* ]]; then
+    if have pacman; then
+        install_pacman
+        status=$?
+    else
+        printf 'pacman not found on this Arch-like system.\n' >&2
+    fi
+elif have apt-get || [[ "$distro_id" == debian || "$distro_id" == ubuntu || "$like" == *debian* || "$like" == *ubuntu* ]]; then
+    if have apt-get; then
+        install_apt
+        status=$?
+    else
+        printf 'apt-get not found on this Debian-like system.\n' >&2
+    fi
+else
+    printf 'Unsupported distribution (%s): install the GStreamer WebRTC/ICE (libnice) plugins manually.\n' "$distro_id" >&2
+fi
+set -e
+
+if ((status != 0)); then
+    exit "$status"
+fi
+# Limpa o cache de registro para o novo plugin aparecer na hora.
+rm -f /root/.cache/gstreamer-1.0/registry.*.bin 2>/dev/null || true
+if [[ -n "${PKEXEC_UID:-}" ]]; then
+    _user_home="$(getent passwd "$PKEXEC_UID" | cut -d: -f6)"
+    if [[ -n "$_user_home" ]]; then
+        rm -f "$_user_home"/.cache/gstreamer-1.0/registry.*.bin 2>/dev/null || true
+    fi
+fi
+if verified_ok; then
+    printf 'WebRTC GStreamer plugins installed and verified.\n'
+    exit 0
+fi
+printf 'Installed packages but nicesrc is still missing; a reboot or manual plugin install may be needed.\n' >&2
+exit 70

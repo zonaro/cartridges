@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>Jolven</vendor>
+  <action id="io.github.zonaro.Jolven.install-xcloud-deps">
+    <description>Install GStreamer WebRTC plugins for Xbox Cloud Gaming</description>
+    <message>Authentication is required to install the streaming dependencies</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">@libexecdir@/jolven-xcloud-deps</annotate>
+  </action>
+</policyconfig>

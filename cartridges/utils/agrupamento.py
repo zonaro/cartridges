@@ -32,6 +32,8 @@ _ARQUIVO = "agrupamento.json"
 
 _prefs: Optional[dict] = None
 _curando = False
+_indice: Optional[dict[str, list]] = None
+_indice_chave: Optional[tuple] = None
 
 
 def _carregar() -> dict:
@@ -93,7 +95,44 @@ def atualizar(game) -> str:
     if getattr(game, "_grupo_nome", None) != nome:
         game._grupo_chave = chave_para(nome)
         game._grupo_nome = nome
+        limpar_indice()
     return game._grupo_chave
+
+
+def limpar_indice() -> None:
+    global _indice, _indice_chave
+    _indice = None
+    _indice_chave = None
+
+
+def construir_indice(jogos, *, agrupar: bool = True) -> dict[str, list]:
+    grupos: dict[str, list] = {}
+    for outro in jogos:
+        if not agrupar or not elegivel(outro):
+            continue
+        chave = atualizar(outro)
+        if desagrupada(chave):
+            continue
+        grupos.setdefault(chave, []).append(outro)
+    return grupos
+
+
+def indice() -> dict[str, list]:
+    global _indice, _indice_chave
+    agrupar = ativo()
+    try:
+        revisao = shared.store.revision
+    except AttributeError:
+        revisao = 0
+    chave = (revisao, agrupar)
+    if _indice is None or _indice_chave != chave:
+        try:
+            jogos = list(shared.store)
+        except AttributeError:
+            return {}
+        _indice = construir_indice(jogos, agrupar=agrupar)
+        _indice_chave = chave
+    return _indice
 
 
 def desagrupada(chave: str) -> bool:
@@ -104,12 +143,7 @@ def membros(game) -> list:
     chave = atualizar(game)
     if desagrupada(chave) or not elegivel(game):
         return [game]
-    saida = [
-        outro
-        for outro in shared.store
-        if elegivel(outro) and atualizar(outro) == chave
-    ]
-    return saida or [game]
+    return list(indice().get(chave) or [game])
 
 
 def primario(members: list):
@@ -129,6 +163,7 @@ def definir_preferido(game) -> None:
     prefs = _carregar()
     prefs["preferidos"][atualizar(game)] = game.game_id
     _salvar()
+    limpar_indice()
 
 
 def desagrupar_chave(chave: str) -> None:
@@ -137,6 +172,7 @@ def desagrupar_chave(chave: str) -> None:
         prefs["desagrupados"].append(chave)
     prefs["preferidos"].pop(chave, None)
     _salvar()
+    limpar_indice()
 
 
 def garantir(game) -> None:
@@ -162,14 +198,7 @@ def reconciliar() -> None:
     if _curando or not ativo():
         return
     try:
-        grupos: dict[str, list] = {}
-        for game in shared.store:
-            if not elegivel(game):
-                continue
-            chave = atualizar(game)
-            if desagrupada(chave):
-                continue
-            grupos.setdefault(chave, []).append(game)
+        grupos = indice()
         _curando = True
         try:
             for members in grupos.values():

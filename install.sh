@@ -95,6 +95,11 @@ install_binary() {
     install_runtime_packages \
         adwaita-icon-theme \
         desktop-file-utils \
+        libnice-gstreamer1 \
+        gstreamer1-plugins-bad-free \
+        gstreamer1-plugins-bad-freeworld \
+        gstreamer1-plugins-bad-free-extras \
+        gstreamer1-plugin-openh264 \
         gtk4 \
         libadwaita \
         python3-gobject \
