@@ -2229,3 +2229,23 @@ msgstr "Não foi possível instalar o Sunshine"
 #: cartridges/main.py:651
 msgid "Sunshine instalado!"
 msgstr "Sunshine instalado!"
+
+#: data/gtk/preferences.blp:177
+msgid "Iniciar o Sunshine"
+msgstr "Iniciar o Sunshine"
+
+#: data/gtk/preferences.blp:178
+msgid "Inicia o servidor em segundo plano"
+msgstr "Inicia o servidor em segundo plano"
+
+#: data/gtk/preferences.blp:177
+msgid "Iniciar"
+msgstr "Iniciar"
+
+#: cartridges/preferences.py:1127
+msgid "O Sunshine já está rodando"
+msgstr "O Sunshine já está rodando"
+
+#: cartridges/preferences.py:1129
+msgid "Iniciando o Sunshine…"
+msgstr "Iniciando o Sunshine…"

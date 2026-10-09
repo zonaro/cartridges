@@ -23,8 +23,10 @@ from cartridges.utils.sunshine import (
     installation_type,
     is_eligible,
     is_installed,
+    is_running,
     read_catalog,
     resolve_apps_path,
+    start_server,
     sync_library,
     upsert_app,
 )
@@ -321,6 +323,112 @@ class InstallationTests(unittest.TestCase):
         ):
             with self.assertRaises(SunshineError):
                 install_flatpak()
+
+
+class RunningTests(unittest.TestCase):
+    def test_native_running_matches_exact_name(self) -> None:
+        def fake_run(command: list, **kwargs: Any) -> SimpleNamespace:
+            self.assertEqual(command[:2], ["/usr/bin/pgrep", "-x"])
+            self.assertEqual(command[2], "sunshine")
+            return SimpleNamespace(returncode=0)
+
+        with (
+            patch(
+                "cartridges.utils.sunshine.shutil.which",
+                side_effect=lambda n: f"/usr/bin/{n}",
+            ),
+            patch("cartridges.utils.sunshine.subprocess.run", side_effect=fake_run),
+        ):
+            self.assertTrue(is_running())
+
+    def test_native_stopped(self) -> None:
+        def fake_run(command: list, **kwargs: Any) -> SimpleNamespace:
+            return SimpleNamespace(returncode=1)
+
+        with (
+            patch(
+                "cartridges.utils.sunshine.shutil.which",
+                side_effect=lambda n: f"/usr/bin/{n}",
+            ),
+            patch("cartridges.utils.sunshine.subprocess.run", side_effect=fake_run),
+        ):
+            self.assertFalse(is_running())
+
+    def test_flatpak_running_lists_apps(self) -> None:
+        def fake_run(command: list, **kwargs: Any) -> SimpleNamespace:
+            self.assertEqual(command[:2], ["/usr/bin/flatpak", "ps"])
+            return SimpleNamespace(
+                returncode=0,
+                stdout="APPLICATION\ndev.lizardbyte.app.Sunshine\n",
+            )
+
+        with (
+            patch(
+                "cartridges.utils.sunshine.installation_type",
+                return_value="flatpak",
+            ),
+            patch(
+                "cartridges.utils.sunshine.shutil.which",
+                return_value="/usr/bin/flatpak",
+            ),
+            patch("cartridges.utils.sunshine.subprocess.run", side_effect=fake_run),
+        ):
+            self.assertTrue(is_running())
+
+    def test_start_skips_when_running(self) -> None:
+        with (
+            patch(
+                "cartridges.utils.sunshine.installation_type",
+                return_value="native",
+            ),
+            patch("cartridges.utils.sunshine.is_running", return_value=True),
+            patch("cartridges.utils.sunshine.subprocess.Popen") as popen,
+        ):
+            self.assertFalse(start_server())
+        popen.assert_not_called()
+
+    def test_start_spawns_detached_native(self) -> None:
+        import subprocess
+
+        with (
+            patch(
+                "cartridges.utils.sunshine.installation_type",
+                return_value="native",
+            ),
+            patch("cartridges.utils.sunshine.is_running", return_value=False),
+            patch("cartridges.utils.sunshine.subprocess.Popen") as popen,
+        ):
+            self.assertTrue(start_server())
+        args, kwargs = popen.call_args
+        self.assertEqual(args[0], ["sunshine"])
+        self.assertTrue(kwargs.get("start_new_session"))
+        self.assertIs(kwargs.get("stdout"), subprocess.DEVNULL)
+
+    def test_start_spawns_flatpak_run(self) -> None:
+        with (
+            patch(
+                "cartridges.utils.sunshine.installation_type",
+                return_value="flatpak",
+            ),
+            patch("cartridges.utils.sunshine.is_running", return_value=False),
+            patch(
+                "cartridges.utils.sunshine.shutil.which",
+                return_value="/usr/bin/flatpak",
+            ),
+            patch("cartridges.utils.sunshine.subprocess.Popen") as popen,
+        ):
+            self.assertTrue(start_server())
+        args, _kwargs = popen.call_args
+        self.assertEqual(
+            args[0], ["/usr/bin/flatpak", "run", "dev.lizardbyte.app.Sunshine"]
+        )
+
+    def test_start_without_install_raises(self) -> None:
+        with patch(
+            "cartridges.utils.sunshine.installation_type", return_value=""
+        ):
+            with self.assertRaises(SunshineError):
+                start_server()
 
 
 if __name__ == "__main__":

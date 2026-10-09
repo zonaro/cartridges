@@ -175,6 +175,9 @@ instalar via Flatpak user a partir do Flathub (sem sudo), com toast de
 progresso e abertura da página ao concluir. O caminho padrão do
 `apps.json` prefere o catálogo existente (nativo, depois Flatpak) e,
 sem nenhum, segue o tipo de instalação detectado.
+- A linha **Iniciar o Sunshine** (`is_running` via `pgrep -x` no
+  nativo e `flatpak ps` no Flatpak) inicia o servidor destacado quando
+  parado, avisa quando já roda e retesta a conexão em seguida.
 - Flatpak: o Jolven confinado não enxerga o `~/.config` do host; nesse
   caso aponte `sunshine-apps-path` para um caminho acessível.
 

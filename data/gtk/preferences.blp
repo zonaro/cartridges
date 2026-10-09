@@ -172,6 +172,18 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
           label: _("Abrir");
         }
       }
+
+      Adw.ActionRow sunshine_start_row {
+        title: _("Iniciar o Sunshine");
+        subtitle: _("Inicia o servidor em segundo plano");
+        activatable-widget: sunshine_start_button;
+
+        [suffix]
+        Button sunshine_start_button {
+          valign: center;
+          label: _("Iniciar");
+        }
+      }
     }
 
     Adw.PreferencesGroup sunshine_apps_group {

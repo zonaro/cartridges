@@ -90,6 +90,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     sunshine_status_row: Adw.ActionRow = Gtk.Template.Child()
     sunshine_test_button: Gtk.Button = Gtk.Template.Child()
     sunshine_web_button: Gtk.Button = Gtk.Template.Child()
+    sunshine_start_button: Gtk.Button = Gtk.Template.Child()
     sunshine_apps_group: Adw.PreferencesGroup = Gtk.Template.Child()
     sunshine_api_sync_button: Gtk.Button = Gtk.Template.Child()
     sunshine_max_bitrate_row: Adw.EntryRow = Gtk.Template.Child()
@@ -340,6 +341,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         self.sunshine_username_row.connect("changed", sunshine_username_changed)
         self.sunshine_test_button.connect("clicked", self.testar_sunshine)
         self.sunshine_web_button.connect("clicked", self.abrir_sunshine_web)
+        self.sunshine_start_button.connect("clicked", self.iniciar_sunshine)
         self.sunshine_apply_button.connect("clicked", self.aplicar_sunshine_host)
         self.sunshine_api_sync_button.connect("clicked", self.exportar_sunshine_api)
         self.sunshine_unpair_all_button.connect("clicked", self.desemparelhar_todos)
@@ -1112,6 +1114,24 @@ class CartridgesPreferences(Adw.PreferencesDialog):
             return
         host = self.sunshine_host_row.get_text().strip() or "localhost"
         open_uri(f"https://{host}:{porta}/", parent=self)
+
+    def iniciar_sunshine(self, *_args: Any) -> None:
+        from cartridges.utils import sunshine
+
+        try:
+            launched = sunshine.start_server()
+        except Exception as error:  # pylint: disable=broad-exception-caught
+            self.add_toast(Adw.Toast.new(str(error)))
+            return
+        if not launched:
+            self.add_toast(Adw.Toast.new(_("O Sunshine já está rodando")))
+            return
+        self.add_toast(Adw.Toast.new(_("Iniciando o Sunshine…")))
+        GLib.timeout_add_seconds(4, self._retestar_sunshine)
+
+    def _retestar_sunshine(self) -> bool:
+        self.testar_sunshine()
+        return GLib.SOURCE_REMOVE
 
     def atualizar_atalho_global(self) -> None:
         try:

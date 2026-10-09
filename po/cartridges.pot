@@ -2117,3 +2117,23 @@ msgstr ""
 #: cartridges/main.py:651
 msgid "Sunshine instalado!"
 msgstr ""
+
+#: data/gtk/preferences.blp:177
+msgid "Iniciar o Sunshine"
+msgstr ""
+
+#: data/gtk/preferences.blp:178
+msgid "Inicia o servidor em segundo plano"
+msgstr ""
+
+#: data/gtk/preferences.blp:177
+msgid "Iniciar"
+msgstr ""
+
+#: cartridges/preferences.py:1127
+msgid "O Sunshine já está rodando"
+msgstr ""
+
+#: cartridges/preferences.py:1129
+msgid "Iniciando o Sunshine…"
+msgstr ""

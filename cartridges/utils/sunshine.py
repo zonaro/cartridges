@@ -67,6 +67,7 @@ FLATPAK_APPS_PATH = (
 
 SUNSHINE_FLATPAK_ID = "dev.lizardbyte.app.Sunshine"
 SUNSHINE_FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
+SUNSHINE_BINARY = "sunshine"
 
 
 def _flatpak_app_dirs() -> list[Path]:
@@ -79,7 +80,7 @@ def _flatpak_app_dirs() -> list[Path]:
 
 def installation_type() -> str:
     """Tell how Sunshine is installed: ``native``, ``flatpak`` or ``""``."""
-    if shutil.which("sunshine"):
+    if shutil.which(SUNSHINE_BINARY):
         return "native"
     try:
         if any(path.is_dir() for path in _flatpak_app_dirs()):
@@ -92,6 +93,89 @@ def installation_type() -> str:
 def is_installed() -> bool:
     """Tell whether Sunshine is available on this machine."""
     return bool(installation_type())
+
+
+def _pgrep_exact(name: str) -> bool:
+    pgrep = shutil.which("pgrep")
+    if not pgrep:
+        return False
+    try:
+        result = subprocess.run(
+            [pgrep, "-x", name],
+            capture_output=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0
+
+
+def _flatpak_running() -> bool:
+    flatpak = shutil.which("flatpak")
+    if not flatpak:
+        return False
+    try:
+        result = subprocess.run(
+            [flatpak, "ps", "--columns=application"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    if result.returncode != 0:
+        return False
+    return any(
+        line.strip() == SUNSHINE_FLATPAK_ID
+        for line in result.stdout.splitlines()
+    )
+
+
+def is_running() -> bool:
+    """Tell whether a Sunshine server process is currently running.
+
+    Native matches the exact process name; Flatpak lists its own
+    sandboxed apps, avoiding the false positives of a loose match.
+    """
+    kind = installation_type()
+    if kind == "native":
+        return _pgrep_exact(SUNSHINE_BINARY)
+    if kind == "flatpak":
+        return _flatpak_running()
+    return False
+
+
+def start_server() -> bool:
+    """Start Sunshine detached, returning True when it was launched.
+
+    Returns False when already running (nothing to do). Raises
+    :class:`SunshineError` when not installed or spawning fails.
+    """
+    kind = installation_type()
+    if not kind:
+        raise SunshineError("Sunshine is not installed")
+    if is_running():
+        return False
+    if kind == "native":
+        command = [SUNSHINE_BINARY]
+    else:
+        flatpak = shutil.which("flatpak")
+        if not flatpak:
+            raise SunshineError("Flatpak is not available")
+        command = [flatpak, "run", SUNSHINE_FLATPAK_ID]
+    try:
+        subprocess.Popen(  # pylint: disable=consider-using-with
+            command,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise SunshineError(f"Could not start Sunshine: {error}") from error
+    logging.debug("Sunshine starting (%s)", kind)
+    return True
 
 
 def install_flatpak() -> None:
