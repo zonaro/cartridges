@@ -41,6 +41,7 @@ watching.
 """
 
 import logging
+import os
 import threading
 from typing import Optional
 
@@ -57,6 +58,27 @@ _INTERVAL_KEY = "news-check-interval"
 # Newest pubDate the user has already seen, in the State schema because it is
 # window state, not a preference.
 _LAST_SEEN_KEY = "news-last-seen-ts"
+
+
+def _ui_language() -> str:
+    """The language the interface actually renders in.
+
+    Mirrors ``cartridges/jolven.in``: an explicit ``language`` preference wins;
+    ``auto`` follows the system locale, read with gettext's own precedence
+    (LANGUAGE, then LC_ALL, LC_MESSAGES, LANG). Read on the main thread because
+    GSettings is not meant to be touched from the poll worker.
+    """
+    try:
+        language = shared.schema.get_string("language")
+    except Exception:  # pylint: disable=broad-exception-caught
+        language = "auto"
+    if language and language != "auto":
+        return language
+    for variable in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        value = os.environ.get(variable)
+        if value:
+            return value
+    return ""
 
 
 class NewsChecker(GObject.Object):
@@ -156,12 +178,17 @@ class NewsChecker(GObject.Object):
             if self._running:
                 return
             self._running = True
-        threading.Thread(target=self._poll_thread, daemon=True).start()
+        # Read the language here, on the main thread: the poll worker must not
+        # touch GSettings (see _ui_language).
+        language = _ui_language()
+        threading.Thread(
+            target=self._poll_thread, args=(language,), daemon=True
+        ).start()
 
-    def _poll_thread(self) -> None:
+    def _poll_thread(self, language: str) -> None:
         posts: Optional[list[NewsPost]] = None
         try:
-            posts = fetch_all_news()
+            posts = fetch_all_news(language=language)
         except requests.RequestException as error:
             # A failed poll is a non-event: the cached posts (if any) stay up
             # and the badge does not change. Info level because a flaky network

@@ -90,7 +90,7 @@ erro parcial.
 ## Feed de atualizações e notícias
 
 Há consumo opcional de RSS do FitGirl para avisos de atualização por jogo e
-notícias. A página Novidades agrega três fontes em uma lista
+notícias. A página Novidades agrega fontes em uma lista
 (`cartridges/utils/news_feed.py:NEWS_FEEDS`): FitGirl, GamerPower
 (`https://www.gamerpower.com/rss/giveaways`, agregado "all" — os sub-feeds
 por plataforma/tipo sobrepõem-se a ele e não são consultados) e FreeToKeep
@@ -98,8 +98,18 @@ por plataforma/tipo sobrepõem-se a ele e não são consultados) e FreeToKeep
 sobrepõem-se a ele; a API JSON segue fora de escopo). Cada post carrega o
 rótulo da fonte, exibido no subtítulo da linha. O poll busca cada feed com
 falha isolada (um feed fora não esvazia a página nem derruba os outros),
-deduplica por guid/link entre feeds e ordena por pubDate. Por ser conteúdo
-remoto não confiável e potencialmente sensível a políticas locais:
+deduplica por guid/link entre feeds e ordena por pubDate.
+
+Uma quarta fonte é restrita por idioma. O feed do TrinityWeb Games
+(`https://games.thetrinityweb.com.br/feed.xml`) publica só em português,
+então fica em `_PT_BR_FEEDS` (fora de `NEWS_FEEDS`) e só é consultado quando
+`feeds_for_language` confirma interface pt-BR: preferência `language` do
+GSettings igual a `pt_BR` ou `auto` com locale do sistema pt-BR, seguindo a
+precedência do gettext (LANGUAGE, LC_ALL, LC_MESSAGES, LANG) e o mesmo padrão
+de `jolven.in`. Em qualquer outro idioma a fonte não é consultada nem exibida.
+`news_checker.py:_ui_language` lê o idioma na thread principal e o repassa ao
+worker. Por ser conteúdo remoto não confiável e potencialmente sensível a
+políticas locais:
 
 - mantenha o acompanhamento opt-in por jogo;
 - aceite apenas HTTPS e URLs seguras;

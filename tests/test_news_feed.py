@@ -8,9 +8,12 @@ from cartridges.utils.news_feed import (
     FREETOKEEP_FEED_URL,
     GAMERPOWER_FEED_URL,
     NEWS_FEEDS,
+    TRINITYWEB_FEED_URL,
     NewsPost,
+    feeds_for_language,
     fetch_all_news,
     fetch_news,
+    is_brazilian_portuguese,
     parse_news,
 )
 
@@ -52,6 +55,32 @@ class NewsFeedTests(unittest.TestCase):
             self.assertTrue(url.startswith("https://"))
         self.assertEqual(urls.count(GAMERPOWER_FEED_URL), 1)
         self.assertEqual(urls.count(FREETOKEEP_FEED_URL), 1)
+        self.assertTrue(TRINITYWEB_FEED_URL.startswith("https://"))
+
+    def test_is_brazilian_portuguese_accepts_locale_spellings(self):
+        for value in ("pt_BR", "pt-BR", "pt_BR.UTF-8", "pt_BR:pt:en"):
+            self.assertTrue(is_brazilian_portuguese(value), value)
+        for value in ("", "en_US", "pt_PT", "auto", "es_ES.UTF-8"):
+            self.assertFalse(is_brazilian_portuguese(value), value)
+
+    def test_feeds_for_language_gates_pt_br_source(self):
+        english = [url for _source, url in feeds_for_language("en_US")]
+        self.assertEqual(english, [url for _source, url in NEWS_FEEDS])
+        self.assertNotIn(TRINITYWEB_FEED_URL, english)
+
+        portuguese = [url for _source, url in feeds_for_language("pt_BR")]
+        self.assertIn(TRINITYWEB_FEED_URL, portuguese)
+        self.assertEqual(len(portuguese), len(NEWS_FEEDS) + 1)
+
+    def test_fetch_all_news_polls_pt_br_source_only_in_pt_br(self):
+        with patch.object(news_feed, "fetch_news", return_value=[]) as fetch:
+            fetch_all_news(language="en_US")
+            english_urls = [call.args[0] for call in fetch.call_args_list]
+            fetch.reset_mock()
+            fetch_all_news(language="pt_BR")
+            portuguese_urls = [call.args[0] for call in fetch.call_args_list]
+        self.assertNotIn(TRINITYWEB_FEED_URL, english_urls)
+        self.assertIn(TRINITYWEB_FEED_URL, portuguese_urls)
 
     def test_parse_tags_source(self):
         posts = parse_news(_doc(_item()), source="GamerPower")

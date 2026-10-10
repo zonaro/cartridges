@@ -31,11 +31,18 @@ spoiler markup that reads as noise, and every game it names is already surfaced
 on that game's own details page. Conversely a news post is never handed to the
 update matcher, which would happily mistake a repack announcement for a patch.
 
-The page aggregates three sources into one list (see ``NEWS_FEEDS``): the
-repack feed above plus the GamerPower "all giveaways" feed and the FreeToKeep
-"everything free to keep" feed. The GamerPower sub-feeds (pc/steam/xbox/...) overlap
-with its ``/rss/giveaways`` aggregate, so only the aggregate is polled. Each
-post carries its source label so the row can show where it came from.
+The page aggregates sources into one list (see ``NEWS_FEEDS``): the repack feed
+above, the GamerPower "all giveaways" feed and the FreeToKeep "everything free
+to keep" feed. The GamerPower sub-feeds (pc/steam/xbox/...) overlap with its
+``/rss/giveaways`` aggregate, so only the aggregate is polled. Each post carries
+its source label so the row can show where it came from.
+
+Portuguese readers get a fourth source. The TrinityWeb Games feed publishes
+exclusively in Portuguese (its ``<language>`` is pt-BR), so it is listed
+separately in ``_PT_BR_FEEDS`` and only polled when the UI language is
+Brazilian Portuguese — see :func:`feeds_for_language`. In any other locale the
+rows would be prose nobody can read, so the source is skipped entirely rather
+than shown and ignored.
 
 Only the parts of an ``<item>`` that a list row can show are kept: title, link,
 publication date, source and a short plain-text excerpt cut out of the HTML summary.
@@ -73,6 +80,11 @@ GAMERPOWER_FEED_URL = "https://www.gamerpower.com/rss/giveaways"
 # combined feed is polled. The JSON API (/api/v1/...) is out of scope.
 FREETOKEEP_FEED_URL = "https://freetokeep.gg/feed.xml"
 
+# TrinityWeb Games blog. The feed declares <language>pt-BR</language> and its
+# posts are written in Portuguese, so it is polled only for a pt-BR interface
+# (see _PT_BR_FEEDS / feeds_for_language). It is not part of NEWS_FEEDS.
+TRINITYWEB_FEED_URL = "https://games.thetrinityweb.com.br/feed.xml"
+
 # (source label, feed url) polled by fetch_all_news, in order. Source labels
 # are proper nouns shown verbatim in the UI, never translated.
 NEWS_FEEDS: tuple[tuple[str, str], ...] = (
@@ -81,7 +93,13 @@ NEWS_FEEDS: tuple[tuple[str, str], ...] = (
     ("FreeToKeep", FREETOKEEP_FEED_URL),
 )
 
-_SOURCE_BY_URL = {url: source for source, url in NEWS_FEEDS}
+# Sources that only make sense for one UI language, appended to NEWS_FEEDS by
+# feeds_for_language when the locale matches. Today only pt-BR.
+_PT_BR_FEEDS: tuple[tuple[str, str], ...] = (("TrinityWeb", TRINITYWEB_FEED_URL),)
+
+# Every source the module can ever resolve a label for, gated or not, so
+# fetch_news can name a post even when it was reached through a gated feed.
+_SOURCE_BY_URL = {url: source for source, url in NEWS_FEEDS + _PT_BR_FEEDS}
 
 _CONTENT_NS = "{http://purl.org/rss/1.0/modules/content/}encoded"
 
@@ -285,18 +303,47 @@ def fetch_news(
     )
 
 
-def fetch_all_news(
-    timeout: float = 15, max_bytes: int = _MAX_FEED_BYTES
-) -> list[NewsPost]:
-    """Download every feed in NEWS_FEEDS and merge the posts, newest first.
+def is_brazilian_portuguese(language: str) -> bool:
+    """True when a locale or ``LANGUAGE`` list means Brazilian Portuguese.
 
-    A feed that fails (network, HTTP, oversized) is skipped with a log line;
-    it never sinks the other feeds. Identifiers repeated across feeds resolve
-    to the newest post. The merged list is capped at _MAX_POSTS.
+    Accepts what the environment actually holds: a single locale
+    (``pt_BR.UTF-8``), a hyphenated tag (``pt-BR``) or gettext's colon list
+    (``pt_BR:pt:en``). Any variant spelling is normalised before comparing, so
+    the gate does not hinge on how the locale was written.
+    """
+    for candidate in (language or "").split(":"):
+        tag = candidate.strip().split(".")[0].split("@")[0].replace("-", "_")
+        if tag.lower() == "pt_br":
+            return True
+    return False
+
+
+def feeds_for_language(language: str = "") -> tuple[tuple[str, str], ...]:
+    """The feeds to poll for a UI language: the base list plus gated sources.
+
+    A single-language source is appended only when its locale matches, so a
+    plain call with an empty language gets exactly ``NEWS_FEEDS`` and callers
+    that never care about language stay unaffected.
+    """
+    if is_brazilian_portuguese(language):
+        return NEWS_FEEDS + _PT_BR_FEEDS
+    return NEWS_FEEDS
+
+
+def fetch_all_news(
+    timeout: float = 15, max_bytes: int = _MAX_FEED_BYTES, language: str = ""
+) -> list[NewsPost]:
+    """Download the feeds for ``language`` and merge the posts, newest first.
+
+    ``language`` selects the source set through :func:`feeds_for_language`; the
+    pt-BR-only sources are polled only for a Brazilian Portuguese interface. A
+    feed that fails (network, HTTP, oversized) is skipped with a log line; it
+    never sinks the other feeds. Identifiers repeated across feeds resolve to
+    the newest post. The merged list is capped at _MAX_POSTS.
     """
     merged: dict[str, NewsPost] = {}
     failures = 0
-    for source, url in NEWS_FEEDS:
+    for source, url in feeds_for_language(language):
         try:
             posts = fetch_news(url, timeout, max_bytes)
         except requests.RequestException as error:
