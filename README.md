@@ -107,6 +107,16 @@ Jolven exports your games to [Sunshine](https://github.com/LizardByte/Sunshine) 
 - The export writes to your local Sunshine `apps.json` — no account, no network — preserving anything already there.
 - Then open [Moonlight](https://moonlight-stream.org/) on your TV, phone or another PC and play.
 
+### Gravação de tela e streaming (GPU Screen Recorder)
+
+Jolven can drive the native [GPU Screen Recorder](https://git.dec05eba.com/gpu-screen-recorder/) from the in-game overlay. The recorder is optional: install the `gpu-screen-recorder` binary (or the Flatpak [com.dec05eba.gpu_screen_recorder](https://flathub.org/apps/com.dec05eba.gpu_screen_recorder)) and enable it in Preferences. Without it, the rest of Jolven keeps working normally.
+
+- **Preferences page** — choose the capture source (portal, monitor or focused window), container, codec, quality, bitrate mode, FPS, resolution and cursor, plus the audio source, codec and bitrate, the replay buffer length and storage, and the output folder.
+- **Overlay controls** — while a game is running, a click on the record button starts or stops recording and a right-click flushes the replay buffer to disk.
+- **Auto-record per game** — a game can start recording automatically when it is launched.
+- **Replay buffer** — keep the last few seconds in RAM or on disk and save a clip on demand.
+- **Streaming** — send the capture to an RTMP, SRT or WHIP URL instead of a file.
+
 Your existing data is safe: on first launch, Jolven copies the library, covers, settings, favorites and metadata from the previous `cartridges` folders into its own folders. The originals are never deleted. GSettings keys are migrated the same way (new keys win when already customized).
 
 # Installation

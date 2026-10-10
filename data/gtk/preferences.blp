@@ -302,6 +302,125 @@ template $CartridgesPreferences: Adw.PreferencesDialog {
     }
   }
 
+  Adw.PreferencesPage recorder_page {
+    name: "recorder";
+    title: _("Gravacao");
+    icon-name: "media-record-symbolic";
+
+    Adw.PreferencesGroup recorder_source_group {
+      title: _("Fonte");
+
+      Adw.SwitchRow recorder_enabled_switch {
+        title: _("Ativar o gravador");
+        subtitle: _("Controla a gravação pela sessão do Jolven");
+      }
+
+      Adw.ComboRow recorder_source_row {
+        title: _("Fonte de vídeo");
+        subtitle: _("De onde a tela é capturada");
+        sensitive: bind recorder_enabled_switch.active;
+      }
+
+      Adw.EntryRow recorder_output_dir_row {
+        title: _("Pasta de saída");
+        sensitive: bind recorder_enabled_switch.active;
+      }
+    }
+
+    Adw.PreferencesGroup recorder_quality_group {
+      title: _("Qualidade");
+      sensitive: bind recorder_enabled_switch.active;
+
+      Adw.ComboRow recorder_container_row {
+        title: _("Formato do arquivo");
+      }
+
+      Adw.ComboRow recorder_codec_row {
+        title: _("Codec de vídeo");
+      }
+
+      Adw.ComboRow recorder_quality_row {
+        title: _("Qualidade");
+      }
+
+      Adw.ComboRow recorder_bitrate_mode_row {
+        title: _("Modo de bitrate");
+      }
+
+      Adw.SpinRow recorder_fps_row {
+        title: _("FPS");
+
+        adjustment: Adjustment {
+          lower: 1;
+          upper: 240;
+          step-increment: 1;
+          page-increment: 10;
+        };
+      }
+
+      Adw.SwitchRow recorder_cursor_switch {
+        title: _("Gravar o cursor do mouse");
+      }
+
+      Adw.EntryRow recorder_scale_row {
+        title: _("Resolução (ex.: 1920x1080, vazio = original)");
+      }
+    }
+
+    Adw.PreferencesGroup recorder_audio_group {
+      title: _("Áudio");
+      sensitive: bind recorder_enabled_switch.active;
+
+      Adw.ComboRow recorder_audio_row {
+        title: _("Fonte de áudio");
+      }
+
+      Adw.ComboRow recorder_audio_codec_row {
+        title: _("Codec de áudio");
+      }
+
+      Adw.SpinRow recorder_audio_bitrate_row {
+        title: _("Bitrate de áudio (kbps)");
+
+        adjustment: Adjustment {
+          lower: 32;
+          upper: 512;
+          step-increment: 32;
+          page-increment: 64;
+        };
+      }
+    }
+
+    Adw.PreferencesGroup recorder_replay_group {
+      title: _("Replay");
+      sensitive: bind recorder_enabled_switch.active;
+
+      Adw.SpinRow recorder_replay_seconds_row {
+        title: _("Duração do replay (segundos, 0 desliga)");
+
+        adjustment: Adjustment {
+          lower: 0;
+          upper: 600;
+          step-increment: 5;
+          page-increment: 30;
+        };
+      }
+
+      Adw.ComboRow recorder_replay_storage_row {
+        title: _("Armazenamento do replay");
+      }
+    }
+
+    Adw.PreferencesGroup recorder_stream_group {
+      title: _("Streaming");
+      sensitive: bind recorder_enabled_switch.active;
+
+      Adw.EntryRow recorder_stream_url_row {
+        title: _("URL de transmissão (RTMP, SRT ou WHIP)");
+      }
+    }
+  }
+
   Adw.PreferencesPage session_page {
     name: "session";
     title: _("Sessão");

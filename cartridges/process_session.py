@@ -44,8 +44,9 @@ command, whichever answers first.
 import logging
 import os
 import signal
+import threading
 from time import monotonic, sleep
-from typing import Optional
+from typing import Any, Optional
 
 from gi.repository import Adw, GLib
 
@@ -126,6 +127,9 @@ class ProcessSession:
         self.waited = 0  # seconds spent waiting for the process to appear
         self.missing_since: Optional[float] = None  # when the process vanished
         self.poll_id = 0
+        # Recorder started automatically because the game opted into
+        # auto-record. Owned here so it is stopped when the session ends.
+        self._auto_recorder: Optional[Any] = None
 
     @property
     def elapsed(self) -> int:
@@ -184,8 +188,34 @@ class ProcessSession:
                 "No safely attributable process to terminate for %s", self.game.name
             )
 
+    def _release_auto_recorder(self, blocking: bool = False) -> None:
+        """Stop the recorder armed for this session, if any.
+
+        ``blocking`` waits for the recorder to flush (used on shutdown);
+        otherwise the wait happens off the GTK thread. Either way, recorder
+        errors are swallowed so they can never fail playtime recording.
+        """
+        service = self._auto_recorder
+        self._auto_recorder = None
+        if service is None:
+            return
+        if blocking:
+            self._stop_auto_recorder(service)
+            return
+        threading.Thread(
+            target=self._stop_auto_recorder, args=(service,), daemon=True
+        ).start()
+
+    @staticmethod
+    def _stop_auto_recorder(service: Any) -> None:
+        try:
+            service.stop()
+        except Exception:  # pylint: disable=broad-except
+            logging.exception("Could not stop the auto-started recorder")
+
     def shutdown(self, timeout: float = 2.0) -> None:
         """End a dedicated session without leaving its game processes behind."""
+        self._release_auto_recorder(blocking=True)
         self.terminate_game()
         deadline = monotonic() + max(0.0, timeout)
         while self._attributed_pids() and monotonic() < deadline:
@@ -313,6 +343,7 @@ class ProcessSession:
 
     def stop(self, record: bool = True) -> None:
         """End the session, recording the elapsed time by default."""
+        self._release_auto_recorder()
         if self.poll_id:
             GLib.source_remove(self.poll_id)
             self.poll_id = 0

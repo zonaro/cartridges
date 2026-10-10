@@ -392,6 +392,11 @@ template $DetailsDialog: Adw.Dialog {
           sensitive: bind profile_track_process.active;
         }
 
+        Adw.SwitchRow profile_auto_record {
+          title: _("Gravar automaticamente ao iniciar");
+          subtitle: _("Requer o gravador ativo nas preferências. Não se aplica ao Xbox Cloud Gaming.");
+        }
+
         Adw.EntryRow profile_environment {
           title: _("Environment (JSON)");
         }

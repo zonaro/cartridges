@@ -12,6 +12,7 @@ install_subdir('store', install_dir: moduledir)
 install_subdir('logging', install_dir: moduledir)
 install_subdir('errors', install_dir: moduledir)
 install_subdir('xcloud_native', install_dir: moduledir)
+install_subdir('recorder', install_dir: moduledir)
 
 # Versão de compilação (Fixes #6): regenerada a cada `meson compile` com a
 # data atual (YY.DDD.HHMM via build-aux/write-version.py). Tem precedência
@@ -56,7 +57,6 @@ install_data(
     'hardware.py',
     'controller.py',
     'gamepad_visual.py',
-    'gpu_screen_recorder.py',
     'launchers.py',
     'xcloud_catalog.py',
     'xcloud_deps.py',

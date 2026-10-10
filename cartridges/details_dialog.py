@@ -112,6 +112,7 @@ class DetailsDialog(Adw.Dialog):
     profile_scaling: Adw.ComboRow = Gtk.Template.Child()
     profile_track_process: Adw.SwitchRow = Gtk.Template.Child()
     profile_process_executable: Adw.EntryRow = Gtk.Template.Child()
+    profile_auto_record: Adw.SwitchRow = Gtk.Template.Child()
 
     exec_info_label: Gtk.Label = Gtk.Template.Child()
     exec_info_popover: Gtk.Popover = Gtk.Template.Child()
@@ -203,6 +204,7 @@ class DetailsDialog(Adw.Dialog):
             )
             self.profile_track_process.set_active(self.game.track_process)
             self.profile_process_executable.set_text(self.game.process_executable)
+            self.profile_auto_record.set_active(self.game.auto_record)
             self.update_rating_stars()
             self.apply_button.set_label(_("Apply"))
 
@@ -772,6 +774,7 @@ class DetailsDialog(Adw.Dialog):
         self.game.process_executable = (
             self.profile_process_executable.get_text().strip()
         )
+        self.game.auto_record = self.profile_auto_record.get_active()
 
         if self.game.game_id in shared.win.game_covers.keys():
             shared.win.game_covers[self.game.game_id].animation = None

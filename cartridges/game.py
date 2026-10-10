@@ -19,9 +19,11 @@
 
 import logging
 import shlex
+import threading
 from pathlib import Path
 from time import time
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from gi.repository import Adw, GLib, GObject, Gtk
 
@@ -40,6 +42,22 @@ STATUS_LABELS = {
 
 def status_label(status: str) -> str:
     return STATUS_LABELS.get(status or "", "")
+
+
+# Mirror of the mappings in window.py so a per-game auto-recording session
+# builds exactly the same command line as the global recorder action.
+_RECORDER_VIDEO_SOURCES = {
+    "portal": "portal",
+    "monitor": "screen",
+    "window": "focused",
+}
+_RECORDER_AUDIO_SOURCES = {
+    "default_output": ("default_output",),
+    "default_input": ("default_input",),
+    "both": ("default_output", "default_input"),
+    "none": (),
+}
+_ALLOWED_STREAM_SCHEMES = frozenset({"rtmp", "srt", "http", "https"})
 
 
 # pylint: disable=too-many-instance-attributes
@@ -147,6 +165,9 @@ class Game(Gtk.Box):
     scaling_mode: str = ""
     track_process: bool = False
     process_executable: str = ""
+    # Opt-in per game: start the global recorder automatically when this game
+    # launches. Only honoured while the recorder is enabled in Preferences.
+    auto_record: bool = False
     # Fundo manual da biblioteca (nome do arquivo em `wallpapers_dir`,
     # ex: "<game_id>-fundo.jpg"). None é automático (IGDB → TGDB → wallhaven).
     fundo_biblioteca: Optional[str] = None
@@ -305,24 +326,29 @@ class Game(Gtk.Box):
         # session is already running it is ended first, and when the game
         # is not followable (launcher URI with no path) the launch
         # behaves exactly as before.
+        session = None
         if shared.schema.get_boolean("playtime-tracking"):
             from cartridges.process_session import ProcessSession
 
             if ProcessSession.active is not None:
                 ProcessSession.active.stop(record=True)
-            session = ProcessSession(self, launcher.pid)
+            candidate = ProcessSession(self, launcher.pid)
             if (
-                session.launcher_pid
-                or session.exe_name
-                or session.install_dir
-                or session.steam_appid
-                or session.flatpak_id
+                candidate.launcher_pid
+                or candidate.exe_name
+                or candidate.install_dir
+                or candidate.steam_appid
+                or candidate.flatpak_id
             ):
-                session.start()
+                candidate.start()
+                session = candidate
             else:
                 logging.debug(
                     "%s is not followable, skipping playtime tracking", self.name
                 )
+
+        if session is not None:
+            self._arm_auto_record(session)
 
         if (
             shared.schema.get_boolean("exit-after-launch")
@@ -332,6 +358,100 @@ class Game(Gtk.Box):
 
         # The variable is the title of the game
         self.create_toast(_("{} launched"))
+
+    def _arm_auto_record(self, session: Any) -> None:
+        """Arm automatic recording for a launched game's session.
+
+        The recorder is optional: every import, read and spawn step is
+        guarded, the process is started off the GTK thread and the service is
+        handed to the session so it can be stopped when the session ends.
+        """
+        if not self.auto_record or self.base_source == "xcloud":
+            return
+        try:
+            if not shared.schema.get_boolean("recorder-enabled"):
+                return
+            from cartridges.recorder import RecorderService, RecorderSettings
+        except Exception:  # pylint: disable=broad-except
+            logging.exception("Could not import the recorder; skipping auto-record")
+            return
+        try:
+            service = RecorderService()
+            settings = self._auto_record_settings(RecorderSettings)
+        except Exception:  # pylint: disable=broad-except
+            logging.exception("Could not prepare auto-record for %s", self.name)
+            return
+        session._auto_recorder = service
+        threading.Thread(
+            target=self._auto_record_worker,
+            args=(session, service, settings),
+            daemon=True,
+        ).start()
+
+    @staticmethod
+    def _auto_record_worker(session: Any, service: Any, settings: Any) -> None:
+        """Start the recorder off the GTK thread; never raises."""
+        try:
+            from cartridges.process_session import ProcessSession
+
+            if (
+                ProcessSession.active is not session
+                or session._auto_recorder is not service
+            ):
+                return
+            if not service.is_available():
+                logging.info(
+                    "GPU Screen Recorder is not installed; auto-record skipped"
+                )
+                return
+            if not service.start(settings=settings):
+                logging.warning(
+                    "Auto-record could not be started for %s", session.game.name
+                )
+                return
+            if (
+                ProcessSession.active is not session
+                or session._auto_recorder is not service
+            ):
+                service.stop()
+        except Exception:  # pylint: disable=broad-except
+            logging.exception("Auto-record failed")
+
+    def _auto_record_settings(self, settings_cls: Any) -> Any:
+        """Read the global recorder preferences into recorder settings."""
+        schema = shared.schema
+        audio = schema.get_string("recorder-audio")
+        return settings_cls(
+            video_source=_RECORDER_VIDEO_SOURCES.get(
+                schema.get_string("recorder-source"), "portal"
+            ),
+            container=schema.get_string("recorder-container"),
+            codec=schema.get_string("recorder-codec"),
+            quality=schema.get_string("recorder-quality"),
+            bitrate_mode=schema.get_string("recorder-bitrate-mode"),
+            fps=schema.get_int("recorder-fps"),
+            cursor=schema.get_boolean("recorder-cursor"),
+            scale=schema.get_string("recorder-scale"),
+            audio_sources=_RECORDER_AUDIO_SOURCES.get(audio, ("default_output",)),
+            audio_codec=schema.get_string("recorder-audio-codec"),
+            audio_bitrate=schema.get_int("recorder-audio-bitrate"),
+            replay_seconds=schema.get_int("recorder-replay-seconds"),
+            replay_storage=schema.get_string("recorder-replay-storage"),
+            output_dir=schema.get_string("recorder-output-dir"),
+            stream_url=self._valid_stream_url(
+                schema.get_string("recorder-stream-url")
+            ),
+        )
+
+    @staticmethod
+    def _valid_stream_url(url: str) -> str:
+        url = (url or "").strip()
+        if not url:
+            return ""
+        if urlparse(url).scheme.lower() in _ALLOWED_STREAM_SCHEMES:
+            return url
+        logging.warning("Ignoring recorder stream URL with an unsupported scheme")
+        return ""
 
     def toggle_hidden(self, toast: bool = True) -> None:
         self.hidden = not self.hidden

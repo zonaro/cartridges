@@ -93,6 +93,7 @@ class FileManager(AsyncManager):
             "scaling_mode",
             "track_process",
             "process_executable",
+            "auto_record",
             "is_launcher",
             "fundo_biblioteca",
         )

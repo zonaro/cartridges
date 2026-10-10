@@ -66,6 +66,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     general_page: Adw.PreferencesPage = Gtk.Template.Child()
     import_page: Adw.PreferencesPage = Gtk.Template.Child()
     sgdb_page: Adw.PreferencesPage = Gtk.Template.Child()
+    recorder_page: Adw.PreferencesPage = Gtk.Template.Child()
 
     sources_group: Adw.PreferencesGroup = Gtk.Template.Child()
 
@@ -102,6 +103,23 @@ class CartridgesPreferences(Adw.PreferencesDialog):
     sunshine_apply_button: Gtk.Button = Gtk.Template.Child()
     sunshine_pairings_group: Adw.PreferencesGroup = Gtk.Template.Child()
     sunshine_unpair_all_button: Gtk.Button = Gtk.Template.Child()
+
+    recorder_enabled_switch: Adw.SwitchRow = Gtk.Template.Child()
+    recorder_source_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_output_dir_row: Adw.EntryRow = Gtk.Template.Child()
+    recorder_container_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_codec_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_quality_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_bitrate_mode_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_fps_row: Adw.SpinRow = Gtk.Template.Child()
+    recorder_cursor_switch: Adw.SwitchRow = Gtk.Template.Child()
+    recorder_scale_row: Adw.EntryRow = Gtk.Template.Child()
+    recorder_audio_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_audio_codec_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_audio_bitrate_row: Adw.SpinRow = Gtk.Template.Child()
+    recorder_replay_seconds_row: Adw.SpinRow = Gtk.Template.Child()
+    recorder_replay_storage_row: Adw.ComboRow = Gtk.Template.Child()
+    recorder_stream_url_row: Adw.EntryRow = Gtk.Template.Child()
 
     auto_import_switch: Adw.SwitchRow = Gtk.Template.Child()
     remove_missing_switch: Adw.SwitchRow = Gtk.Template.Child()
@@ -525,6 +543,8 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 "game-mode-enable-vrr",
                 "game-mode-start-library",
                 "game-mode-hide-mouse-cursor",
+                "recorder-enabled",
+                "recorder-cursor",
             }
         )
         self.agrupar_duplicados_switch.connect(
@@ -585,6 +605,7 @@ class CartridgesPreferences(Adw.PreferencesDialog):
         shared.schema.connect(
             "changed::session-wallpaper-saved", lambda *_: self.atualizar_parede()
         )
+        self.setup_recorder_page()
         self.setup_fita_rows()
         self.reler_fitas()
 
@@ -1609,6 +1630,145 @@ class CartridgesPreferences(Adw.PreferencesDialog):
                 shared.schema.set_string("game-overlay-button", choices[selected])
 
         self.game_overlay_button_row.connect("notify::selected", selected_changed)
+
+    @staticmethod
+    def _setup_recorder_combo(
+        row: Adw.ComboRow, setting: str, options: list[tuple[str, str]]
+    ) -> None:
+        values = [value for value, _label in options]
+        row.set_model(Gtk.StringList.new([label for _value, label in options]))
+        saved = shared.schema.get_string(setting)
+        row.set_selected(values.index(saved) if saved in values else 0)
+
+        def selected_changed(widget: Adw.ComboRow, *_args: Any) -> None:
+            selected = widget.get_selected()
+            if 0 <= selected < len(values):
+                shared.schema.set_string(setting, values[selected])
+
+        row.connect("notify::selected", selected_changed)
+
+    @staticmethod
+    def _setup_recorder_spin(row: Adw.SpinRow, setting: str) -> None:
+        row.set_value(shared.schema.get_int(setting))
+
+        def value_changed(widget: Adw.SpinRow, *_args: Any) -> None:
+            shared.schema.set_int(setting, int(widget.get_value()))
+
+        row.connect("notify::value", value_changed)
+
+    def setup_recorder_page(self) -> None:
+        self._setup_recorder_combo(
+            self.recorder_source_row,
+            "recorder-source",
+            [
+                ("portal", _("Portal (escolher a cada gravação)")),
+                ("monitor", _("Monitor inteiro")),
+                ("window", _("Janela em foco")),
+            ],
+        )
+        self._setup_recorder_combo(
+            self.recorder_container_row,
+            "recorder-container",
+            [
+                ("mp4", _("MP4")),
+                ("mkv", _("Matroska (MKV)")),
+            ],
+        )
+        self._setup_recorder_combo(
+            self.recorder_codec_row,
+            "recorder-codec",
+            [
+                ("auto", _("Automático")),
+                ("h264", _("H.264")),
+                ("hevc", _("H.265 (HEVC)")),
+                ("av1", _("AV1")),
+                ("vp8", _("VP8")),
+                ("vp9", _("VP9")),
+            ],
+        )
+        self._setup_recorder_combo(
+            self.recorder_quality_row,
+            "recorder-quality",
+            [
+                ("low", _("Baixa")),
+                ("medium", _("Média")),
+                ("high", _("Alta")),
+                ("very_high", _("Muito alta")),
+                ("ultra", _("Ultra")),
+            ],
+        )
+        self._setup_recorder_combo(
+            self.recorder_bitrate_mode_row,
+            "recorder-bitrate-mode",
+            [
+                ("auto", _("Automático")),
+                ("cbr", _("Taxa constante (CBR)")),
+                ("vbr", _("Taxa variável (VBR)")),
+            ],
+        )
+        self._setup_recorder_spin(self.recorder_fps_row, "recorder-fps")
+
+        def recorder_scale_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "recorder-scale", self.recorder_scale_row.get_text().strip()
+            )
+
+        self.recorder_scale_row.set_text(shared.schema.get_string("recorder-scale"))
+        self.recorder_scale_row.connect("changed", recorder_scale_changed)
+
+        self._setup_recorder_combo(
+            self.recorder_audio_row,
+            "recorder-audio",
+            [
+                ("default_output", _("Saída padrão")),
+                ("default_input", _("Entrada (microfone)")),
+                ("both", _("Saída e entrada")),
+                ("none", _("Sem áudio")),
+            ],
+        )
+        self._setup_recorder_combo(
+            self.recorder_audio_codec_row,
+            "recorder-audio-codec",
+            [
+                ("opus", _("Opus")),
+                ("aac", _("AAC")),
+                ("flac", _("FLAC")),
+            ],
+        )
+        self._setup_recorder_spin(
+            self.recorder_audio_bitrate_row, "recorder-audio-bitrate"
+        )
+        self._setup_recorder_spin(
+            self.recorder_replay_seconds_row, "recorder-replay-seconds"
+        )
+        self._setup_recorder_combo(
+            self.recorder_replay_storage_row,
+            "recorder-replay-storage",
+            [
+                ("ram", _("Memória RAM")),
+                ("disk", _("Disco")),
+            ],
+        )
+
+        def recorder_output_dir_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "recorder-output-dir", self.recorder_output_dir_row.get_text().strip()
+            )
+
+        self.recorder_output_dir_row.set_text(
+            shared.schema.get_string("recorder-output-dir")
+        )
+        self.recorder_output_dir_row.connect("changed", recorder_output_dir_changed)
+
+        def recorder_stream_url_changed(*_args: Any) -> None:
+            shared.schema.set_string(
+                "recorder-stream-url", self.recorder_stream_url_row.get_text().strip()
+            )
+
+        self.recorder_stream_url_row.set_text(
+            shared.schema.get_string("recorder-stream-url")
+        )
+        self.recorder_stream_url_row.connect("changed", recorder_stream_url_changed)
 
     def choose_folder(
         self, _widget: Any, callback: Callable, callback_data: Optional[str] = None

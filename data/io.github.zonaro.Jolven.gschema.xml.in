@@ -283,6 +283,86 @@
       </choices>
       <default>"jolven-dpad"</default>
     </key>
+    <key name="recorder-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Jolven screen recorder</summary>
+      <description>Enables the recorder controls backed by gpu-screen-recorder in the Jolven session.</description>
+    </key>
+    <key name="recorder-source" type="s">
+      <default>"portal"</default>
+      <summary>Video capture source</summary>
+      <description>How the recorder captures the screen: the desktop portal, a monitor or a window.</description>
+    </key>
+    <key name="recorder-container" type="s">
+      <default>"mp4"</default>
+      <summary>Output container format</summary>
+      <description>Container used for the recorded video files.</description>
+    </key>
+    <key name="recorder-codec" type="s">
+      <default>"auto"</default>
+      <summary>Video codec</summary>
+      <description>Video encoder used for recording. Auto selects the best available hardware encoder.</description>
+    </key>
+    <key name="recorder-quality" type="s">
+      <default>"very_high"</default>
+      <summary>Recording quality preset</summary>
+      <description>Quality preset applied when the bitrate mode is set to auto.</description>
+    </key>
+    <key name="recorder-bitrate-mode" type="s">
+      <default>"auto"</default>
+      <summary>Bitrate control mode</summary>
+      <description>Whether the recorder picks the bitrate automatically or uses constant/variable bitrate.</description>
+    </key>
+    <key name="recorder-fps" type="i">
+      <default>60</default>
+      <summary>Recording frame rate</summary>
+      <description>Frames per second captured by the recorder.</description>
+    </key>
+    <key name="recorder-cursor" type="b">
+      <default>true</default>
+      <summary>Record the mouse cursor</summary>
+      <description>Whether the mouse cursor is included in the recorded video.</description>
+    </key>
+    <key name="recorder-scale" type="s">
+      <default>""</default>
+      <summary>Output resolution</summary>
+      <description>Optional output resolution such as 1920x1080. Empty keeps the source resolution.</description>
+    </key>
+    <key name="recorder-audio" type="s">
+      <default>"default_output"</default>
+      <summary>Audio source</summary>
+      <description>Audio captured by the recorder: default output, output and microphone or none.</description>
+    </key>
+    <key name="recorder-audio-codec" type="s">
+      <default>"opus"</default>
+      <summary>Audio codec</summary>
+      <description>Audio encoder used for recording.</description>
+    </key>
+    <key name="recorder-audio-bitrate" type="i">
+      <default>128</default>
+      <summary>Audio bitrate</summary>
+      <description>Audio bitrate in kbps used for recording.</description>
+    </key>
+    <key name="recorder-replay-seconds" type="i">
+      <default>0</default>
+      <summary>Replay buffer length</summary>
+      <description>Seconds kept in the replay buffer. Zero disables the replay buffer.</description>
+    </key>
+    <key name="recorder-replay-storage" type="s">
+      <default>"ram"</default>
+      <summary>Replay buffer storage</summary>
+      <description>Whether the replay buffer is kept in RAM or on disk.</description>
+    </key>
+    <key name="recorder-output-dir" type="s">
+      <default>"~/Videos/Jolven"</default>
+      <summary>Recording output directory</summary>
+      <description>Directory where recordings and saved replays are written.</description>
+    </key>
+    <key name="recorder-stream-url" type="s">
+      <default>""</default>
+      <summary>Streaming URL</summary>
+      <description>RTMP, SRT or WHIP destination used when streaming. The URL is never logged.</description>
+    </key>
   </schema>
 
   <schema id="@APP_ID@.State" path="@PREFIX@/State/">

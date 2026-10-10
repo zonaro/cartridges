@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlparse
 
-from cartridges import gpu_screen_recorder, shared
+from cartridges import shared
 from cartridges.botao_tarefas import BotaoTarefas
 from cartridges.controller import detect_controller_layout, name_for_button
 from cartridges.gamepad_visual import GamepadVisual
@@ -42,6 +42,7 @@ from cartridges.utils.format_playtime import format_playtime, format_stopwatch
 from cartridges.utils.install_size import format_size
 from cartridges.utils.download import download_bytes
 from cartridges.utils.library_background import resolver_fundo
+from cartridges.utils.na_tela import entregar_na_tela
 from cartridges.utils.news_feed import NewsPost
 from cartridges.utils.open_uri import open_uri
 from cartridges.utils.relative_date import relative_date
@@ -54,6 +55,19 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango
 _NEWS_THUMB_SIZE = 64
 _NEWS_THUMB_BYTES = 2 * 1024 * 1024
 _NEWS_THUMB_CACHE_MAX = 200
+
+_RECORDER_SOURCES = {
+    "portal": "portal",
+    "monitor": "screen",
+    "window": "focused",
+}
+_RECORDER_AUDIO_SOURCES = {
+    "default_output": ("default_output",),
+    "default_input": ("default_input",),
+    "both": ("default_output", "default_input"),
+    "none": (),
+}
+_ALLOWED_STREAM_SCHEMES = frozenset({"rtmp", "srt", "http", "https"})
 
 
 def can_edit_notes(game: Game) -> bool:
@@ -265,6 +279,9 @@ class CartridgesWindow(Adw.ApplicationWindow):
     session_game: Optional[Game] = None
     session_timer_id: int = 0
     _game_overlay_open = False
+    _recorder_service: Optional[Any] = None
+    _recorder_busy = False
+    _recorder_recording = False
     botao_tarefas: BotaoTarefas
     _xcloud_controller: Optional[Any] = None
     _xcloud_retry_game: Optional[Any] = None
@@ -530,6 +547,10 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.gpu_screen_recorder_button.connect(
             "clicked", self.open_gpu_screen_recorder
         )
+        self._recorder_replay_gesture = Gtk.GestureClick()
+        self._recorder_replay_gesture.set_button(Gdk.BUTTON_SECONDARY)
+        self._recorder_replay_gesture.connect("pressed", self.on_save_recorder_replay)
+        self.gpu_screen_recorder_button.add_controller(self._recorder_replay_gesture)
         self.session_blocker_notes_popover.connect(
             "notify::visible", self.on_session_notes_popover_toggled
         )
@@ -2688,6 +2709,7 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.session_blocker_label.set_label(_("{} em execução").format(game.name))
         self.session_blocker.set_visible(True)
         self.navigation_view.set_sensitive(False)
+        self._sync_recorder_button()
         self.session_return_button.grab_focus()
         self.session_tick()
         self.session_blocker_timer.set_visible(True)
@@ -2737,13 +2759,92 @@ class CartridgesWindow(Adw.ApplicationWindow):
         self.minimize()
 
     def open_gpu_screen_recorder(self, *_args: Any) -> None:
-        try:
-            launched = gpu_screen_recorder.launch()
-        except GLib.Error as error:
-            logging.warning("Could not launch GPU Screen Recorder: %s", error.message)
-            launched = False
+        """Start or stop the native recorder for the running session."""
+        self._recorder_action(replay=False)
 
-        if not launched:
+    def on_save_recorder_replay(self, *_args: Any) -> None:
+        """Flush the running recorder's replay buffer to disk."""
+        self._recorder_action(replay=True)
+
+    def _recorder_action(self, *, replay: bool) -> None:
+        if self._recorder_busy:
+            return
+        try:
+            from cartridges.recorder import RecorderService, RecorderSettings
+        except ImportError:
+            logging.warning("cartridges.recorder is unavailable")
+            if not replay:
+                self._notify_recorder_missing()
+            return
+        if not shared.schema.get_boolean("recorder-enabled"):
+            if not replay:
+                self._notify_recorder_missing()
+            return
+        self._recorder_busy = True
+        threading.Thread(
+            target=self._recorder_worker,
+            args=(RecorderService, RecorderSettings, replay),
+            daemon=True,
+        ).start()
+
+    def _recorder_worker(
+        self, service_cls: Any, settings_cls: Any, replay: bool
+    ) -> None:
+        outcome = "error"
+        try:
+            service = self._recorder_service
+            if service is None:
+                service = service_cls()
+                self._recorder_service = service
+            if replay:
+                outcome = "replay" if service.save_replay() else "error"
+            elif service.is_running():
+                outcome = "stop" if service.stop() else "error"
+            elif not service.is_available():
+                outcome = "missing"
+            else:
+                settings = self._build_recorder_settings(settings_cls)
+                outcome = "start" if service.start(settings=settings) else "error"
+        except Exception:
+            logging.exception("Recorder action failed")
+        entregar_na_tela(self._recorder_finished, outcome)
+
+    def _build_recorder_settings(self, settings_cls: Any) -> Any:
+        schema = shared.schema
+        audio = schema.get_string("recorder-audio")
+        return settings_cls(
+            video_source=_RECORDER_SOURCES.get(
+                schema.get_string("recorder-source"), "portal"
+            ),
+            container=schema.get_string("recorder-container"),
+            codec=schema.get_string("recorder-codec"),
+            quality=schema.get_string("recorder-quality"),
+            bitrate_mode=schema.get_string("recorder-bitrate-mode"),
+            fps=schema.get_int("recorder-fps"),
+            cursor=schema.get_boolean("recorder-cursor"),
+            scale=schema.get_string("recorder-scale"),
+            audio_sources=_RECORDER_AUDIO_SOURCES.get(audio, ("default_output",)),
+            audio_codec=schema.get_string("recorder-audio-codec"),
+            audio_bitrate=schema.get_int("recorder-audio-bitrate"),
+            replay_seconds=schema.get_int("recorder-replay-seconds"),
+            replay_storage=schema.get_string("recorder-replay-storage"),
+            output_dir=schema.get_string("recorder-output-dir"),
+            stream_url=self._valid_stream_url(schema.get_string("recorder-stream-url")),
+        )
+
+    @staticmethod
+    def _valid_stream_url(url: str) -> str:
+        url = (url or "").strip()
+        if not url:
+            return ""
+        if urlparse(url).scheme.lower() in _ALLOWED_STREAM_SCHEMES:
+            return url
+        logging.warning("Ignoring recorder stream URL with an unsupported scheme")
+        return ""
+
+    def _recorder_finished(self, outcome: str) -> None:
+        self._recorder_busy = False
+        if outcome == "missing":
             self.toast_queue.add(
                 Adw.Toast.new(
                     _(
@@ -2752,9 +2853,50 @@ class CartridgesWindow(Adw.ApplicationWindow):
                 )
             )
             return
+        if outcome == "start":
+            self._recorder_recording = True
+            self._update_recorder_button()
+            self.toast_queue.add(Adw.Toast.new(_("Gravação iniciada")))
+            return
+        if outcome == "stop":
+            self._recorder_recording = False
+            self._update_recorder_button()
+            self.toast_queue.add(Adw.Toast.new(_("Gravação salva")))
+            return
+        if outcome == "replay":
+            self.toast_queue.add(Adw.Toast.new(_("Replay salvo")))
+            return
+        self.toast_queue.add(Adw.Toast.new(_("Não foi possível controlar o gravador.")))
 
-        self._game_overlay_open = False
-        self.minimize()
+    def _update_recorder_button(self) -> None:
+        if self._recorder_recording:
+            self.gpu_screen_recorder_button.set_icon_name(
+                "media-playback-stop-symbolic"
+            )
+            self.gpu_screen_recorder_button.set_tooltip_text(
+                _("Parar a gravação. Clique com o botão direito para salvar o replay.")
+            )
+            return
+        self.gpu_screen_recorder_button.set_icon_name("media-record-symbolic")
+        self.gpu_screen_recorder_button.set_tooltip_text(
+            _("Iniciar a gravação. Clique com o botão direito para salvar o replay.")
+        )
+
+    def _sync_recorder_button(self) -> None:
+        service = self._recorder_service
+        running = bool(service is not None and service.is_running())
+        if running != self._recorder_recording:
+            self._recorder_recording = running
+            self._update_recorder_button()
+
+    def _notify_recorder_missing(self) -> None:
+        self.toast_queue.add(
+            Adw.Toast.new(
+                _(
+                    "GPU Screen Recorder não foi encontrado. Instale o aplicativo e tente novamente."
+                )
+            )
+        )
 
     def on_session_notes_popover_toggled(
         self, popover: Gtk.Popover, _pspec: Any
